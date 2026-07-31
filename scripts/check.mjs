@@ -27,10 +27,21 @@ for (const document of catalog.documents) {
 for (const page of catalog.pages) {
   assert.match(
     page.id,
-    /^LS-(?:HOME|ADM|MER|ADR|CRS)-\d{3}$/,
+    /^BP-REQ-\d{3}$/,
     `${page.id} 不符合页面 ID 规则`
   );
-  assert.ok(moduleCodes.has(page.moduleCode), `${page.id} 后台归属不存在`);
+  assert.ok(
+    Array.isArray(page.moduleCodes) && page.moduleCodes.length > 0,
+    `${page.id} 至少登记一个影响端`
+  );
+  assert.equal(
+    new Set(page.moduleCodes).size,
+    page.moduleCodes.length,
+    `${page.id} 影响端不得重复`
+  );
+  for (const moduleCode of page.moduleCodes) {
+    assert.ok(moduleCodes.has(moduleCode), `${page.id} 影响端不存在`);
+  }
   assert.ok(documentIds.has(page.doc), `${page.id} 对应 Demo 文档不存在`);
 }
 
@@ -41,7 +52,8 @@ const [index, distribution] = await Promise.all([
 
 assert.equal(index, distribution, "根入口与发布构建结果不一致");
 assert.doesNotMatch(index, /\/Users\/|file:\/\//);
-assert.match(index, /蓝盛代付/);
+assert.match(index, /Bluepay/);
+assert.doesNotMatch(index, /需求 Demo 中心|项目说明|跨后台|HTML DEMO/);
 
 console.log(
   `检查通过：${catalog.pages.length} 个页面、${catalog.documents.length} 个 Demo 文档。`

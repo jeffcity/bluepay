@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("项目清单按四类后台维护", async () => {
+test("项目清单只保留后台、商户和地址池", async () => {
   const catalog = JSON.parse(
     await readFile(
       new URL("../src/catalog/project.json", import.meta.url),
@@ -11,23 +11,24 @@ test("项目清单按四类后台维护", async () => {
   );
 
   assert.equal(catalog.project.code, "BLUEPAY-DEMO");
-  assert.deepEqual(
-    catalog.modules.map(([code]) => code),
-    ["HOME", "ADMIN", "MERCHANT", "ADDRESS", "CROSS"]
-  );
-  assert.equal(catalog.pages.length, 1);
-  assert.equal(catalog.documents.length, 1);
-  assert.equal(new Set(catalog.pages.map((page) => page.id)).size, 1);
+  assert.deepEqual(catalog.modules, [
+    ["ADMIN", "后台"],
+    ["MERCHANT", "商户"],
+    ["ADDRESS", "地址池"]
+  ]);
+  assert.equal(catalog.project.name, "Bluepay");
+  assert.equal(catalog.pages.length, 0);
+  assert.equal(catalog.documents.length, 0);
 });
 
-test("母板提供统一分类导航和页面展示区", async () => {
+test("母板只显示 Bluepay 和三个端", async () => {
   const template = await readFile(
     new URL("../src/shell/index.template.html", import.meta.url),
     "utf8"
   );
 
   for (const expected of [
-    "蓝盛代付",
+    "Bluepay",
     "Demo 分类",
     "已打开页面",
     "mainNav",
@@ -40,5 +41,8 @@ test("母板提供统一分类导航和页面展示区", async () => {
       template,
       new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
     );
+  }
+  for (const removed of ["需求 Demo 中心", "项目说明", "跨后台", "HTML DEMO"]) {
+    assert.doesNotMatch(template, new RegExp(removed));
   }
 });

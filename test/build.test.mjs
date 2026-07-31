@@ -12,21 +12,16 @@ test("构建生成一致的本地入口", async () => {
   ]);
 
   assert.equal(root, dist);
-  assert.match(root, /LS-HOME-001/);
-  assert.match(root, /蓝盛代付需求 Demo/);
+  assert.match(root, /Bluepay/);
+  assert.match(root, /\["ADMIN","后台"\]/);
+  assert.match(root, /\["MERCHANT","商户"\]/);
+  assert.match(root, /\["ADDRESS","地址池"\]/);
+  assert.doesNotMatch(root, /需求 Demo 中心|项目说明|跨后台|HTML DEMO/);
   assert.doesNotMatch(root, /\/Users\/|file:\/\//);
 
   const documentStart =
     root.indexOf("const DOCUMENTS=") + "const DOCUMENTS=".length;
   const documentEnd = root.indexOf(";\n    const mainNav=", documentStart);
   const documents = JSON.parse(root.slice(documentStart, documentEnd));
-  assert.deepEqual(Object.keys(documents), ["doc-guide"]);
-
-  for (const document of Object.values(documents)) {
-    for (const script of document.matchAll(
-      /<script[^>]*>([\s\S]*?)<\/script>/gi
-    )) {
-      assert.doesNotThrow(() => new Function(script[1]));
-    }
-  }
+  assert.deepEqual(documents, {});
 });

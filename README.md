@@ -1,4 +1,4 @@
-# 蓝盛代付需求 Demo
+# Bluepay 需求 Demo
 
 蓝盛代付新需求 HTML Demo 的统一维护仓库。
 
@@ -22,20 +22,20 @@ npm run check
 - `test/`：项目结构和构建测试
 - `docs/新Demo接入.md`：新需求 Demo 的接入步骤
 
-## 后台归属
+## 展示分类
 
-- 蓝盛后台
-- 蓝盛商户端后台
-- 地址池后台
-- 跨后台
+- 后台
+- 商户
+- 地址池
 
 新需求仍在上级产品资料库中按完整需求包维护；只有确认用于评审或展示的 Demo 文件复制到本仓库。
 
 ## 接入新 Demo
 
-1. 在 `src/pages/<后台归属>/<需求名称>/` 新增确认后的 Demo。
-2. 在 `src/catalog/project.json` 登记页面和源文件。
-3. 运行 `npm run check`。
-4. 本地确认展示正常后再提交和推送。
+1. 在 `src/pages/<需求名称>/` 新增确认后的 Demo。
+2. 在 `src/catalog/project.json` 登记页面、源文件和影响端。
+3. 同时影响多个端时只保留一份 Demo，并在 `moduleCodes` 登记多个端。
+4. 运行 `npm run check`。
+5. 本地确认展示正常后再提交和推送。
 
 不要直接修改 `index.html` 或 `dist/`，它们是构建产物。
