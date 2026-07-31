@@ -10,7 +10,7 @@ test("项目清单按四类后台维护", async () => {
     )
   );
 
-  assert.equal(catalog.project.code, "LANSHENG-PAYOUT-DEMO");
+  assert.equal(catalog.project.code, "BLUEPAY-DEMO");
   assert.deepEqual(
     catalog.modules.map(([code]) => code),
     ["HOME", "ADMIN", "MERCHANT", "ADDRESS", "CROSS"]

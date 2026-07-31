@@ -11,7 +11,7 @@ const moduleCodes = new Set(catalog.modules.map(([code]) => code));
 const pageIds = catalog.pages.map((page) => page.id);
 const documentIds = new Set(catalog.documents.map((document) => document.id));
 
-assert.equal(catalog.project.code, "LANSHENG-PAYOUT-DEMO");
+assert.equal(catalog.project.code, "BLUEPAY-DEMO");
 assert.equal(new Set(pageIds).size, pageIds.length, "页面 ID 不得重复");
 assert.equal(
   documentIds.size,
