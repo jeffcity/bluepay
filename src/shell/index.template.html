@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>蓝盛代付需求 Demo</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root{--blue:#3867d6;--blue-soft:#eef3ff;--ink:#172033;--text:#465064;--muted:#7b8495;--line:#e2e7f0;--canvas:#f5f7fb;--surface:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:var(--canvas)}
+    *{box-sizing:border-box}html,body{height:100%;margin:0}body{min-width:900px;overflow:hidden;background:var(--canvas)}button{font:inherit;cursor:pointer}.app{height:100%;display:grid;grid-template-rows:64px 44px minmax(0,1fr);overflow:hidden}.topbar{display:flex;align-items:center;padding:0 22px;border-bottom:1px solid var(--line);background:#fff}.brand{display:flex;align-items:center;gap:12px;margin-right:32px;color:var(--ink);font-size:20px;font-weight:900}.brand-mark{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:#fff;background:linear-gradient(135deg,#3867d6,#6b8ee8);box-shadow:0 7px 18px rgba(56,103,214,.24);font-size:13px;letter-spacing:.04em}.subtitle{color:var(--muted);font-size:12px;font-weight:650}.main-nav{height:100%;display:flex;align-items:stretch;gap:3px}.nav-btn{height:100%;padding:0 14px;border:0;border-bottom:3px solid transparent;color:#586174;background:transparent;font-size:13px;font-weight:750}.nav-btn:hover{color:var(--blue);background:#f8faff}.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--blue-soft)}.repo-badge{margin-left:auto;padding:7px 10px;border:1px solid var(--line);border-radius:8px;color:#667085;background:#fff;font-size:11px;font-weight:700}.worktabs{display:flex;align-items:stretch;gap:4px;padding:0 22px;border-bottom:1px solid var(--line);background:#fff;overflow-x:auto}.worktab{position:relative;min-width:max-content;padding:0 14px;border:0;color:#747d8c;background:transparent;font-size:12px}.worktab.active{color:var(--blue);font-weight:750}.worktab.active::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--blue)}.workspace{min-height:0;position:relative}.frame-wrap{position:absolute;inset:0;overflow:hidden;background:#fff}iframe{width:100%;height:100%;display:block;border:0;background:#fff}.empty{height:100%;display:grid;place-items:center;color:var(--muted);background:var(--canvas)}.toast{position:fixed;right:18px;bottom:18px;z-index:100;padding:10px 13px;border-radius:8px;color:#fff;background:#30394b;box-shadow:0 10px 24px rgba(20,28,44,.22);font-size:12px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}@media(max-width:1050px){.subtitle,.repo-badge{display:none}.topbar{padding:0 14px}.brand{margin-right:18px}.nav-btn{padding:0 10px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">LS</span><span id="projectName">蓝盛代付</span></div>
+      <span class="subtitle" id="projectSubtitle">需求 Demo 中心</span>
+      <nav class="main-nav" id="mainNav" aria-label="Demo 分类"></nav>
+      <span class="repo-badge">HTML DEMO</span>
+    </header>
+    <nav class="worktabs" id="worktabs" aria-label="已打开页面"></nav>
+    <main class="workspace">
+      <div class="frame-wrap" id="frameWrap"><iframe id="demoFrame" title="需求 Demo"></iframe></div>
+      <div class="empty" id="emptyState" hidden>当前分类暂未接入 Demo</div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const PROJECT=__PROJECT__;
+    const MODULES=__MODULES__;
+    const PAGES=__PAGES__;
+    const DOCUMENTS=__DOCUMENTS__;
+    const mainNav=document.getElementById("mainNav");
+    const worktabs=document.getElementById("worktabs");
+    const frame=document.getElementById("demoFrame");
+    const frameWrap=document.getElementById("frameWrap");
+    const emptyState=document.getElementById("emptyState");
+    const toast=document.getElementById("toast");
+    let currentId="";
+    let openIds=[];
+    let toastTimer;
+
+    document.getElementById("projectName").textContent=PROJECT.name;
+    document.getElementById("projectSubtitle").textContent=PROJECT.subtitle;
+
+    function escapeHtml(value){return String(value).replace(/[&<>"']/g,function(char){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char];});}
+    function notify(message){toast.textContent=message;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){toast.classList.remove("show");},1800);}
+    function renderNav(){
+      const current=PAGES.find(function(page){return page.id===currentId;});
+      mainNav.innerHTML=MODULES.map(function(module){
+        const code=module[0],label=module[1],active=current&&current.moduleCode===code;
+        return '<button class="nav-btn'+(active?" active":"")+'" type="button" data-module="'+escapeHtml(code)+'">'+escapeHtml(label)+'</button>';
+      }).join("");
+    }
+    function renderTabs(){
+      worktabs.innerHTML=openIds.map(function(id){
+        const page=PAGES.find(function(item){return item.id===id;});
+        return page?'<button class="worktab'+(id===currentId?" active":"")+'" type="button" data-page="'+escapeHtml(id)+'">'+escapeHtml(page.title)+'</button>':"";
+      }).join("");
+    }
+    function selectPage(id,updateHash){
+      const page=PAGES.find(function(item){return item.id===id;});
+      if(!page)return;
+      currentId=page.id;
+      if(!openIds.includes(page.id))openIds.push(page.id);
+      frameWrap.hidden=false;
+      emptyState.hidden=true;
+      frame.title=page.title+" Demo";
+      frame.srcdoc=DOCUMENTS[page.doc];
+      if(updateHash&&location.hash!=="#"+page.id)history.replaceState(null,"","#"+page.id);
+      renderNav();renderTabs();
+    }
+    mainNav.addEventListener("click",function(event){
+      const button=event.target.closest("[data-module]");
+      if(!button)return;
+      const pages=PAGES.filter(function(page){return page.moduleCode===button.dataset.module;});
+      if(!pages.length){notify(button.textContent.trim()+"暂未接入 Demo");return;}
+      selectPage(pages[0].id,true);
+    });
+    worktabs.addEventListener("click",function(event){
+      const tab=event.target.closest("[data-page]");
+      if(tab)selectPage(tab.dataset.page,true);
+    });
+    addEventListener("hashchange",function(){
+      const id=location.hash.slice(1);
+      if(PAGES.some(function(page){return page.id===id;}))selectPage(id,false);
+    });
+    const initial=location.hash.slice(1);
+    if(PAGES.length){selectPage(PAGES.some(function(page){return page.id===initial;})?initial:PAGES[0].id,false);}
+    else{frameWrap.hidden=true;emptyState.hidden=false;renderNav();}
+  </script>
+</body>
+</html>

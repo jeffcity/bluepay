@@ -1,0 +1,30 @@
+{
+  "project": {
+    "code": "LANSHENG-PAYOUT-DEMO",
+    "name": "蓝盛代付",
+    "subtitle": "需求 Demo 中心"
+  },
+  "modules": [
+    ["HOME", "项目说明"],
+    ["ADMIN", "蓝盛后台"],
+    ["MERCHANT", "蓝盛商户端后台"],
+    ["ADDRESS", "地址池后台"],
+    ["CROSS", "跨后台"]
+  ],
+  "pages": [
+    {
+      "id": "LS-HOME-001",
+      "title": "项目说明",
+      "summary": "查看 Demo 收纳范围、后台归属和新需求接入方式",
+      "moduleCode": "HOME",
+      "module": "项目说明",
+      "doc": "doc-guide"
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc-guide",
+      "source": "pages/项目说明/项目说明-demo.html"
+    }
+  ]
+}

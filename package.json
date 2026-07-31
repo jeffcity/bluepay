@@ -1,0 +1,11 @@
+{
+  "name": "lansheng-payout-demos",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test",
+    "check": "node --test && node scripts/check.mjs"
+  }
+}
