@@ -8,6 +8,19 @@
     ["MERCHANT", "商户"],
     ["ADDRESS", "地址池"]
   ],
-  "pages": [],
-  "documents": []
+  "pages": [
+    {
+      "id": "BP-REQ-001",
+      "title": "商户充值订单统计栏位",
+      "summary": "在商户充值订单状态卡片与列表之间新增查询结果汇总统计。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "商户充值订单统计栏位-demo"
+    }
+  ],
+  "documents": [
+    {
+      "id": "商户充值订单统计栏位-demo",
+      "source": "pages/商户充值订单统计栏位/商户充值订单统计栏位-demo.html"
+    }
+  ]
 }

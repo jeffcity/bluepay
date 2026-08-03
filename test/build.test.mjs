@@ -23,5 +23,6 @@ test("构建生成一致的本地入口", async () => {
     root.indexOf("const DOCUMENTS=") + "const DOCUMENTS=".length;
   const documentEnd = root.indexOf(";\n    const mainNav=", documentStart);
   const documents = JSON.parse(root.slice(documentStart, documentEnd));
-  assert.deepEqual(documents, {});
+  assert.ok(documents["商户充值订单统计栏位-demo"]);
+  assert.match(documents["商户充值订单统计栏位-demo"], /成功订单总额/);
 });
