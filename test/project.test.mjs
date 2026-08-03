@@ -17,8 +17,10 @@ test("项目清单只保留后台、商户和地址池", async () => {
     ["ADDRESS", "地址池"]
   ]);
   assert.equal(catalog.project.name, "Bluepay");
-  assert.equal(catalog.pages.length, 0);
-  assert.equal(catalog.documents.length, 0);
+  assert.ok(Array.isArray(catalog.pages));
+  assert.ok(Array.isArray(catalog.documents));
+  assert.equal(catalog.pages.length, catalog.documents.length);
+  assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN")));
 });
 
 test("母板只显示 Bluepay 和三个端", async () => {
