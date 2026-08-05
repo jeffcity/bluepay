@@ -570,6 +570,11 @@
       font-weight: 600;
       letter-spacing: .08em;
     }
+    .config-nav-label.grouped {
+      margin: 12px 10px 7px;
+      padding: 12px 0 0;
+      border-top: 1px solid #e7ebf2;
+    }
     .config-nav-button {
       position: relative;
       width: 100%;
@@ -766,6 +771,18 @@
     .switch-copy { color: var(--regular); font-size: 13px; }
     .white-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
     .white-empty { color: var(--muted); font-size: 12px; }
+    .balance-action { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+    .transfer-link { color: var(--primary); background: transparent; border: 0; padding: 0; font: inherit; cursor: pointer; }
+    .transfer-link:hover { color: var(--primary-hover); text-decoration: underline; }
+    .transfer-note { margin: 0 0 14px; padding: 10px 12px; color: #336f9f; background: #eef8ff; border: 1px solid #cce7fb; border-radius: 4px; font-size: 13px; line-height: 1.6; }
+    .transfer-accounts { display: grid; grid-template-columns: 1fr 30px 1fr; align-items: center; gap: 10px; margin: 8px 0 14px; }
+    .transfer-account { min-height: 78px; padding: 12px; color: var(--regular); background: #f7f8fa; border: 1px solid #e4e7ed; border-radius: 4px; }
+    .transfer-account strong { display: block; margin-bottom: 5px; color: var(--text); font-weight: 600; }
+    .transfer-arrow { color: var(--primary); font-size: 22px; text-align: center; }
+    .config-tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 9px; }
+    .config-tag { display: inline-flex; align-items: center; gap: 5px; min-height: 25px; padding: 0 8px; color: #337ecc; background: #ecf5ff; border: 1px solid #d9ecff; border-radius: 3px; font-size: 12px; }
+    .config-tag button { color: inherit; background: transparent; border: 0; padding: 0; cursor: pointer; font-size: 15px; line-height: 1; }
+    .transfer-status { display: flex; align-items: center; gap: 8px; min-height: 42px; margin-top: 12px; padding: 9px 11px; color: #8a6d1d; background: #fdf6ec; border: 1px solid #faecd8; border-radius: 4px; font-size: 13px; }
     .check-row { display: flex; flex-wrap: wrap; gap: 18px; min-height: 32px; align-items: center; }
     .check-row label { display: inline-flex; align-items: center; gap: 6px; }
     .tier-toolbar {
@@ -974,6 +991,7 @@
   </div>
 
   <div id="merchantModalRoot"></div>
+  <div id="transferModalRoot"></div>
   <div class="alerts" aria-label="系统提醒">
     <div class="alert-card">
       <span class="alert-mark">!</span>
@@ -1040,6 +1058,60 @@
       { start: 10000, groupId: "-10088000002", people: ["@finance_a", "@risk_b", "@ops_b", "@manager_a"], required: 3 },
       { start: 50000, groupId: "-10088000003", people: ["@finance_a", "@risk_lead", "@ops_lead", "@manager_a", "@director_a"], required: 4 }
     ];
+
+    // 商户互转关系按一对商户双向维护；划转审核群与确认人独立，审核机器人共用商户下分确认配置。
+    const transferRelations = {
+      M00000901: ["M00000902", "M00000904"],
+      M00000902: ["M00000901", "M00000905"],
+      M00000904: ["M00000901"],
+      M00000905: ["M00000902"]
+    };
+    const withdrawConfirmConfigs = {
+      M00000901: { bot: "商户下分确认机器人 A" },
+      M00000902: { bot: "商户下分确认机器人 B" },
+      M00000904: { bot: "商户下分确认机器人 A" },
+      M00000905: { bot: "商户下分确认机器人 B" }
+    };
+    const transferReviewConfigs = {
+      M00000901: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2 },
+      M00000902: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], required: 2 },
+      M00000904: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2 },
+      M00000905: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], required: 2 }
+    };
+    const transferOrders = [
+      { no: "TRF-DEMO-0001", sourceNo: "M00000901", targetNo: "M00000902", sourceWallet: "collect", targetWallet: "payout", amount: "120.000000", bot: "商户下分确认机器人 A", group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2, created: "2026-08-05 11:40:00" }
+    ];
+    let transferSequence = 2;
+
+    function merchantByNo(merchantNo) { return merchants.find((merchant) => merchant[1] === merchantNo); }
+    function merchantLabel(merchantNo) {
+      const merchant = merchantByNo(merchantNo);
+      return merchant ? `${merchant[0]} / ${merchant[1]}` : merchantNo;
+    }
+    const walletOptions = [
+      { value: "collect", label: "代收 USDT余额" },
+      { value: "payout", label: "代付 USDT代付剩余预付" }
+    ];
+    function walletLabel(wallet) { return walletOptions.find((item) => item.value === wallet)?.label || "未选择钱包"; }
+    function walletBalance(merchantNo, wallet) {
+      const merchant = merchantByNo(merchantNo);
+      return merchant ? Number(wallet === "collect" ? merchant[2] : merchant[3]) : 0;
+    }
+    function transferLink(wallet, index) {
+      return `<button type="button" class="transfer-link" data-transfer-open="${wallet}" data-transfer-index="${index}">划转</button>`;
+    }
+    function relationTags(sourceNo) {
+      const targets = transferRelations[sourceNo] || [];
+      return targets.length
+        ? targets.map((targetNo) => `<span class="config-tag">${merchantLabel(targetNo)}<button type="button" data-transfer-remove-relation="${targetNo}" aria-label="移除${merchantLabel(targetNo)}">×</button></span>`).join("")
+        : '<span class="white-empty">暂未配置可划转商户</span>';
+    }
+    function transferReviewInfo(sourceNo) {
+      const config = transferReviewConfigs[sourceNo];
+      const bot = withdrawConfirmConfigs[sourceNo]?.bot;
+      if (!config || !bot) return "未配置商户下分确认机器人或资金划转审核群与确认人，不能提交。";
+      return `共用商户下分确认机器人：${bot}；资金划转审核群：${config.group}；有效确认人：${config.reviewers.join("、")}；需 ${config.required} 人确认。`;
+    }
 
     const withdrawRows = [
       ["1", "ORD-DEMO-0001", "单", "示例商户 A/M00000901", "200.00", "4.00", "196.00", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
@@ -1215,8 +1287,8 @@
         <td>${m[2]}</td><td>${i % 3 === 0 ? "120.00" : "0.00"}</td><td>${i === 1 ? "固定：1.0000" : "未配置"}</td>
         <td>${switchControl(true, "正常")}</td><td>${switchControl(true, "开启")}</td><td>${switchControl(true, "开启")}</td>
         <td>${m[3]}　${mockLink("调整")}</td><td>0.00</td><td>未绑定</td>
-        <td class="op-links">${["详情","修改","服务费配置","编辑密码","查看密钥","设置汇率","通道测试","区块链确认数配置","重置谷歌秘钥","绑定到主账户","删除"].map((label) =>
-          label === "修改" ? `<button type="button" class="link" data-edit-index="${i}">修改</button>` : mockLink(label)
+        <td class="op-links">${["详情","修改","资金划转配置","服务费配置","编辑密码","查看密钥","设置汇率","通道测试","区块链确认数配置","重置谷歌秘钥","绑定到主账户","删除"].map((label) =>
+          label === "修改" ? `<button type="button" class="link" data-edit-index="${i}">修改</button>` : label === "资金划转配置" ? `<button type="button" class="link" data-transfer-config-index="${i}">资金划转配置</button>` : mockLink(label)
         ).join("")}</td>
       </tr>`).join("");
       return `<div class="filters two-line">
@@ -1365,8 +1437,10 @@
       showToast(index >= 0 ? "金额区间配置已更新（演示）" : "金额区间配置已新增（演示）");
     }
 
-    function openMerchantModal(index) {
+    function openMerchantModal(index, focusTransfer = false) {
       const merchant = merchants[index] || merchants[0];
+      const withdrawConfirmConfig = withdrawConfirmConfigs[merchant[1]] || { bot: "" };
+      const transferConfig = transferReviewConfigs[merchant[1]] || { group: "", reviewers: [], required: 2 };
       const root = document.getElementById("merchantModalRoot");
       root.innerHTML = `<div class="modal-layer">
         <section class="merchant-modal" role="dialog" aria-modal="true" aria-labelledby="merchantModalTitle" tabindex="-1">
@@ -1384,9 +1458,14 @@
                 <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelBasic" data-modal-section-target="basic">
                   <span class="config-nav-title">基础资料</span><span class="config-nav-subtitle">名称、账号与代理</span>
                 </button>
+                <div class="config-nav-label grouped">资金确认配置</div>
                 <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelWithdraw" data-modal-section-target="withdraw-confirm">
-                  <span class="config-nav-title">商户下分确认</span><span class="config-nav-subtitle">风控群与确认人员</span>
+                  <span class="config-nav-title">商户下分（提现）</span><span class="config-nav-subtitle">机器人、审核群与确认人</span>
                 </button>
+                <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelTransfer" data-modal-section-target="transfer-confirm">
+                  <span class="config-nav-title">资金划转</span><span class="config-nav-subtitle">互转商户、审核群与确认人</span>
+                </button>
+                <div class="config-nav-label grouped">通知与其他</div>
                 <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelTelegram" data-modal-section-target="telegram">
                   <span class="config-nav-title">Telegram 通知</span><span class="config-nav-subtitle">通知群与机器人</span>
                 </button>
@@ -1419,12 +1498,27 @@
 
                 <section class="config-panel" id="merchantPanelWithdraw" role="tabpanel" data-modal-section-panel="withdraw-confirm" hidden>
                   <header class="config-panel-header">
-                    <div><h3>商户下分 TG 确认配置</h3><p>配置商户下分审核使用的风控群和确认人员。</p></div>
-                    <span class="config-panel-status">下分业务</span>
+                    <div><h3>商户下分（提现）TG 确认配置</h3><p>维护商户下分（提现）使用的审核机器人、审核群和确认人员。</p></div>
+                    <span class="config-panel-status">下分（提现）</span>
                   </header>
                   <div class="config-card">
+                    <div class="config-row"><div class="config-label">审核机器人</div><div class="config-main"><select class="modal-control" data-withdraw-confirm-bot><option value="">请选择审核机器人</option><option ${withdrawConfirmConfig.bot === "商户下分确认机器人 A" ? "selected" : ""}>商户下分确认机器人 A</option><option ${withdrawConfirmConfig.bot === "商户下分确认机器人 B" ? "selected" : ""}>商户下分确认机器人 B</option></select></div></div>
                     <div class="config-row"><div class="config-label">审核风控群ID</div><div class="config-main"><input class="modal-control" placeholder="-1001234567890"></div></div>
                     <div class="config-row"><div class="config-label">TG username 白名单</div><div class="config-main"><div class="config-inline"><input class="modal-control" placeholder="输入 TG username（如 @admin_a）"><button type="button" class="btn" data-action="添加审核白名单">+ 添加</button></div></div></div>
+                  </div>
+                </section>
+
+                <section class="config-panel" id="merchantPanelTransfer" role="tabpanel" data-modal-section-panel="transfer-confirm" hidden data-transfer-config="${merchant[1]}">
+                  <header class="config-panel-header">
+                    <div><h3>资金划转 TG 确认配置</h3><p>维护本商户作为被划出商户时的互转关系、审核群、有效确认人与确认人数。</p></div>
+                    <span class="config-panel-status">资金划转</span>
+                  </header>
+                  <div class="config-card">
+                    <p class="transfer-note">配置一对商户后，双方可互相发起划转。审核机器人共用「商户下分（提现）」配置。</p>
+                    <div class="config-row"><div class="config-label">可互转商户</div><div class="config-main"><div class="config-tags" data-transfer-relation-tags>${relationTags(merchant[1])}</div><div class="config-inline"><select class="modal-control" data-transfer-relation-select><option value="">选择商户</option>${merchants.filter((item) => item[1] !== merchant[1]).map((item) => `<option value="${item[1]}">${item[0]} / ${item[1]}</option>`).join("")}</select><button type="button" class="btn" data-transfer-add-relation>+ 添加</button></div></div></div>
+                    <div class="config-row"><div class="config-label">审核群 ID</div><div class="config-main"><input class="modal-control" data-transfer-group value="${transferConfig.group}" placeholder="请输入资金划转审核群 ID"></div></div>
+                    <div class="config-row"><div class="config-label">有效确认人</div><div class="config-main"><div class="config-tags" data-transfer-reviewer-tags>${transferConfig.reviewers.length ? transferConfig.reviewers.map((name) => `<span class="config-tag">${name}<button type="button" data-transfer-remove-reviewer="${name}" aria-label="移除${name}">×</button></span>`).join("") : '<span class="white-empty">暂未配置有效确认人</span>'}</div><div class="config-inline"><input class="modal-control" data-transfer-reviewer-input placeholder="输入 TG username"><button type="button" class="btn" data-transfer-add-reviewer>+ 添加</button></div></div></div>
+                    <div class="config-row"><div class="config-label">需确认人数</div><div class="config-main"><input class="modal-control" data-transfer-required type="number" min="1" value="${transferConfig.required}"></div></div>
                   </div>
                 </section>
 
@@ -1489,6 +1583,7 @@
       </div>`;
       document.body.style.overflow = "hidden";
       root.querySelector(".merchant-modal").focus();
+      if (focusTransfer) setMerchantConfigPanel("transfer-confirm");
     }
 
     function setMerchantConfigPanel(key) {
@@ -1511,6 +1606,115 @@
       document.body.style.overflow = "";
     }
 
+    function merchantOptions(selectedNo) {
+      return merchants.map((merchant) => `<option value="${merchant[1]}" ${merchant[1] === selectedNo ? "selected" : ""}>${merchantLabel(merchant[1])}</option>`).join("");
+    }
+
+    function walletOptionsHtml(selectedWallet) {
+      return walletOptions.map((wallet) => `<option value="${wallet.value}" ${wallet.value === selectedWallet ? "selected" : ""}>${wallet.label}</option>`).join("");
+    }
+
+    function targetMerchantOptions(sourceNo, selectedNo) {
+      const targets = transferRelations[sourceNo] || [];
+      if (!targets.length) return '<option value="">暂未配置可互转商户</option>';
+      return targets.map((merchantNo) => `<option value="${merchantNo}" ${merchantNo === selectedNo ? "selected" : ""}>${merchantLabel(merchantNo)}</option>`).join("");
+    }
+
+    function renderTransferModal(defaultWallet, index) {
+      const anchorMerchant = merchants[index] || merchants[0];
+      const sourceNo = anchorMerchant[1];
+      const targetNo = (transferRelations[sourceNo] || [])[0] || "";
+      const targetWallet = defaultWallet === "collect" ? "payout" : "collect";
+      const root = document.getElementById("transferModalRoot");
+      root.innerHTML = `<div class="modal-layer">
+        <section class="merchant-modal" role="dialog" aria-modal="true" aria-labelledby="transferModalTitle" tabindex="-1">
+          <header class="modal-header"><div class="modal-header-copy"><h2 id="transferModalTitle">资金划转</h2><div class="modal-subtitle">后台操作员发起 · 等待 TG 群多人确认</div></div><button type="button" class="modal-close" data-transfer-close aria-label="关闭此对话框">×</button></header>
+          <div class="modal-body" style="overflow-y:auto;padding:20px 22px;">
+            <p class="transfer-note">当前点击账户仅作为初始带入。来源与目标钱包均可调整；目标商户只能从已配置可互转关系中选择。提交后使用本次被划出商户的资金划转 TG 确认配置。</p>
+            <div class="modal-basic-grid">
+              <div class="modal-field"><label class="required">被划出商户</label><select class="modal-control" data-transfer-source>${merchantOptions(sourceNo)}</select></div>
+              <div class="modal-field"><label class="required">划出钱包</label><select class="modal-control" data-transfer-source-wallet>${walletOptionsHtml(defaultWallet)}</select></div>
+              <div class="modal-field"><label class="required">转入商户</label><select class="modal-control" data-transfer-target>${targetMerchantOptions(sourceNo, targetNo)}</select></div>
+              <div class="modal-field"><label class="required">转入钱包</label><select class="modal-control" data-transfer-target-wallet>${walletOptionsHtml(targetWallet)}</select></div>
+              <div class="modal-field full"><label class="required">划转金额</label><div class="config-inline"><input class="modal-control" data-transfer-amount type="number" min="0.000001" step="0.000001" placeholder="请输入 USDT 划转金额"><span class="unit">USDT</span></div></div>
+            </div>
+            <div class="transfer-accounts"><div class="transfer-account"><strong data-transfer-source-name></strong><span data-transfer-source-wallet-name></span></div><div class="transfer-arrow">→</div><div class="transfer-account"><strong data-transfer-target-name></strong><span data-transfer-target-wallet-name></span></div></div>
+            <div class="transfer-status" data-transfer-review-info></div><div class="transfer-status" data-transfer-error hidden></div>
+          </div>
+          <footer class="modal-footer"><button type="button" class="btn" data-transfer-close>取消</button><button type="button" class="btn primary" data-transfer-submit>提交审核</button></footer>
+        </section>
+      </div>`;
+      document.body.style.overflow = "hidden";
+      refreshTransferModal(root);
+      root.querySelector(".merchant-modal").focus();
+    }
+
+    function refreshTransferModal(root) {
+      const sourceNo = root.querySelector("[data-transfer-source]").value;
+      const targetSelect = root.querySelector("[data-transfer-target]");
+      const previousTarget = targetSelect.value;
+      targetSelect.innerHTML = targetMerchantOptions(sourceNo, previousTarget);
+      const targetNo = targetSelect.value;
+      const sourceWallet = root.querySelector("[data-transfer-source-wallet]").value;
+      const targetWallet = root.querySelector("[data-transfer-target-wallet]").value;
+      root.querySelector("[data-transfer-source-name]").textContent = merchantLabel(sourceNo);
+      root.querySelector("[data-transfer-target-name]").textContent = merchantLabel(targetNo);
+      root.querySelector("[data-transfer-source-wallet-name]").textContent = walletLabel(sourceWallet);
+      root.querySelector("[data-transfer-target-wallet-name]").textContent = walletLabel(targetWallet);
+      root.querySelector("[data-transfer-review-info]").textContent = transferReviewInfo(sourceNo);
+    }
+
+    function closeTransferModal() {
+      document.getElementById("transferModalRoot").innerHTML = "";
+      document.body.style.overflow = "";
+    }
+
+    function submitTransferOrder() {
+      const root = document.getElementById("transferModalRoot");
+      const sourceNo = root.querySelector("[data-transfer-source]").value;
+      const targetNo = root.querySelector("[data-transfer-target]").value;
+      const sourceWallet = root.querySelector("[data-transfer-source-wallet]").value;
+      const targetWallet = root.querySelector("[data-transfer-target-wallet]").value;
+      const amount = Number(root.querySelector("[data-transfer-amount]").value);
+      const error = root.querySelector("[data-transfer-error]");
+      const allowedTargets = transferRelations[sourceNo] || [];
+      const config = transferReviewConfigs[sourceNo];
+      const sharedBot = withdrawConfirmConfigs[sourceNo]?.bot;
+      const fail = (message) => { error.hidden = false; error.textContent = message; };
+      if (!allowedTargets.includes(targetNo)) return fail("目标商户不在被划出商户的可互转配置中。");
+      if (!sharedBot || !config || !config.group || !config.reviewers.length || !config.required) return fail("请先完整配置被划出商户的下分确认机器人，以及资金划转审核群、确认人和确认人数。");
+      if (!Number.isFinite(amount) || amount <= 0) return fail("请输入大于 0 的划转金额。");
+      if (amount > walletBalance(sourceNo, sourceWallet)) return fail(`划转金额不能超过该商户的模拟${walletLabel(sourceWallet)}。`);
+      transferOrders.unshift({ no: `TRF-DEMO-${String(transferSequence++).padStart(4, "0")}`, sourceNo, targetNo, sourceWallet, targetWallet, amount: amount.toFixed(6), bot: sharedBot, group: config.group, reviewers: config.reviewers, required: config.required, created: "2026-08-05 12:00:00" });
+      closeTransferModal();
+      navigateTo("withdraw");
+      showToast("资金划转订单已提交，等待审核群多人确认（演示）。");
+    }
+
+    function saveTransferConfig(root) {
+      const section = root.querySelector("[data-transfer-config]");
+      if (!section) return;
+      const merchantNo = section.dataset.transferConfig;
+      const current = transferReviewConfigs[merchantNo] || { reviewers: [], required: 2 };
+      transferReviewConfigs[merchantNo] = { ...current, group: section.querySelector("[data-transfer-group]").value.trim(), required: Number(section.querySelector("[data-transfer-required]").value) || current.required };
+    }
+
+    function saveWithdrawConfirmConfig(root) {
+      const merchantNo = root.querySelector("[data-transfer-config]")?.dataset.transferConfig;
+      const bot = root.querySelector("[data-withdraw-confirm-bot]")?.value;
+      if (merchantNo && bot) withdrawConfirmConfigs[merchantNo] = { bot };
+    }
+
+    function refreshRelationTags(section) {
+      section.querySelector("[data-transfer-relation-tags]").innerHTML = relationTags(section.dataset.transferConfig);
+    }
+
+    function refreshReviewerTags(section) {
+      const sourceNo = section.dataset.transferConfig;
+      const reviewers = (transferReviewConfigs[sourceNo] || { reviewers: [] }).reviewers;
+      section.querySelector("[data-transfer-reviewer-tags]").innerHTML = reviewers.length ? reviewers.map((name) => `<span class="config-tag">${name}<button type="button" data-transfer-remove-reviewer="${name}" aria-label="移除${name}">×</button></span>`).join("") : '<span class="white-empty">暂未配置有效确认人</span>';
+    }
+
     function setConfigSectionState(key, enabled) {
       const root = document.getElementById("merchantModalRoot");
       root.querySelectorAll(`[data-config-field="${key}"]`).forEach((control) => { control.disabled = !enabled; });
@@ -1519,7 +1723,14 @@
     }
 
     function withdrawPage() {
-      const rows = withdrawRows.map((r, i) => `<tr>
+      const transferRows = transferOrders.map((order) => `<tr>
+        <td></td><td class="cell-center">—</td><td>${order.no}</td><td><span class="tag">划转</span></td>
+        <td class="wrap">${merchantLabel(order.sourceNo)}</td><td>${order.amount}</td><td>0.000000</td><td>${order.amount}</td><td>USDT</td>
+        <td class="wrap">${order.targetNo} / ${walletLabel(order.targetWallet)}</td><td>内部划转</td><td class="wrap">${order.sourceNo} / ${walletLabel(order.sourceWallet)}</td>
+        <td><span class="tag warning">待审核</span></td><td><span class="tag warning">待确认</span></td><td>0/${order.required}</td><td class="wrap">${order.reviewers.join("、")}</td>
+        <td class="wrap">审核机器人：${order.bot}；审核群：${order.group}</td><td>${order.created}</td><td>—</td><td>运营员</td><td>等待${order.required}人确认</td><td>—</td><td class="op-links">${mockLink("查看")}</td>
+      </tr>`).join("");
+      const rows = transferRows + withdrawRows.map((r, i) => `<tr>
         <td></td><td class="cell-center">${r[0]}</td><td>${r[1]}</td><td><span class="tag">${r[2]}</span></td>
         <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>USDT</td>
         <td><div class="ellipsis" title="TDEMO${i}XXXXXXXXXXXXXXXXXXXXXXXX">TDEMO${i}…WALLET</div></td><td>TRC20</td>
@@ -1548,7 +1759,7 @@
         <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td><td>${m[0]}</td><td>${m[1]}</td><td>${i ? "—" : "示例代理"}</td><td>0</td>
         <td>${switchControl(true, "正常")}</td><td>${switchControl(true, "开启")}</td><td>${switchControl(false, "禁用")}</td>
         <td>${i === 4 ? "1" : "0"}　${mockLink("编辑")}</td><td>0</td><td>${m[2]}　${mockLink("调额")}</td><td>${m[3]}</td><td>${m[3]}　${mockLink("调额")}</td>
-        <td>${i === 3 ? "20" : "0"}</td><td>${m[2]}　${mockLink("调额")}</td><td>${m[3]}</td><td>${m[3]}　${mockLink("调额")}</td>
+        <td>${i === 3 ? "20" : "0"}</td><td>${m[2]}　${mockLink("调额")}</td><td><span class="balance-action">${m[3]} ${transferLink("payout", i)}</span></td><td>${m[3]}　${mockLink("调额")}</td>
         <td>0</td><td>0</td><td>${i === 3 ? "122.00" : "0.00"}　${mockLink("资金调整")}</td><td>${i === 3 ? "28.00" : "0.00"}</td>
         <td class="op-links">${["IP白名单","绑定代付通道","设置代付费率","对接信息","单独清算","USDT下单测试"].map(mockLink).join("")}</td>
       </tr>`).join("");
@@ -1571,7 +1782,7 @@
         <td>${i === 4 ? "11205.00" : i === 2 ? "19.00" : "0.00"}　${mockLink("调整")} ${mockLink("下发")}</td>
         <td>${i === 4 ? "30000.00" : i === 2 ? "30.00" : "0.00"}　${mockLink("调整")}</td>
         <td>${i === 4 ? "18795.00" : i === 2 ? "11.00" : "0.00"}　${mockLink("结算")}</td>
-        <td>${m[2]}　${mockLink("调整")} ${mockLink("下发")}</td><td>${m[3]}　${mockLink("调整")}</td>
+        <td><span class="balance-action">${m[2]}　${mockLink("调整")} ${mockLink("下发")} ${transferLink("collect", i)}</span></td><td>${m[3]}　${mockLink("调整")}</td>
         <td>${i === 3 ? "-70.00" : "0.00"}　${mockLink("结算")}</td><td>${switchControl(true)}</td>
         <td class="op-links">${button("代收产品","primary small")}${button("测试下单","success small")}${button("对接","warning small")}</td>
       </tr>`).join("");
@@ -1623,8 +1834,68 @@
     document.addEventListener("click", (event) => {
       const target = event.target.closest("button");
       if (!target) return;
+      if (target.dataset.transferOpen !== undefined) {
+        renderTransferModal(target.dataset.transferOpen, Number(target.dataset.transferIndex));
+        return;
+      }
+      if (target.dataset.transferClose !== undefined) {
+        closeTransferModal();
+        return;
+      }
+      if (target.dataset.transferSubmit !== undefined) {
+        submitTransferOrder();
+        return;
+      }
       if (target.dataset.editIndex !== undefined) {
         openMerchantModal(Number(target.dataset.editIndex));
+        return;
+      }
+      if (target.dataset.transferConfigIndex !== undefined) {
+        openMerchantModal(Number(target.dataset.transferConfigIndex), true);
+        return;
+      }
+      if (target.dataset.transferAddRelation !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        const targetNo = section.querySelector("[data-transfer-relation-select]").value;
+        if (!targetNo) return showToast("请先选择可互转商户。");
+        transferRelations[sourceNo] = transferRelations[sourceNo] || [];
+        transferRelations[targetNo] = transferRelations[targetNo] || [];
+        if (!transferRelations[sourceNo].includes(targetNo)) transferRelations[sourceNo].push(targetNo);
+        if (!transferRelations[targetNo].includes(sourceNo)) transferRelations[targetNo].push(sourceNo);
+        refreshRelationTags(section);
+        showToast("已更新可互转商户关系（演示）。");
+        return;
+      }
+      if (target.dataset.transferRemoveRelation !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        const targetNo = target.dataset.transferRemoveRelation;
+        transferRelations[sourceNo] = (transferRelations[sourceNo] || []).filter((item) => item !== targetNo);
+        transferRelations[targetNo] = (transferRelations[targetNo] || []).filter((item) => item !== sourceNo);
+        refreshRelationTags(section);
+        showToast("已移除可互转商户关系（演示）。");
+        return;
+      }
+      if (target.dataset.transferAddReviewer !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        const input = section.querySelector("[data-transfer-reviewer-input]");
+        const reviewer = input.value.trim();
+        if (!reviewer) return showToast("请输入有效确认人。");
+        transferReviewConfigs[sourceNo] = transferReviewConfigs[sourceNo] || { group: "", reviewers: [], required: 2 };
+        if (!transferReviewConfigs[sourceNo].reviewers.includes(reviewer)) transferReviewConfigs[sourceNo].reviewers.push(reviewer);
+        input.value = "";
+        refreshReviewerTags(section);
+        showToast("已添加有效确认人（演示）。");
+        return;
+      }
+      if (target.dataset.transferRemoveReviewer !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        transferReviewConfigs[sourceNo].reviewers = transferReviewConfigs[sourceNo].reviewers.filter((item) => item !== target.dataset.transferRemoveReviewer);
+        refreshReviewerTags(section);
+        showToast("已移除有效确认人（演示）。");
         return;
       }
       if (target.dataset.modalClose !== undefined) {
@@ -1632,8 +1903,10 @@
         return;
       }
       if (target.dataset.modalSubmit !== undefined) {
+        saveWithdrawConfirmConfig(document.getElementById("merchantModalRoot"));
+        saveTransferConfig(document.getElementById("merchantModalRoot"));
         closeMerchantModal();
-        showToast("修改商户已保存（演示）");
+        showToast("商户与资金划转配置已保存（演示）");
         return;
       }
       const modalSectionTarget = target.dataset.modalSectionTarget;
@@ -1683,7 +1956,14 @@
       const action = target.dataset.action;
       if (action) showToast(`现状页面：${action} 不执行真实业务操作`);
     });
+    document.addEventListener("change", (event) => {
+      if (event.target.matches("[data-transfer-source], [data-transfer-target], [data-transfer-source-wallet], [data-transfer-target-wallet]")) refreshTransferModal(document.getElementById("transferModalRoot"));
+    });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && document.getElementById("transferModalRoot").innerHTML) {
+        closeTransferModal();
+        return;
+      }
       if (event.key !== "Escape" || !document.getElementById("merchantModalRoot").innerHTML) return;
       const editor = document.getElementById("tierRuleEditor");
       if (editor && !editor.hidden) closeTierRuleEditor();

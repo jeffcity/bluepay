@@ -20,7 +20,11 @@ test("项目清单只保留后台、商户和地址池", async () => {
   assert.ok(Array.isArray(catalog.pages));
   assert.ok(Array.isArray(catalog.documents));
   assert.equal(catalog.pages[0].id, "BP-REQ-002");
-  assert.equal(catalog.pages.length, catalog.documents.length);
+  assert.ok(catalog.pages.length >= catalog.documents.length);
+  assert.equal(
+    catalog.pages.find((page) => page.id === "BP-REQ-003").doc,
+    "机器人分层播报与多人确认-demo"
+  );
   assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN")));
 });
 

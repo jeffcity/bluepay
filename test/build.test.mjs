@@ -44,7 +44,7 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /id="tierStartAmount"/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /merchant-config-shell/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /role="tablist" aria-label="商户配置分组"/);
-  for (const section of ["basic", "withdraw-confirm", "telegram", "payout-confirm", "balance-alert", "advanced"]) {
+  for (const section of ["basic", "withdraw-confirm", "transfer-confirm", "telegram", "payout-confirm", "balance-alert", "advanced"]) {
     assert.match(documents["机器人分层播报与多人确认-demo"], new RegExp(`data-modal-section-target="${section}"`));
     assert.match(documents["机器人分层播报与多人确认-demo"], new RegExp(`data-modal-section-panel="${section}"`));
   }
@@ -54,39 +54,37 @@ test("构建生成一致的本地入口", async () => {
   assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /tierMaxAmount|结束金额（USDT）|data-tier-action="toggle"/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /确认人员数量不能少于需确认人数/);
   assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /data-config-toggle="tg-confirm"/);
-  assert.ok(documents["商户增加资金划转-demo"]);
-  assert.match(documents["商户增加资金划转-demo"], /资金调整/);
-  assert.match(documents["商户增加资金划转-demo"], /代收商户管理/);
-  assert.match(documents["商户增加资金划转-demo"], /\["recharge", "商户充值订单"\]/);
-  assert.match(documents["商户增加资金划转-demo"], /成功订单总额/);
-  assert.match(documents["商户增加资金划转-demo"], /data-edit-index/);
-  assert.match(documents["商户增加资金划转-demo"], /修改商户/);
-  assert.match(documents["商户增加资金划转-demo"], /data-config-toggle="tg-confirm"/);
-  assert.doesNotMatch(documents["商户增加资金划转-demo"], /tier-rule-table/);
   const botDocument = documents["机器人分层播报与多人确认-demo"];
-  assert.match(botDocument, /商户下分 TG 确认配置/);
+  assert.match(botDocument, /商户下分（提现）TG 确认配置/);
   assert.match(botDocument, /审核风控群ID/);
   assert.match(botDocument, /TG username 白名单/);
   const botConfirmPanel = botDocument.slice(
     botDocument.indexOf('data-modal-section-panel="withdraw-confirm"'),
-    botDocument.indexOf('data-modal-section-panel="telegram"')
+    botDocument.indexOf('data-modal-section-panel="transfer-confirm"')
   );
   assert.doesNotMatch(botConfirmPanel, /群与确认人|section-badge mod|原「机器人群组ID」|仅列表内的 TG 账号/);
-  const fundsDocument = documents["商户增加资金划转-demo"];
-  assert.match(
-    fundsDocument,
-    /商户下分TG确认配置[\s\S]*审核风控群ID[\s\S]*TG username 白名单[\s\S]*Telegram 通知配置/
-  );
-  const fundsConfirmSection = fundsDocument.slice(
-    fundsDocument.indexOf("<strong>商户下分TG确认配置</strong>"),
-    fundsDocument.indexOf("<strong>Telegram 通知配置</strong>")
-  );
-  assert.doesNotMatch(fundsConfirmSection, /群与确认人|section-badge mod|原「机器人群组ID」|仅列表内的 TG 账号/);
-  for (const document of [botDocument, fundsDocument]) {
-    assert.doesNotMatch(document, /原 TG username 白名单/);
-    assert.doesNotMatch(document, /section-badge|modal-help|>NEW<|含新增字段|独立配置/);
-    assert.equal((document.match(/class="config-label">TG username 白名单/g) || []).length, 1);
-  }
+  assert.match(botDocument, /资金划转 TG 确认配置/);
+  assert.match(botDocument, /data-withdraw-confirm-bot/);
+  assert.match(botDocument, /共用商户下分确认机器人/);
+  assert.match(botDocument, /资金确认配置/);
+  assert.match(botDocument, /通知与其他/);
+  assert.doesNotMatch(botDocument, /data-transfer-bot/);
+  assert.doesNotMatch(botDocument, /data-transfer-shared-bot/);
+  assert.match(botDocument, /data-transfer-open="\$\{wallet\}"/);
+  assert.match(botDocument, /transferLink\("collect", i\)/);
+  assert.match(botDocument, /transferLink\("payout", i\)/);
+  assert.match(botDocument, /data-transfer-source-wallet/);
+  assert.match(botDocument, /data-transfer-target-wallet/);
+  assert.match(botDocument, /代收 USDT余额/);
+  assert.match(botDocument, /代付 USDT代付剩余预付/);
+  assert.match(botDocument, /资金划转配置/);
+  assert.doesNotMatch(botDocument, /原 TG username 白名单/);
+  assert.doesNotMatch(botDocument, /section-badge|modal-help|>NEW<|含新增字段/);
+  assert.equal((botDocument.match(/class="config-label">TG username 白名单/g) || []).length, 1);
+  const pageStart = root.indexOf("const PAGES=") + "const PAGES=".length;
+  const pageEnd = root.indexOf(";\n    const DOCUMENTS=", pageStart);
+  const pages = JSON.parse(root.slice(pageStart, pageEnd));
+  assert.equal(pages.find((page) => page.id === "BP-REQ-003").doc, "机器人分层播报与多人确认-demo");
   assert.match(root, /BP-REQ-002/);
   assert.match(root, /BP-REQ-003/);
 });
