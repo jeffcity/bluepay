@@ -1,0 +1,548 @@
+<!-- PROJECT: bluepay-vnd-fiat-payin -->
+<!-- PAGES: 虚拟币充值配置 / 虚拟币充值订单管理 -->
+<!-- FIDELITY: high / desktop-admin / replica-baseline / synthetic-data -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VND 法币代收｜现状复刻</title>
+  <style>
+    :root{--blue:#5798ec;--blue-strong:#438def;--bg:#f3f6fb;--line:#edf0f5;--text:#303133;--muted:#909399;--green:#69a74d;--orange:#c8962d;--danger:#e06a6a}
+    *{box-sizing:border-box}html,body{margin:0;min-width:1180px;background:var(--bg);color:var(--text);font:14px/1.45 Inter,"PingFang SC","Microsoft YaHei",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(67,141,239,.26);outline-offset:2px}
+    .app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.rail{background:#fff;border-right:1px solid #e8edf3}.rail-head{height:56px;display:flex;align-items:center;padding-left:42px;color:#fff;background:linear-gradient(90deg,#4792ed,#62a2ed);font-size:22px;font-weight:600}.rail-nav{padding:0}.nav{height:62px;display:flex;align-items:center;gap:14px;padding:0 20px;color:#6d7783;border-left:3px solid transparent;background:#fff;border:0;border-right:none;width:100%;text-align:left;font-size:14px}.nav svg{width:17px;height:17px;flex:0 0 auto;fill:none;stroke:#83b2e8;stroke-width:1.7}.nav .arrow{margin-left:auto;width:7px;height:7px;border-right:1px solid #9bc1eb;border-bottom:1px solid #9bc1eb;transform:rotate(45deg)}.submenu{padding:4px 0 7px;background:#fafbfd}.submenu .nav{height:52px;padding-left:63px;color:#7a8490}.submenu .nav.active{color:#4b90e5;border-left:3px solid #5e9bed;background:#dceafa}.nav:hover{background:#f5f9ff}.main{min-width:0}.top{height:56px;background:linear-gradient(90deg,#4792ed,#62a2ed);display:flex;justify-content:flex-end;align-items:center;padding:0 25px;color:#fff}.user{display:flex;align-items:center;gap:9px}.avatar{width:30px;height:30px;border-radius:50%;background:#b9c4d1;border:1px solid rgba(255,255,255,.5)}.tabs{height:38px;display:flex;align-items:center;gap:6px;padding:0 16px;background:#fff;border-bottom:1px solid #e8edf4}.tab{height:29px;padding:0 12px;border:1px solid #e4e8ef;border-radius:3px;background:#fff;color:#687482}.tab.active{border-color:var(--blue-strong);background:var(--blue-strong);color:#fff}.title{height:64px;display:flex;align-items:center;padding:0 20px;background:#fff;border-bottom:1px solid #f0f2f6;font-size:17px;font-weight:600}.page{padding:16px 18px 32px}
+    .card{background:#fff;border:1px solid #e9edf3}.card-head{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;border-bottom:1px solid var(--line)}.card-head h2{margin:0;font-size:16px}.card-head span{color:#969fac;font-size:12px}
+    .filter{display:flex;flex-wrap:wrap;align-items:center;gap:14px 17px;padding:16px;background:#fff;border:1px solid #edf0f5}.field{display:flex;align-items:center;gap:8px}.field label{white-space:nowrap;color:#59636f}.control{width:150px;height:32px;padding:0 10px;border:1px solid #d9dfe8;border-radius:3px;color:#606a76;background:#fff}.control.wide{width:220px}.control.amount{width:110px}.date{width:300px}.btn{height:32px;padding:0 15px;border:1px solid #d9dfe8;border-radius:3px;color:#5d6874;background:#fff;transition:.18s}.btn:hover{color:var(--blue-strong);border-color:var(--blue)}.btn.primary{color:#fff;border-color:var(--blue-strong);background:var(--blue-strong)}.btn.primary:hover{color:#fff;background:#63a2ee}
+    .shortcuts{display:flex;gap:12px;align-items:center;color:#59636f}.shortcuts a{color:#4a91e5;text-decoration:none;cursor:pointer}.shortcuts a.active{font-weight:600}
+    .summary{display:flex;flex-wrap:wrap;align-items:center;min-height:48px;margin:14px 0;padding:9px 14px;background:#fff;border:1px solid #edf0f5}.metric{display:flex;align-items:baseline;gap:6px;padding:2px 18px 2px 0;margin:2px 18px 2px 0;border-right:1px solid #edf0f5;white-space:nowrap;color:#65707d}.metric:last-child{margin-right:0;padding-right:0;border:0}.metric b{font-size:15px;color:#475362}.metric .green{color:var(--green)}.metric .orange{color:var(--orange)}.metric .red{color:var(--danger)}.metric .blue{color:#4289de}.countdown{margin-left:auto;color:#8a949f;font-size:12px}
+    .table-wrap{overflow:auto;background:#fff;border:1px solid #e9edf3}table{width:100%;min-width:3260px;border-collapse:collapse}th,td{height:46px;padding:0 11px;border-right:1px solid #f0f2f5;border-bottom:1px solid #edf0f4;text-align:left;white-space:nowrap;vertical-align:middle}th{height:41px;color:#5f6a76;background:#fafbfd;font-weight:500;position:sticky;top:0}tbody tr:nth-child(even){background:#fcfdfe}tbody tr:hover{background:#f8fbff}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.cell2{display:flex;flex-direction:column;gap:2px;line-height:1.35}.copy,.link{border:0;background:transparent;color:#4a91e5;padding:0 3px;font-size:13px}.tag{display:inline-block;padding:2px 8px;border:1px solid;border-radius:3px;font-size:12px}.tag.success{color:#5d9b45;border-color:#d9e9d0;background:#f8fcf6}.tag.info{color:#7e8792;border-color:#e1e5e8;background:#fafafa}.tag.warning{color:#c8962d;border-color:#f0e0bd;background:#fdf9f0}.tag.danger{color:#d85f5f;border-color:#f3cece;background:#fff7f7}
+    .col-op{position:sticky;right:0;background:#fff;box-shadow:-6px 0 8px -6px rgba(35,62,96,.12)}th.col-op{background:#fafbfd}
+    .pager{height:54px;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0 15px;color:#8a949f;background:#fff;border:1px solid #e9edf3;border-top:0}.page-no{display:grid;place-items:center;width:28px;height:28px;color:#fff;background:#4389dc;border-radius:3px}
+    /* config page */
+    .config-card{background:#fff;border:1px solid #e9edf3}.config-head{height:54px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--line);font-size:16px;font-weight:600}
+    .rate-info{margin:18px 20px 0;padding:16px 18px;background:#f8fafd;border:1px solid #edf2f8;border-radius:4px}.rate-info-title{font-weight:600;color:#4a5563;margin-bottom:12px}.rate-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.rate-item{display:flex;align-items:baseline;gap:8px}.rate-label{color:#6d7783}.rate-value{font-size:20px;font-weight:600;color:#303133}.rate-unit{color:#a3acb8;font-size:12px}.rate-item.highlight .rate-value{color:var(--blue-strong)}
+    .config-form{margin:10px 20px 26px;max-width:860px}.form-row{display:flex;align-items:flex-start;gap:0;padding:14px 0;border-bottom:1px dashed #f0f2f6}.form-row:last-child{border-bottom:0}.form-label{flex:0 0 220px;text-align:right;padding-right:14px;color:#59636f;line-height:32px}.form-label .req{color:var(--danger);margin-right:3px}.form-body{flex:1}.form-input{width:240px;height:32px;padding:0 10px;border:1px solid #d9dfe8;border-radius:3px;color:#303133}.form-tip{margin-left:10px;color:#a3acb8;font-size:12px}.radio-group{display:flex;gap:22px;height:32px;align-items:center}.radio-group label{display:flex;gap:6px;align-items:center;color:#59636f;cursor:pointer}.rate-preview{margin-top:8px;color:#6d7783}.rate-preview b{color:var(--blue-strong)}.submit-row{padding:18px 0 0 220px}.submit-btn{height:38px;padding:0 26px;border:0;border-radius:4px;background:var(--blue-strong);color:#fff;font-size:14px}.submit-btn:hover{background:#63a2ee}
+    .head-hint{margin-left:12px;color:#a3acb8;font-size:12px;font-weight:400}
+    .rate-table-wrap{overflow:auto;padding:0 20px 4px}
+    .rate-table{width:auto!important;min-width:0!important;max-width:100%;border-collapse:collapse;table-layout:auto}
+    .rate-table th,.rate-table td{height:44px;padding:0 12px;border-right:0;border-bottom:1px solid #f0f2f5;text-align:left;white-space:nowrap;vertical-align:middle}
+    .rate-table th{color:#5f6a76;background:#fafbfd;font-weight:500;position:static}
+    .rate-table tbody tr:nth-child(even){background:transparent}
+    .rate-table tbody tr:hover{background:#f8fbff}
+    .rate-table td.rate-num,.rate-num{color:var(--blue-strong);font-weight:600}
+    .rate-cell{display:flex;flex-direction:column;gap:2px;line-height:1.3;white-space:nowrap}
+    .rate-sub{color:#a3acb8;font-size:12px;font-weight:400}
+    .rate-src{height:30px;min-width:220px;max-width:280px;padding:0 8px;border:1px solid #d9dfe8;border-radius:3px;color:#303133;background:#fff}
+    .switch-dot{display:inline-block;width:30px;height:16px;border-radius:9px;background:#c6ccd6;position:relative;cursor:pointer;transition:.15s;vertical-align:middle}
+    .switch-dot.on{background:var(--blue-strong)}
+    .switch-dot:after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:.15s}
+    .switch-dot.on:after{left:16px}
+    .rate-add-row{padding:14px 20px 20px}
+    .dialog.w560{width:560px}
+    /* dialogs */
+    .overlay{position:fixed;inset:0;z-index:50;display:none;align-items:flex-start;justify-content:center;background:rgba(20,28,44,.42);padding:40px 16px;overflow:auto}
+    .overlay.show{display:flex}
+    .dialog{background:#fff;border-radius:6px;box-shadow:0 18px 48px rgba(16,24,40,.22);display:flex;flex-direction:column;max-height:calc(100vh - 80px)}
+    .dialog.w800{width:800px}.dialog.w900{width:900px}
+    .dialog-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--line);font-size:16px;font-weight:600}.dialog-close{border:0;background:none;font-size:18px;color:#98a2b3;line-height:1}.dialog-close:hover{color:#4a91e5}
+    .dialog-body{padding:18px 20px;overflow:auto}
+    .dialog-foot{display:flex;justify-content:flex-end;gap:10px;padding:13px 20px;border-top:1px solid var(--line)}
+    .desc{width:100%;border-collapse:collapse}.desc th,.desc td{border:1px solid #eef1f6;padding:9px 12px;height:auto;white-space:normal}.desc th{width:150px;background:#fafbfd;color:#6d7783;font-weight:500;text-align:left}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 26px;margin-bottom:14px}.info-grid .lbl{color:#8a949f}
+    .mini-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+    .mini-table th,.mini-table td{border:1px solid #eef1f6;padding:8px 10px;text-align:center;height:auto}
+    .mini-table th{background:#fafbfd;color:#5f6a76;font-weight:500}
+    .mini-table td.addr{max-width:200px;overflow:hidden;text-overflow:ellipsis}
+    .form-block .form-row{padding:10px 0;border-bottom:0}.form-block .form-label{flex:0 0 130px}
+    .form-textarea{width:100%;min-height:64px;padding:8px 10px;border:1px solid #d9dfe8;border-radius:3px;resize:vertical}
+    .identify{margin-top:16px;border:1px solid #edf2f8;border-radius:4px;background:#f8fafd;padding:14px 16px}
+    .identify-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}.identify-title{font-weight:600;color:#4a5563}.identify-hint{color:#a3acb8;font-size:12px}
+    .identify-query{display:flex;gap:10px;align-items:center}.identify-query .control{flex:1}
+    .identify-result{margin-top:12px}.result-row{display:flex;gap:8px;padding:3px 0;color:#59636f}.row-label{color:#8a949f;flex:0 0 110px}.type-badge{display:inline-block;padding:1px 8px;border-radius:3px;font-size:12px}.badge-platform{color:#4389d8;border:1px solid #d5e8fb;background:#f4f9ff}
+    .toast{position:fixed;right:18px;bottom:18px;z-index:100;padding:10px 13px;border-radius:8px;color:#fff;background:#30394b;box-shadow:0 10px 24px rgba(20,28,44,.22);font-size:12px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s ease}.toast.show{opacity:1;transform:none}
+    .empty{height:130px;color:#909399;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail" aria-label="蓝盛后台导航"><div class="rail-head">蓝盛支付</div><nav class="rail-nav">
+      <div class="nav"><svg viewBox="0 0 24 24"><path d="m4 11 8-7 8 7v9H4z"/></svg>首页</div>
+      <div class="nav"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M8 13c1.2 2.3 3 3.5 4 3.5s2.8-1.2 4-3.5"/></svg>商户管理<span class="arrow"></span></div>
+      <div class="nav"><svg viewBox="0 0 24 24"><path d="M5 7h14v11H5zM8 4h8M8 18v2m8-2v2"/></svg>虚拟币订单管理<span class="arrow"></span></div>
+      <div class="submenu">
+        <button type="button" class="nav active" data-page="config">虚拟币充值配置</button>
+        <button type="button" class="nav" data-page="orders">虚拟币充值订单管理</button>
+        <button type="button" class="nav" data-page="disabled">虚拟币代付订单管理</button>
+        <button type="button" class="nav" data-page="disabled">USDT异常工单</button>
+      </div>
+      <div class="nav"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>地址查询</div>
+      <div class="nav"><svg viewBox="0 0 24 24"><path d="M5 6h14v12H5zM8 10h8M8 14h5"/></svg>代付管理<span class="arrow"></span></div>
+      <div class="nav"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8M8 13h6"/></svg>代收管理<span class="arrow"></span></div>
+      <div class="nav"><svg viewBox="0 0 24 24"><path d="M6 5h12v14H6zM9 9h6M9 13h6"/></svg>账户记录<span class="arrow"></span></div>
+      <div class="nav"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>系统管理<span class="arrow"></span></div>
+    </nav></aside>
+    <main class="main">
+      <header class="top"><div class="user"><span class="avatar"></span><span>管理员</span></div></header>
+      <div class="tabs"><button class="tab active" id="tabConfig">虚拟币充值配置 ×</button><button class="tab" id="tabOrders">虚拟币充值订单 ×</button></div>
+      <div class="title" id="pageTitle">虚拟币充值配置</div>
+
+      <!-- 页面一：虚拟币充值配置（现状复刻） -->
+      <div class="page" id="page-config">
+        <section class="config-card" aria-label="汇率设置">
+          <div class="config-head">汇率设置<span class="head-hint">所有法币统一配置：基准汇率按各币种所选汇率来源自动获取（CNY 取交易所行情，其他法币按 USDT≈USD 1:1 取汇率网站牌价），有效汇率 = 基准汇率 + 统一浮动加点（利润）</span></div>
+          <form class="config-form" id="configForm">
+            <div class="form-row"><label class="form-label" for="floatRate"><span class="req">*</span>统一浮动加点（利润）：</label>
+              <div class="form-body"><input class="form-input" id="floatRate" value="0.02" inputmode="decimal"><span class="form-tip">统一设置，叠加在各币种基准汇率上给到客户；可调整范围：0.00 及以上</span></div>
+            </div>
+            <div class="form-row"><label class="form-label" for="ipLimit">同ip每分钟下单次数限制：</label>
+              <div class="form-body"><input class="form-input" id="ipLimit" value="5" inputmode="numeric"><span class="form-tip">（注：超过该次数将提示异常）</span></div>
+            </div>
+            <div class="submit-row"><button type="button" class="submit-btn" id="saveConfig">提交保存</button></div>
+          </form>
+        </section>
+
+        <section class="config-card" style="margin-top:14px" aria-label="指定币种汇率配置">
+          <div class="config-head">指定币种汇率配置<span class="head-hint">人民币与其他法币同表配置：汇率来源按币种可选，基准汇率随来源自动获取；未配置或已关闭的币种不开放代收</span></div>
+          <div class="rate-table-wrap">
+            <table class="rate-table">
+              <thead><tr><th>币种</th><th>汇率来源</th><th>基准汇率</th><th>有效汇率</th><th>最低下单金额</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody id="currencyRateRows"></tbody>
+            </table>
+          </div>
+          <div class="rate-add-row"><button type="button" class="btn" id="addCurrencyRate">添加币种</button></div>
+        </section>
+      </div>
+
+      <!-- 页面二：虚拟币充值订单管理（现状复刻） -->
+      <div class="page" id="page-orders" hidden>
+        <section class="filter" aria-label="订单筛选">
+          <div class="field"><label for="fOrderNo">系统订单号</label><input id="fOrderNo" class="control" placeholder="请输入系统订单号"></div>
+          <div class="field"><label for="fChannelNo">通道订单号</label><input id="fChannelNo" class="control" placeholder="请输入通道订单号"></div>
+          <div class="field"><label for="fMerchantNo">商家订单号</label><input id="fMerchantNo" class="control" placeholder="请输入商家订单号"></div>
+          <div class="field"><label for="fMerchant">商户</label><select id="fMerchant" class="control"><option value="">全部商户</option><option>远航商户</option><option>北辰商户</option><option>星河商户</option></select></div>
+          <div class="field"><label for="fCurrency">币种</label><select id="fCurrency" class="control"><option value="">币种</option><option value="USDT">USDT</option><option value="CNY">CNY</option></select></div>
+          <div class="field"><label for="fPayStatus">支付状态</label><select id="fPayStatus" class="control"><option value="">支付状态</option><option value="1">待支付</option><option value="2">支付成功</option><option value="3">已驳回</option><option value="5">地址验证异常</option><option value="6">已过期</option><option value="7">IP封禁</option><option value="8">同ip下单超限</option></select></div>
+          <div class="field"><label for="fNotify">通知状态</label><select id="fNotify" class="control"><option value="">通知状态</option><option value="0">未通知</option><option value="1">通知成功</option><option value="2">通知失败</option></select></div>
+          <div class="field"><label for="fProtocol">协议类型</label><select id="fProtocol" class="control"><option value="">协议类型</option><option value="1">TRC20</option><option value="2">ERC20</option></select></div>
+          <div class="field"><label for="fAmtStart">到账金额起</label><input id="fAmtStart" class="control amount" placeholder=""></div>
+          <div class="field"><label for="fAmtEnd">到账金额止</label><input id="fAmtEnd" class="control amount" placeholder=""></div>
+          <div class="field"><label for="fTime">时间</label><input id="fTime" class="control date" placeholder="开始时间　至　结束时间"></div>
+          <div class="shortcuts"><a class="active">今天</a><a>昨天</a><a>近三天</a><a>近一周</a><a>自定义时间</a></div>
+          <button class="btn primary" id="search">搜索</button>
+          <button class="btn primary" id="exportData">导出数据</button>
+          <button class="btn primary" id="exportList">导出任务列表</button>
+        </section>
+
+        <section class="summary" aria-label="订单汇总统计">
+          <div class="metric"><span>成功订单总额：</span><b class="green" id="stSuccessAmount">0.00 USDT</b></div>
+          <div class="metric"><span>驳回订单总金额：</span><b class="red" id="stRejectedAmount">0.00 USDT</b></div>
+          <div class="metric"><span>成功订单数：</span><b class="green" id="stSuccessCount">0</b></div>
+          <div class="metric"><span>失败订单：</span><b class="red" id="stFailedCount">0</b></div>
+          <div class="metric"><span>成功率：</span><b class="blue" id="stSuccessRate">0.00%</b></div>
+          <div class="metric"><span>处理中金额：</span><b class="orange" id="stProcessingAmount">0.00 USDT</b></div>
+          <div class="metric"><span>处理中笔数：</span><b class="orange" id="stProcessingCount">0</b></div>
+          <div class="countdown">数据刷新倒计时: 60s</div>
+        </section>
+
+        <div class="table-wrap">
+          <table aria-label="虚拟币充值订单列表">
+            <thead><tr>
+              <th style="min-width:200px;text-align:center">系统订单号</th>
+              <th style="min-width:320px">通道订单号/商家订单号</th>
+              <th style="min-width:150px">商户名/商户号</th>
+              <th style="min-width:100px">类型</th>
+              <th style="min-width:100px">交易金额</th>
+              <th style="min-width:80px">币种</th>
+              <th style="min-width:80px">服务费</th>
+              <th style="min-width:100px">汇率</th>
+              <th style="min-width:100px">浮动费率</th>
+              <th style="min-width:100px">浮动金额</th>
+              <th style="min-width:100px">协议类型</th>
+              <th style="min-width:90px;text-align:center">IP白名单</th>
+              <th style="min-width:100px;text-align:center">地址池类型</th>
+              <th style="min-width:100px">到账金额</th>
+              <th style="min-width:280px">收款钱包地址</th>
+              <th style="min-width:280px">付款地址</th>
+              <th style="min-width:280px">Hash</th>
+              <th style="min-width:100px">支付状态</th>
+              <th style="min-width:100px">通知状态</th>
+              <th style="min-width:180px">支付时间</th>
+              <th style="min-width:180px">回调时间</th>
+              <th style="min-width:150px">驳回描述</th>
+              <th style="min-width:140px">IP</th>
+              <th style="min-width:220px">提交时间</th>
+              <th class="col-op" style="min-width:250px">操作</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <footer class="pager"><span id="total">共 0 条</span><span class="page-no">1</span><span>10条/页</span></footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- 币种汇率编辑弹窗 -->
+  <div class="overlay" id="rateEditOverlay" role="dialog" aria-modal="true" aria-label="币种汇率设置">
+    <div class="dialog w560">
+      <div class="dialog-head"><span id="rateEditTitle">添加币种汇率</span><button class="dialog-close" data-close="rateEditOverlay" aria-label="关闭">×</button></div>
+      <div class="dialog-body">
+        <form class="form-block">
+          <div class="form-row"><label class="form-label" for="reCurrency"><span class="req">*</span>币种</label>
+            <div class="form-body"><select class="form-input" id="reCurrency" style="width:100%"></select></div></div>
+          <div class="form-row"><label class="form-label" for="reSource"><span class="req">*</span>汇率来源</label>
+            <div class="form-body"><select class="form-input" id="reSource" style="width:100%"></select><span class="form-tip">基准汇率由汇率来源自动获取，不支持手填</span></div></div>
+          <div class="form-row"><span class="form-label">基准汇率（自动获取）</span>
+            <div class="form-body"><div class="rate-preview" id="reBaseRead" style="margin-top:6px">—</div></div></div>
+          <div class="form-row"><span class="form-label">有效汇率预览</span>
+            <div class="form-body"><div class="rate-preview" id="rePreview">有效汇率: <b>—</b></div><span class="form-tip">有效汇率 = 基准汇率 + 统一浮动加点</span></div></div>
+          <div class="form-row"><label class="form-label" for="reMin"><span class="req">*</span>最低下单金额</label>
+            <div class="form-body"><input class="form-input" id="reMin" value="1" inputmode="decimal" style="width:200px"><span class="form-tip">USDT，不得低于 1</span></div></div>
+        </form>
+      </div>
+      <div class="dialog-foot"><button class="btn" data-close="rateEditOverlay">取消</button><button class="btn primary" id="rateEditSave">确定</button></div>
+    </div>
+  </div>
+
+  <!-- 订单详情弹窗 -->
+  <div class="overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-label="订单详情">
+    <div class="dialog w800">
+      <div class="dialog-head">订单详情<button class="dialog-close" data-close="detailOverlay" aria-label="关闭">×</button></div>
+      <div class="dialog-body"><table class="desc" id="detailDesc"></table></div>
+      <div class="dialog-foot"><button class="btn" data-close="detailOverlay">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- 补单弹窗 -->
+  <div class="overlay" id="replenishOverlay" role="dialog" aria-modal="true" aria-label="补单">
+    <div class="dialog w900">
+      <div class="dialog-head">补单<button class="dialog-close" data-close="replenishOverlay" aria-label="关闭">×</button></div>
+      <div class="dialog-body">
+        <div class="info-grid" id="replenishInfo"></div>
+        <table class="mini-table" id="replenishTable"></table>
+        <form class="form-block">
+          <div class="form-row"><label class="form-label" for="actualAmount"><span class="req">*</span>实际到账金额</label>
+            <div class="form-body"><input class="form-input" id="actualAmount" placeholder="请输入到账金额" inputmode="decimal" style="width:100%"></div></div>
+          <div class="form-row"><label class="form-label" for="replenishRemark">备注</label>
+            <div class="form-body"><textarea class="form-textarea" id="replenishRemark" placeholder="请输入备注信息（选填）" maxlength="500"></textarea></div></div>
+        </form>
+        <div class="identify">
+          <div class="identify-head"><span class="identify-title">地址识别</span><span class="identify-hint">代收方向 · 优先查本地 · 未命中再调外部服务</span></div>
+          <div class="identify-query"><input class="control mono" id="identifyInput" placeholder="请输入钱包地址"><button class="btn primary" id="identifyQuery">查询</button></div>
+          <div class="identify-result" id="identifyResult"><div class="result-row"><span class="row-label"></span><span style="color:#a3acb8">点击「查询」识别地址类型</span></div></div>
+        </div>
+      </div>
+      <div class="dialog-foot"><button class="btn" data-close="replenishOverlay">关闭</button><button class="btn primary" id="replenishSubmit">确认提交</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $=id=>document.getElementById(id);
+    const money=n=>Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const rate4=n=>n==null?'-':Number(n).toFixed(4);
+    const payStatusText={1:'待支付',2:'支付成功',3:'已驳回',4:'处理中',5:'地址验证异常',6:'已过期',7:'IP封禁',8:'同ip下单超限'};
+    const payStatusTag={1:'warning',2:'success',3:'danger',4:'warning',5:'danger',6:'danger',7:'danger',8:'danger'};
+    const notifyText={0:'未通知',1:'通知成功',2:'通知失败'};
+    const notifyTag={0:'info',1:'success',2:'danger'};
+
+    const orders=[
+      {no:'VR20260806001',channel:'CH202608060001',merchantOrder:'MO-88121',merchant:'远航商户',merchantId:'M00000001',type:'虚拟币充值',amount:500,currency:'USDT',fee:'5.00',rate:7.1523,floatRate:0.02,floatAmount:'10.00',protocol:'TRC20',ipWhite:true,pool:'普通池',received:495,wallet:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',pay:'TNq4mL6sPw3xJ7vB9kT2aE5hU8iO1rY2wK',hash:'f64a9032c8d1e5b7a2f04963d8c1b5e902174a6f3d2b8c9e1a0b7d4c5f6e31b9',payStatus:2,notify:1,payTime:'2026-08-06 09:12:45',notifyTime:'2026-08-06 09:12:48',remark:'',ip:'203.0.113.21',submit:'2026-08-06 09:10:02'},
+      {no:'VR20260806002',channel:'CH202608060002',merchantOrder:'MO-88122',merchant:'北辰商户',merchantId:'M00000002',type:'虚拟币充值',amount:1200,currency:'USDT',fee:'12.00',rate:7.1523,floatRate:0.02,floatAmount:'24.00',protocol:'TRC20',ipWhite:true,pool:'白名单池',received:1188,wallet:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',pay:'TLm8pQ2xNv5bV0cX3zJ6hG9kW4sR7tY1uA',hash:'aa29e10b7f4d3c8a2e9b1d6f0c5a8e3b7d2f9a4c1e6b8d3f0a5c2e7b9d4f1a62',payStatus:2,notify:1,payTime:'2026-08-06 10:37:12',notifyTime:'2026-08-06 10:37:15',remark:'',ip:'198.51.100.14',submit:'2026-08-06 10:34:40'},
+      {no:'VR20260806003',channel:'CH202608060003',merchantOrder:'MO-88123',merchant:'星河商户',merchantId:'M00000003',type:'虚拟币充值',amount:800,currency:'USDT',fee:'8.00',rate:7.1489,floatRate:0.02,floatAmount:'16.00',protocol:'ERC20',ipWhite:false,pool:'普通池',received:0,wallet:'0x8f3Ae2b7C1d9F04a6E5b8D2c7A9f1B3e0D6c4A72',pay:'0x2b9Cf5d1A8e3F70c4B6a9D2e5F8b1C3a0E7d6B45',hash:'',payStatus:1,notify:0,payTime:'',notifyTime:'',remark:'',ip:'203.0.113.87',submit:'2026-08-06 11:02:31'},
+      {no:'VR20260806004',channel:'CH202608060004',merchantOrder:'MO-88124',merchant:'远航商户',merchantId:'M00000001',type:'虚拟币充值',amount:300,currency:'USDT',fee:'3.00',rate:7.1523,floatRate:0.02,floatAmount:'6.00',protocol:'TRC20',ipWhite:true,pool:'普通池',received:0,wallet:'TNq4mL6sPw3xJ7vB9kT2aE5hU8iO1rY2wK',pay:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',hash:'',payStatus:6,notify:2,payTime:'',notifyTime:'',remark:'订单超时未支付',ip:'192.0.2.55',submit:'2026-08-06 08:15:20'},
+      {no:'VR20260806005',channel:'CH202608060005',merchantOrder:'MO-88125',merchant:'北辰商户',merchantId:'M00000002',type:'虚拟币充值',amount:2600,currency:'USDT',fee:'26.00',rate:7.1523,floatRate:0.02,floatAmount:'52.00',protocol:'TRC20',ipWhite:false,pool:'普通池',received:0,wallet:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',pay:'TXb1nP9qWe4rT6yU2iO5pA8sD3fG7hJ0kL',hash:'',payStatus:3,notify:1,payTime:'',notifyTime:'',remark:'付款地址命中风险名单',ip:'198.51.100.32',submit:'2026-08-06 07:48:09'},
+      {no:'VR20260806006',channel:'CH202608060006',merchantOrder:'MO-88126',merchant:'星河商户',merchantId:'M00000003',type:'虚拟币充值',amount:150,currency:'USDT',fee:'1.50',rate:7.1489,floatRate:0.02,floatAmount:'3.00',protocol:'TRC20',ipWhite:false,pool:'白名单池',received:0,wallet:'TLm8pQ2xNv5bV0cX3zJ6hG9kW4sR7tY1uA',pay:'TNq4mL6sPw3xJ7vB9kT2aE5hU8iO1rY2wK',hash:'',payStatus:8,notify:0,payTime:'',notifyTime:'',remark:'同IP一分钟内下单超过限制',ip:'203.0.113.21',submit:'2026-08-06 09:11:03'}
+    ];
+
+    function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+    function copy(text){try{navigator.clipboard&&navigator.clipboard.writeText(text);toast('复制成功')}catch(e){toast('复制失败，请手动复制')}}
+
+    function filtered(){
+      const q={no:$('fOrderNo').value.trim(),channel:$('fChannelNo').value.trim(),merchantOrder:$('fMerchantNo').value.trim(),merchant:$('fMerchant').value,currency:$('fCurrency').value,pay:$('fPayStatus').value,notify:$('fNotify').value,protocol:$('fProtocol').value,amtS:$('fAmtStart').value,amtE:$('fAmtEnd').value};
+      return orders.filter(o=>(!q.no||o.no.includes(q.no))&&(!q.channel||o.channel.includes(q.channel))&&(!q.merchantOrder||o.merchantOrder.includes(q.merchantOrder))&&(!q.merchant||o.merchant===q.merchant)&&(!q.currency||o.currency===q.currency)&&(!q.pay||String(o.payStatus)===q.pay)&&(!q.notify||String(o.notify)===q.notify)&&(!q.protocol||(q.protocol==='1'?o.protocol==='TRC20':o.protocol==='ERC20'))&&(!q.amtS||o.received>=Number(q.amtS))&&(!q.amtE||o.received<=Number(q.amtE)));
+    }
+
+    function renderStats(list){
+      const success=list.filter(o=>o.payStatus===2),rejected=list.filter(o=>o.payStatus===3),failed=list.filter(o=>[3,5,6,7,8].includes(o.payStatus)),processing=list.filter(o=>o.payStatus===1);
+      $('stSuccessAmount').textContent=money(success.reduce((n,o)=>n+o.received,0))+' USDT';
+      $('stRejectedAmount').textContent=money(rejected.reduce((n,o)=>n+o.amount,0))+' USDT';
+      $('stSuccessCount').textContent=success.length;
+      $('stFailedCount').textContent=failed.length;
+      const denom=success.length+failed.length;
+      $('stSuccessRate').textContent=(denom?success.length/denom*100:0).toFixed(2)+'%';
+      $('stProcessingAmount').textContent=money(processing.reduce((n,o)=>n+o.amount,0))+' USDT';
+      $('stProcessingCount').textContent=processing.length;
+    }
+
+    function opButtons(o){
+      let html='<button class="link" data-action="detail" data-no="'+o.no+'">详情</button>';
+      if(o.payStatus===1)html+=' <button class="link" data-action="replenish" data-no="'+o.no+'">补单</button> <button class="link" data-action="fail" data-no="'+o.no+'">失败</button>';
+      if(o.payStatus===2&&o.notify===2)html+=' <button class="link" data-action="notify" data-no="'+o.no+'">通知</button>';
+      if([5,7,8].includes(o.payStatus))html+=' <button class="link" data-action="ban" data-no="'+o.no+'">封禁IP</button>';
+      return html;
+    }
+
+    function renderRows(){
+      const list=filtered();
+      renderStats(list);
+      $('total').textContent='共 '+list.length+' 条';
+      $('rows').innerHTML=list.length?list.map(o=>`<tr>
+        <td class="mono" style="text-align:center">${o.no}</td>
+        <td><div class="cell2"><span class="mono">${o.channel} <button class="copy" data-copy="${o.channel}">复制</button></span><span class="mono">${o.merchantOrder} <button class="copy" data-copy="${o.merchantOrder}">复制</button></span></div></td>
+        <td>${o.merchant} / ${o.merchantId}</td>
+        <td>${o.type}</td>
+        <td>${money(o.amount)}</td>
+        <td>${o.currency}</td>
+        <td>${o.fee}</td>
+        <td>${rate4(o.rate)}</td>
+        <td>${rate4(o.floatRate)}</td>
+        <td>${o.floatAmount}</td>
+        <td>${o.protocol}</td>
+        <td style="text-align:center">${o.ipWhite?'是':'否'}</td>
+        <td style="text-align:center">${o.pool}</td>
+        <td>${o.received?money(o.received):'—'}</td>
+        <td class="mono">${o.wallet} <button class="copy" data-copy="${o.wallet}">复制</button></td>
+        <td class="mono">${o.pay} <button class="copy" data-copy="${o.pay}">复制</button></td>
+        <td class="mono">${o.hash?o.hash+' <button class="copy" data-copy="'+o.hash+'">复制</button>':'—'}</td>
+        <td><span class="tag ${payStatusTag[o.payStatus]||'info'}">${payStatusText[o.payStatus]||'-'}</span></td>
+        <td><span class="tag ${notifyTag[o.notify]||'info'}">${notifyText[o.notify]||'-'}</span></td>
+        <td>${o.payTime||'—'}</td>
+        <td>${o.notifyTime||'—'}</td>
+        <td>${o.remark||'—'}</td>
+        <td>${o.ip}</td>
+        <td>${o.submit}</td>
+        <td class="col-op">${opButtons(o)}</td>
+      </tr>`).join(''):'<tr><td class="empty" colspan="25">暂无符合条件的订单</td></tr>';
+    }
+
+    function findOrder(no){return orders.find(o=>o.no===no)}
+    function openOverlay(id){$(id).classList.add('show')}
+    function closeOverlay(id){$(id).classList.remove('show')}
+
+    function showDetail(no){
+      const o=findOrder(no);if(!o)return;
+      const rows=[['系统订单号',o.no],['通道订单号',o.channel],['商家订单号',o.merchantOrder],['商户名称',o.merchant],['商户号',o.merchantId],['类型',o.type],['交易金额',money(o.amount)+' USDT'],['服务费',o.fee],['币种',o.currency],['汇率',rate4(o.rate)],['浮动汇率',rate4(o.floatRate)],['协议类型',o.protocol],['IP白名单',o.ipWhite?'是':'否'],['地址池类型',o.pool],['到账金额',o.received?money(o.received)+' USDT':'—'],['收款钱包地址',o.wallet],['付款地址',o.pay],['Hash',o.hash||'—'],['支付状态',payStatusText[o.payStatus]||'-'],['通知状态',notifyText[o.notify]||'-'],['创建时间',o.submit],['支付时间',o.payTime||'—'],['回调时间',o.notifyTime||'—'],['驳回描述',o.remark||'—']];
+      $('detailDesc').innerHTML=rows.map(r=>`<tr><th>${r[0]}</th><td class="mono">${r[1]}</td></tr>`).join('');
+      openOverlay('detailOverlay');
+    }
+
+    function showReplenish(no){
+      const o=findOrder(no);if(!o)return;
+      $('replenishInfo').innerHTML=`
+        <div><span class="lbl">系统订单号：</span><span class="mono">${o.no}</span> <button class="copy" data-copy="${o.no}">复制</button></div>
+        <div><span class="lbl">通道订单号/商家订单号：</span><span class="mono">${o.channel}</span> / <span class="mono">${o.merchantOrder}</span></div>
+        <div><span class="lbl">商户名/商户号：</span>${o.merchant} / ${o.merchantId}</div>
+        <div><span class="lbl">类型：</span>${o.type}</div>`;
+      $('replenishTable').innerHTML=`<thead><tr><th>交易金额</th><th>到账金额</th><th>币种</th><th>协议类型</th><th>收款地址</th><th>付款地址</th><th>提交时间</th></tr></thead>
+        <tbody><tr><td>${money(o.amount)}</td><td>${o.received?money(o.received):'—'}</td><td>${o.currency}</td><td>${o.protocol}</td><td class="addr mono">${o.wallet}</td><td class="addr mono">${o.pay}</td><td>${o.submit}</td></tr></tbody>`;
+      $('actualAmount').value=o.received?o.received:'';
+      $('replenishRemark').value='';
+      $('identifyInput').value=o.pay;
+      $('identifyResult').innerHTML='<div class="result-row"><span class="row-label"></span><span style="color:#a3acb8">点击「查询」识别地址类型</span></div>';
+      openOverlay('replenishOverlay');
+    }
+
+    document.addEventListener('click',e=>{
+      const t=e.target;
+      if(t.dataset&&t.dataset.close)return closeOverlay(t.dataset.close);
+      if(t.classList&&t.classList.contains('overlay'))return closeOverlay(t.id);
+      if(t.dataset&&t.dataset.copy)return copy(t.dataset.copy);
+      const btn=t.closest&&t.closest('[data-action]');
+      if(btn){
+        const no=btn.dataset.no,action=btn.dataset.action;
+        if(action==='detail')return showDetail(no);
+        if(action==='replenish')return showReplenish(no);
+        if(action==='fail')return confirm('确认将该订单改为失败状态，同时回调商户吗?')&&toast('已标记失败');
+        if(action==='notify')return toast('已重新发送通知');
+        if(action==='ban')return confirm('确定封禁该 IP 吗?')&&toast('封禁IP成功');
+      }
+    });
+
+    $('identifyQuery').onclick=()=>{
+      const addr=$('identifyInput').value.trim();
+      if(!addr)return toast('请输入钱包地址');
+      $('identifyResult').innerHTML='<div class="result-row"><span class="row-label"></span><span style="color:#a3acb8">识别中…</span></div>';
+      setTimeout(()=>{
+        $('identifyResult').innerHTML=`
+          <div class="result-row"><span class="row-label">地址类型</span><span class="type-badge badge-platform">平台地址 · TRC20</span></div>
+          <div class="result-row"><span class="row-label">数据来源</span><span>本地客户聚合表（已有记录 · 5 分钟缓存）</span></div>
+          <div class="result-row"><span class="row-label">收款次数</span><span>3 次 · 客户 → 我方</span></div>
+          <div class="result-row"><span class="row-label">累计充值金额</span><span>1,500.00 USDT · 该客户地址 → 我方所有平台地址（全平台聚合）</span></div>
+          <div class="result-row"><span class="row-label">出款次数</span><span>0 次 · 我方 → 客户（本次发布无数据）</span></div>
+          <div class="result-row"><span class="row-label">涉及平台地址</span><span>2 个</span></div>
+          <div class="result-row"><span class="row-label">最近活跃</span><span>2026-08-06 09:12:45</span></div>`;
+      },500);
+    };
+
+    $('replenishSubmit').onclick=()=>{
+      const amt=$('actualAmount').value;
+      if(!amt||Number(amt)<0)return toast('请输入实际到账金额');
+      const code=prompt('输入谷歌验证码，补单单号为：'+(orders[0]?orders[0].no:'')+'，金额为：'+Number(amt).toFixed(2)+' 的订单');
+      if(code===null)return;
+      if(!/^\d{6}$/.test(code))return toast('请输入6位数字验证码');
+      closeOverlay('replenishOverlay');toast('补单成功');
+    };
+
+    /* page switching */
+    const pages={config:{title:'虚拟币充值配置',tab:'tabConfig'},orders:{title:'虚拟币充值订单',tab:'tabOrders'}};
+    function switchPage(key){
+      if(key==='disabled')return;
+      for(const k in pages){$('page-'+k).hidden=k!==key;$(pages[k].tab).classList.toggle('active',k===key)}
+      $('pageTitle').textContent=pages[key].title;
+      document.querySelectorAll('.submenu .nav').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
+    }
+    document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
+    $('tabConfig').onclick=()=>switchPage('config');
+    $('tabOrders').onclick=()=>switchPage('orders');
+
+    /* config preview */
+    function updatePreview(){
+      if($('rateEditOverlay').classList.contains('show'))updateRatePreview();
+      renderRateRows();
+    }
+    $('floatRate').addEventListener('input',updatePreview);
+    $('saveConfig').onclick=()=>toast('操作成功');
+
+    $('search').onclick=renderRows;
+    $('exportData').onclick=()=>toast('导出任务已创建，请稍后下载');
+    $('exportList').onclick=()=>toast('导出任务列表');
+    document.querySelectorAll('.shortcuts a').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.shortcuts a').forEach(x=>x.classList.remove('active'));a.classList.add('active')}));
+
+    /* 指定币种汇率配置 */
+    /* 所有法币统一配置：汇率来源按币种可选。CNY 取交易所行情；其他法币按 USDT≈USD 1:1 取汇率网站牌价 */
+    const rateSources={
+      CNY:['欧易 (OKX)','币安 (Binance)'],
+      default:['XE 汇率网','Wise 汇率','汇率 API (exchangerate.host)']
+    };
+    const mockBase={
+      CNY:{'欧易 (OKX)':7.1523,'币安 (Binance)':7.1489},
+      VND:{'XE 汇率网':26150.00,'Wise 汇率':26128.50,'汇率 API (exchangerate.host)':26140.20},
+      THB:{'XE 汇率网':34.62,'Wise 汇率':34.58,'汇率 API (exchangerate.host)':34.60},
+      MYR:{'XE 汇率网':4.47,'Wise 汇率':4.46,'汇率 API (exchangerate.host)':4.47},
+      PHP:{'XE 汇率网':57.85,'Wise 汇率':57.79,'汇率 API (exchangerate.host)':57.82},
+      IDR:{'XE 汇率网':16280.00,'Wise 汇率':16255.00,'汇率 API (exchangerate.host)':16268.00}
+    };
+    const currencyRates=[
+      {code:'CNY',name:'人民币',source:'欧易 (OKX)',minUsdt:1,enabled:true},
+      {code:'VND',name:'越南盾',source:'XE 汇率网',minUsdt:1,enabled:true},
+      {code:'THB',name:'泰铢',source:'Wise 汇率',minUsdt:1,enabled:false}
+    ];
+    const currencyOptions=[['CNY','人民币'],['VND','越南盾'],['THB','泰铢'],['MYR','马来西亚林吉特'],['PHP','菲律宾比索'],['IDR','印尼卢比']];
+    const fmtBase=(c,v)=>{
+      const n=Number(v),d=c==='CNY'?4:2;
+      return n.toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
+    };
+    const globalFloat=()=>Number($('floatRate').value)||0;
+    const baseOf=r=>(mockBase[r.code]&&mockBase[r.code][r.source])||0;
+    const sourceOptionsOf=code=>{
+      const map=mockBase[code]||{};
+      return (rateSources[code]||rateSources.default).map(s=>{
+        const rate=map[s];
+        const label=rate!=null?(s+'　'+fmtBase(code,rate)):s;
+        return `<option value="${s}">${label}</option>`;
+      }).join('');
+    };
+
+    function renderRateRows(){
+      const float=globalFloat();
+      $('currencyRateRows').innerHTML=currencyRates.map(r=>{
+        const base=baseOf(r),eff=base+float;
+        return `<tr>
+          <td><b>${r.code}</b> ${r.name}</td>
+          <td><select class="rate-src" data-rate-source="${r.code}" aria-label="汇率来源">${sourceOptionsOf(r.code)}</select></td>
+          <td><div class="rate-cell"><span class="rate-num">${fmtBase(r.code,base)}</span><span class="rate-sub">来源牌价 · 自动获取</span></div></td>
+          <td><div class="rate-cell"><span class="rate-num">${fmtBase(r.code,eff)}</span><span class="rate-sub">${fmtBase(r.code,base)} + ${float.toFixed(2)} 加点</span></div></td>
+          <td>${r.minUsdt} USDT</td>
+          <td><span class="switch-dot ${r.enabled?'on':''}" data-rate-toggle="${r.code}" role="switch" aria-checked="${r.enabled}" tabindex="0"></span></td>
+          <td><button class="link" data-rate-edit="${r.code}">编辑</button></td>
+        </tr>`;
+      }).join('')||'<tr><td class="empty" colspan="7">暂无配置币种，点击「添加币种」开始</td></tr>';
+      currencyRates.forEach(r=>{
+        const el=document.querySelector('[data-rate-source="'+r.code+'"]');
+        if(el)el.value=r.source;
+      });
+    }
+
+    let rateEditCode=null;
+    function openRateEdit(code){
+      rateEditCode=code;
+      const sel=$('reCurrency');
+      sel.innerHTML=currencyOptions.map(c=>`<option value="${c[0]}">${c[0]}（${c[1]}）</option>`).join('');
+      const taken=new Set(currencyRates.map(r=>r.code));
+      if(code){
+        const r=currencyRates.find(x=>x.code===code);
+        $('rateEditTitle').textContent='编辑币种汇率 — '+code;
+        sel.value=code;sel.disabled=true;
+        $('reSource').innerHTML=sourceOptionsOf(code);
+        $('reSource').value=r.source;
+        $('reMin').value=r.minUsdt;
+      }else{
+        $('rateEditTitle').textContent='添加币种汇率';
+        sel.disabled=false;
+        [...sel.options].forEach(o=>o.disabled=taken.has(o.value));
+        const first=[...sel.options].find(o=>!o.disabled);
+        if(!first)return toast('所有币种均已配置');
+        sel.value=first.value;
+        $('reSource').innerHTML=sourceOptionsOf(sel.value);
+        $('reMin').value='1';
+      }
+      updateRatePreview();
+      openOverlay('rateEditOverlay');
+    }
+    function updateRatePreview(){
+      const code=$('reCurrency').value;
+      const source=$('reSource').value;
+      const base=(mockBase[code]&&mockBase[code][source])||0;
+      const float=globalFloat();
+      $('reBaseRead').innerHTML='1 USDT ≈ <b>'+fmtBase(code,base)+'</b> '+code+'　<span style="color:#a3acb8">来源：'+(source||'—')+'</span>';
+      $('rePreview').innerHTML='有效汇率: <b>'+fmtBase(code,base+float)+'</b> ('+fmtBase(code,base)+' + '+float.toFixed(2)+')';
+    }
+    $('reCurrency').addEventListener('change',()=>{
+      $('reSource').innerHTML=sourceOptionsOf($('reCurrency').value);
+      updateRatePreview();
+    });
+    $('reSource').addEventListener('change',updateRatePreview);
+    $('addCurrencyRate').onclick=()=>openRateEdit(null);
+    $('rateEditSave').onclick=()=>{
+      const code=$('reCurrency').value;
+      const min=Number($('reMin').value);
+      if(!code)return toast('请选择币种');
+      if(!isFinite(min)||min<1)return toast('最低下单金额不得低于 1 USDT');
+      if(rateEditCode){
+        Object.assign(currencyRates.find(r=>r.code===rateEditCode),{source:$('reSource').value,minUsdt:min});
+      }else{
+        if(currencyRates.some(r=>r.code===code))return toast('该币种已配置');
+        const name=(currencyOptions.find(c=>c[0]===code)||['',code])[1];
+        currencyRates.push({code,name,source:$('reSource').value,minUsdt:min,enabled:true});
+      }
+      renderRateRows();
+      updatePreview();
+      closeOverlay('rateEditOverlay');
+      toast('操作成功');
+    };
+    document.addEventListener('change',e=>{
+      const s=e.target.closest&&e.target.closest('[data-rate-source]');
+      if(s){
+        const r=currencyRates.find(x=>x.code===s.dataset.rateSource);
+        r.source=s.value;updatePreview();
+        toast(r.code+' 汇率来源已切换为 '+s.value);
+      }
+    });
+    document.addEventListener('click',e=>{
+      const t=e.target.closest&&e.target.closest('[data-rate-toggle]');
+      if(t){
+        const r=currencyRates.find(x=>x.code===t.dataset.rateToggle);
+        r.enabled=!r.enabled;renderRateRows();updatePreview();
+        toast(r.code+' 已'+(r.enabled?'开启':'关闭'));
+      }
+      const ed=e.target.closest&&e.target.closest('[data-rate-edit]');
+      if(ed)openRateEdit(ed.dataset.rateEdit);
+    });
+    updatePreview();
+    renderRows();
+    const hashKey=location.hash.slice(1)||new URLSearchParams(location.search).get('page')||'';
+    switchPage(pages[hashKey]?hashKey:'config');
+  </script>
+</body>
+</html>

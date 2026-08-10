@@ -896,40 +896,6 @@
       border-top: 1px solid var(--line);
     }
 
-    .alerts {
-      position: fixed;
-      z-index: 80;
-      right: 16px;
-      bottom: 16px;
-      width: 330px;
-      display: grid;
-      gap: 12px;
-      pointer-events: none;
-    }
-    .alert-card {
-      min-height: 78px;
-      display: grid;
-      grid-template-columns: 30px 1fr;
-      gap: 8px;
-      align-items: start;
-      padding: 15px 18px;
-      background: #fff;
-      border-radius: 6px;
-      box-shadow: var(--shadow-float);
-    }
-    .alert-mark {
-      width: 22px;
-      height: 22px;
-      display: grid;
-      place-items: center;
-      margin-top: 1px;
-      color: #fff;
-      border-radius: 50%;
-      background: var(--warning);
-      font-weight: 800;
-    }
-    .alert-title { color: var(--text); font-size: 15px; font-weight: 600; }
-    .alert-copy { margin-top: 5px; color: var(--regular); font-size: 13px; }
     .toast {
       position: fixed;
       z-index: 100;
@@ -992,16 +958,6 @@
 
   <div id="merchantModalRoot"></div>
   <div id="transferModalRoot"></div>
-  <div class="alerts" aria-label="系统提醒">
-    <div class="alert-card">
-      <span class="alert-mark">!</span>
-      <div><div class="alert-title">未处理工单提醒</div><div class="alert-copy">当前有 45 条未处理工单，请及时处理</div></div>
-    </div>
-    <div class="alert-card">
-      <span class="alert-mark">!</span>
-      <div><div class="alert-title">未处理订单提醒</div><div class="alert-copy">当前有 3 条待处理订单，请及时处理</div></div>
-    </div>
-  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
