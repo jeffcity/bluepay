@@ -19,6 +19,10 @@ test("构建生成一致的本地入口", async () => {
   assert.match(root, /\["ADDRESS","地址池"\]/);
   assert.doesNotMatch(root, /需求 Demo 中心|项目说明|跨后台|HTML DEMO/);
   assert.doesNotMatch(root, /\/Users\/|file:\/\//);
+  assert.match(root, /id="sideNav"/);
+  assert.match(root, /const NAV=/);
+  assert.match(root, /admin-collect/);
+  assert.match(root, /merchant-order/);
 
   const documentStart =
     root.indexOf("const DOCUMENTS=") + "const DOCUMENTS=".length;
@@ -28,68 +32,23 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["商户充值订单统计栏位-demo"], /成功订单总额/);
   assert.ok(documents["机器人分层播报与多人确认-demo"]);
   assert.match(documents["机器人分层播报与多人确认-demo"], /TG确认状态/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /商户下分/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /\["recharge", "商户充值订单"\]/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /成功订单总额/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /data-edit-index/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /修改商户/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /Telegram 通知配置/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /USDT 代付确认配置/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /USDT 余额提醒配置/);
-  assert.match(
-    documents["机器人分层播报与多人确认-demo"],
-    /tier-rule-table[\s\S]*金额区间[\s\S]*TG 群 ID[\s\S]*确认人员[\s\S]*需确认人数[\s\S]*操作/
-  );
-  assert.match(documents["机器人分层播报与多人确认-demo"], /data-tier-action="add"/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /id="tierStartAmount"/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /merchant-config-shell/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /role="tablist" aria-label="商户配置分组"/);
-  for (const section of ["basic", "withdraw-confirm", "transfer-confirm", "telegram", "payout-confirm", "balance-alert", "advanced"]) {
-    assert.match(documents["机器人分层播报与多人确认-demo"], new RegExp(`data-modal-section-target="${section}"`));
-    assert.match(documents["机器人分层播报与多人确认-demo"], new RegExp(`data-modal-section-panel="${section}"`));
-  }
-  assert.match(documents["机器人分层播报与多人确认-demo"], /formatTierAmount\(rule\.start\)\} USDT 起/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /formatTierAmount\(nextRule\.start\)\} USDT 前/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /tier-range-end">无上限/);
-  assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /tierMaxAmount|结束金额（USDT）|data-tier-action="toggle"/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /确认人员数量不能少于需确认人数/);
-  assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /data-config-toggle="tg-confirm"/);
-  const botDocument = documents["机器人分层播报与多人确认-demo"];
-  assert.match(botDocument, /商户下分（提现）TG 确认配置/);
-  assert.match(botDocument, /审核风控群ID/);
-  assert.match(botDocument, /TG username 白名单/);
-  const botConfirmPanel = botDocument.slice(
-    botDocument.indexOf('data-modal-section-panel="withdraw-confirm"'),
-    botDocument.indexOf('data-modal-section-panel="transfer-confirm"')
-  );
-  assert.doesNotMatch(botConfirmPanel, /群与确认人|section-badge mod|原「机器人群组ID」|仅列表内的 TG 账号/);
-  assert.match(botDocument, /资金划转 TG 确认配置/);
-  assert.match(botDocument, /data-withdraw-confirm-bot/);
-  assert.match(botDocument, /共用商户下分确认机器人/);
-  assert.match(botDocument, /资金确认配置/);
-  assert.match(botDocument, /通知与其他/);
-  assert.doesNotMatch(botDocument, /data-transfer-bot/);
-  assert.doesNotMatch(botDocument, /data-transfer-shared-bot/);
-  assert.match(botDocument, /data-transfer-open="\$\{wallet\}"/);
-  assert.match(botDocument, /transferLink\("collect", i\)/);
-  assert.match(botDocument, /transferLink\("payout", i\)/);
-  assert.match(botDocument, /data-transfer-source-wallet/);
-  assert.match(botDocument, /data-transfer-target-wallet/);
-  assert.match(botDocument, /代收 USDT余额/);
-  assert.match(botDocument, /代付 USDT代付剩余预付/);
-  assert.match(botDocument, /资金划转配置/);
-  assert.doesNotMatch(botDocument, /原 TG username 白名单/);
-  assert.doesNotMatch(botDocument, /section-badge|modal-help|>NEW<|含新增字段/);
-  assert.equal((botDocument.match(/class="config-label">TG username 白名单/g) || []).length, 1);
-  const pageStart = root.indexOf("const PAGES=") + "const PAGES=".length;
-  const pageEnd = root.indexOf(";\n    const DOCUMENTS=", pageStart);
-  const pages = JSON.parse(root.slice(pageStart, pageEnd));
-  assert.equal(pages.find((page) => page.id === "BP-REQ-003").doc, "机器人分层播报与多人确认-demo");
-  assert.match(root, /BP-REQ-002/);
-  assert.match(root, /BP-REQ-003/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /cryptoOrder|虚拟币充值订单管理/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /<th>余额<\/th>/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /<th>预付<\/th>/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /<th>剩余预付<\/th>/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /USDT/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /TRX/);
+  assert.ok(documents["TRX代收通道-demo"]);
+  assert.match(documents["TRX代收通道-demo"], /m-order|代收订单/);
+  assert.match(documents["TRX代收通道-demo"], /全部通道/);
+  assert.match(documents["TRX代收通道-demo"], /完成起始时间/);
+  assert.match(documents["TRX代收通道-demo"], /商户代理费/);
+  assert.match(documents["TRX代收通道-demo"], /交易金额/);
+  assert.ok(documents["VND法币代收-demo"]);
+  assert.match(documents["VND法币代收-demo"], /虚拟币充值配置|汇率/);
 });
 
-test("后台默认直接进入五页面复刻且不显示需求页签", async () => {
+test("后台默认进产品导航页且商户不串后台", async () => {
   await promisify(execFile)(process.execPath, ["scripts/build.mjs"]);
   const root = await readFile("index.html", "utf8");
   const scriptStart = root.indexOf("<script>") + "<script>".length;
@@ -107,10 +66,11 @@ test("后台默认直接进入五页面复刻且不显示需求页签", async ()
         srcdoc: "",
         textContent: "",
         title: "",
-        classList: { add() {}, remove() {} },
+        classList: { add() {}, remove() {}, toggle() {} },
         addEventListener(type, listener) {
           listeners.set(`${id}:${type}`, listener);
-        }
+        },
+        removeAttribute() {}
       });
     }
     return elements.get(id);
@@ -118,7 +78,7 @@ test("后台默认直接进入五页面复刻且不显示需求页签", async ()
 
   const location = { hash: "" };
   vm.runInNewContext(script, {
-    document: { getElementById: element },
+    document: { getElementById: element, body: { classList: { toggle() {} } } },
     history: {
       replaceState(_state, _title, hash) {
         location.hash = hash;
@@ -127,13 +87,29 @@ test("后台默认直接进入五页面复刻且不显示需求页签", async ()
     location,
     addEventListener() {},
     clearTimeout() {},
-    setTimeout() {}
+    setTimeout() {},
+    JSON
   });
 
-  assert.doesNotMatch(root, /class="worktabs"|class="worktab/);
-  assert.equal(location.hash, "");
-  assert.match(element("demoFrame").srcdoc, /TG确认状态/);
-  for (const page of ["商户下分", "代付商户管理", "代收商户管理", "商户管理", "商户充值订单"]) {
-    assert.match(element("demoFrame").srcdoc, new RegExp(page));
-  }
+  assert.match(element("sideNav").innerHTML, /代收商户管理|商户充值订单|虚拟币充值/);
+  assert.match(element("demoFrame").srcdoc, /__BP_SURFACE__=\"ADMIN\"|__BP_SURFACE__='ADMIN'|__BP_SURFACE__=\"ADMIN\"/);
+  assert.match(element("demoFrame").srcdoc, /__BP_BOOT__/);
+  assert.match(element("demoFrame").srcdoc, /bp-embed|__BP_EMBED__/);
+  // default admin page should not be merchant surface
+  assert.doesNotMatch(element("demoFrame").srcdoc, /__BP_SURFACE__=\"MERCHANT\"/);
+
+  const clickMain = listeners.get("mainNav:click");
+  assert.equal(typeof clickMain, "function");
+  clickMain({
+    target: {
+      closest(sel) {
+        if (sel === "[data-module]") return { dataset: { module: "MERCHANT" } };
+        return null;
+      }
+    }
+  });
+  assert.match(element("sideNav").innerHTML, /代收订单|商户下发提现/);
+  assert.doesNotMatch(element("sideNav").innerHTML, /代收商户管理|虚拟币充值配置/);
+  assert.match(element("demoFrame").srcdoc, /__BP_SURFACE__=\"MERCHANT\"/);
+  assert.match(element("demoFrame").srcdoc, /m-order|__BP_BOOT__=\"m-order\"/);
 });

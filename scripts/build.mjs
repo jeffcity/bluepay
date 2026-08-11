@@ -38,10 +38,11 @@ const template = await readFile(
 const output = template
   .replace("__PROJECT__", () => safeJson(catalog.project))
   .replace("__MODULES__", () => safeJson(catalog.modules))
+  .replace("__NAV__", () => safeJson(catalog.nav || {}))
   .replace("__PAGES__", () => safeJson(catalog.pages))
   .replace("__DOCUMENTS__", () => safeJson(documents));
 
-if (/__(?:PROJECT|MODULES|PAGES|DOCUMENTS)__/.test(output)) {
+if (/__(?:PROJECT|MODULES|NAV|PAGES|DOCUMENTS)__/.test(output)) {
   throw new Error("模板占位符未完全替换");
 }
 if (/\/Users\/|file:\/\//.test(output)) {

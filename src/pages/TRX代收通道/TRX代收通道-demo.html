@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRX 代收通道 — 蓝盛后台 + 商户端 Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1890ff;
+  --primary-dark: #096dd9;
+  --primary-soft: #e6f7ff;
+  --primary-border: #91d5ff;
+  --bg-page: #f0f2f5;
+  --bg-surface: #fff;
+  --text-primary: #262626;
+  --text-secondary: #8c8c8c;
+  --text-body: #595959;
+  --border: #e8e8e8;
+  --border-input: #d9d9d9;
+  --success: #52c41a;
+  --danger: #ff4d4f;
+  --warning: #faad14;
+  --radius: 4px;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.04);
+  --font-ui: 'Fira Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'Fira Code', 'SFMono-Regular', monospace;
+  --sidebar-w: 208px;
+  --tabbar-h: 40px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font: 14px/1.5 var(--font-ui); color: var(--text-primary); background: var(--bg-page); overflow: hidden; height: 100vh; }
+button, input, select { font: inherit; }
+
+/* ===== Layout ===== */
+.app { display: flex; height: 100vh; }
+
+/* ===== Sidebar ===== */
+.sidebar { width: var(--sidebar-w); background: var(--bg-surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+.sidebar-brand { padding: 0; flex-shrink: 0; }
+.sidebar-brand.admin { background: linear-gradient(135deg, #1890ff 0%, #36a3ff 100%); }
+.sidebar-brand.merchant { background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%); }
+.sidebar-brand-inner { padding: 18px 20px; color: #fff; font: 700 18px/1 var(--font-ui); letter-spacing: 3px; }
+.sidebar-menu { flex: 1; overflow-y: auto; padding: 6px 0; }
+.menu-group-title { padding: 10px 20px 4px; font-size: 12px; color: var(--text-secondary); }
+.menu-item { display: flex; align-items: center; height: 40px; padding: 0 20px; color: var(--text-body); cursor: pointer; transition: background .15s, color .15s; user-select: none; font-size: 14px; position: relative; }
+.menu-item:hover { background: #fafafa; }
+.menu-item .mi-icon { width: 14px; height: 14px; margin-right: 10px; border-radius: 2px; border: 1.5px solid #bfbfbf; flex-shrink: 0; }
+.menu-item .mi-arrow { margin-left: auto; font-size: 10px; color: #bfbfbf; transition: transform .2s; }
+.menu-item .mi-arrow.open { transform: rotate(180deg); }
+.menu-sub { overflow: hidden; }
+.menu-sub .menu-item { padding-left: 44px; height: 36px; font-size: 13px; }
+.menu-sub .menu-item:hover { color: var(--primary); background: var(--primary-soft); }
+.menu-sub .menu-item.active { color: var(--primary); background: var(--primary-soft); font-weight: 600; }
+.menu-sub .menu-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--primary); border-radius: 0 2px 2px 0; }
+
+/* ===== Main ===== */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* Tab bar */
+.tabbar { height: var(--tabbar-h); background: var(--bg-surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 8px; gap: 2px; flex-shrink: 0; overflow-x: auto; }
+.tabbar::-webkit-scrollbar { height: 0; }
+.ttab { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: var(--text-body); cursor: pointer; white-space: nowrap; transition: all .15s; flex-shrink: 0; }
+.ttab:hover { background: #f5f5f5; }
+.ttab.active { background: var(--primary); color: #fff; }
+.ttab .tdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .5; }
+.ttab.active .tdot { opacity: .9; }
+.ttab .tclose { font-size: 14px; opacity: .4; margin-left: 2px; line-height: 1; }
+.ttab .tclose:hover { opacity: .8; }
+
+/* Content scroll */
+.content-scroll { flex: 1; overflow-y: auto; padding: 16px 20px 32px; }
+
+/* Page title */
+.page-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 14px; }
+
+/* Filter card */
+.filter-card { background: var(--bg-surface); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow-card); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 0; }
+.fc-input, .fc-select { height: 32px; padding: 0 11px; border: 1px solid var(--border-input); border-radius: var(--radius); background: #fff; color: var(--text-primary); outline: none; font-size: 13px; transition: border-color .18s, box-shadow .18s; }
+.fc-input:focus, .fc-select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,.12); }
+.fc-input { width: 140px; }
+.fc-select { min-width: 110px; }
+.fc-sep { color: var(--text-secondary); font-size: 13px; }
+.merchant-order-filter { margin-bottom: 12px; }
+.auto-refresh { display: inline-flex; align-items: center; gap: 8px; height: 32px; color: var(--text-body); font-size: 13px; white-space: nowrap; }
+.switch { position: relative; display: inline-block; width: 36px; height: 20px; border-radius: 10px; background: #d9d9d9; }
+.switch i { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+.order-summary { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 14px 20px; margin-bottom: 12px; background: #f8fbff; border: 1px solid #e6f0fb; border-radius: var(--radius); color: var(--text-secondary); font-size: 13px; }
+.order-summary span { white-space: nowrap; }
+.order-summary b { margin-left: 4px; color: var(--primary); font-family: var(--font-mono); font-weight: 600; }
+.btn { height: 32px; padding: 0 16px; border-radius: var(--radius); border: 1px solid var(--border-input); background: #fff; color: var(--text-body); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; justify-content: center; }
+.btn:hover { border-color: var(--primary); color: var(--primary); }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { background: #40a9ff; border-color: #40a9ff; color: #fff; }
+.btn-sm { height: 24px; padding: 0 8px; font-size: 12px; }
+
+/* Currency tabs */
+.curr-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg-surface); padding: 0 20px; }
+.curr-tab { position: relative; padding: 10px 24px 9px; font-size: 14px; font-weight: 500; color: var(--text-body); cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s; }
+.curr-tab:hover { color: var(--primary); }
+.curr-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.curr-tab.is-new::after { content: 'NEW'; position: absolute; top: 5px; right: 2px; font-size: 9px; font-weight: 600; background: #e6fffb; color: #13c2c2; border: 1px solid #87e8de; border-radius: 2px; padding: 0 3px; line-height: 14px; }
+
+/* Table */
+.table-card { background: var(--bg-surface); box-shadow: var(--shadow-card); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+.merchant-order-table table { min-width: 0; table-layout: fixed; }
+.merchant-order-table th, .merchant-order-table td { overflow: hidden; text-overflow: ellipsis; }
+.merchant-order-table th:nth-child(1), .merchant-order-table th:nth-child(2) { width: 13%; }
+.merchant-order-table th:nth-child(3), .merchant-order-table th:nth-child(4) { width: 11%; }
+.merchant-order-table th:nth-child(5) { width: 7%; }
+.merchant-order-table th:nth-child(6), .merchant-order-table th:nth-child(7) { width: 11%; }
+.merchant-order-table th:nth-child(8) { width: 8%; }
+.merchant-order-table th:nth-child(9), .merchant-order-table th:nth-child(10) { width: 12.5%; }
+thead { background: #fafafa; }
+th { height: 44px; padding: 0 12px; text-align: left; font-weight: 500; font-size: 13px; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { height: 48px; padding: 0 12px; font-size: 13px; color: var(--text-body); border-bottom: 1px solid #f5f5f5; white-space: nowrap; }
+tbody tr { transition: background .12s; }
+tbody tr:hover { background: #fafcff; }
+.mono { font-family: var(--font-mono); font-size: 12px; }
+.amt-pos { color: var(--success); font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+.amt-neg { color: var(--danger); font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+.amt-zero { color: var(--text-body); font-family: var(--font-mono); font-size: 12px; }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 2px; font-size: 12px; line-height: 18px; }
+.tag-blue { background: var(--primary-soft); color: var(--primary); border: 1px solid var(--primary-border); }
+.tag-green { background: #f6ffed; color: var(--success); border: 1px solid #b7eb8f; }
+.tag-red { background: #fff2f0; color: var(--danger); border: 1px solid #ffccc7; }
+.tag-orange { background: #fff7e6; color: var(--warning); border: 1px solid #ffd591; }
+.tag-gray { background: #fafafa; color: #999; border: 1px solid #e8e8e8; }
+.badge-new { display: inline-block; background: #e6fffb; color: #13c2c2; border: 1px solid #87e8de; border-radius: 2px; padding: 0 4px; font-size: 10px; font-weight: 600; margin-left: 4px; vertical-align: middle; line-height: 14px; }
+.asset-stack { display: grid; gap: 8px; min-width: 210px; }
+.asset-line { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: start; gap: 8px; min-height: 22px; }
+.asset-line .tag { min-width: 39px; text-align: center; font-size: 11px; }
+.asset-line.cny .tag { color: var(--primary); background: var(--primary-soft); border-color: var(--primary-border); }
+.asset-line.trx .tag { color: #0f8d91; background: #e6fffb; border-color: #87e8de; }
+.asset-value { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; min-width: 0; line-height: 22px; }
+.asset-empty { color: var(--text-secondary); }
+
+/* Pagination */
+.pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 20px; background: var(--bg-surface); font-size: 13px; color: var(--text-secondary); }
+.pager-btn { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-input); border-radius: var(--radius); background: #fff; font-size: 13px; color: var(--text-body); cursor: pointer; transition: all .15s; padding: 0 6px; }
+.pager-btn:hover { border-color: var(--primary); color: var(--primary); }
+.pager-btn.active { border-color: var(--primary); color: var(--primary); font-weight: 600; }
+.pager-btn.disabled { color: #d9d9d9; cursor: default; border-color: #e8e8e8; }
+.pager-btn.disabled:hover { color: #d9d9d9; border-color: #e8e8e8; }
+.merchant-order-pager .fc-select { min-width: 86px; }
+.merchant-order-pager .fc-input { height: 32px; }
+
+/* Footer note */
+.foot-note { margin-top: 14px; padding: 10px 16px; background: #f6f8fa; border: 1px solid #e8ecf0; border-radius: var(--radius); font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+.foot-note b { color: var(--text-body); font-weight: 600; }
+
+/* Toast */
+.toast { position: fixed; right: 24px; bottom: 24px; z-index: 2000; padding: 10px 18px; border-radius: var(--radius); background: #262626; color: #fff; font-size: 13px; box-shadow: 0 6px 16px rgba(0,0,0,.16); opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* Modal */
+.modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; justify-content: center; align-items: flex-start; padding-top: 80px; }
+.modal-mask.show { display: flex; }
+.modal-box { background: #fff; border-radius: 6px; width: 580px; max-height: 72vh; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+.modal-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-head h3 { font-size: 15px; font-weight: 600; }
+.modal-x { background: none; border: none; font-size: 18px; color: #999; cursor: pointer; }
+.modal-x:hover { color: #333; }
+.modal-body { padding: 20px; }
+.modal-foot { padding: 10px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.dtl { width: 100%; }
+.dtl td { padding: 7px 12px; border: none; font-size: 13px; height: auto; }
+.dtl td:first-child { color: var(--text-secondary); width: 110px; text-align: right; }
+
+.hidden { display: none !important; }
+
+/* Withdraw page balance cards */
+.balance-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.balance-card { flex: 1; min-width: 260px; background: var(--bg-surface); border-radius: 8px; padding: 20px 24px; box-shadow: var(--shadow-card); position: relative; }
+.balance-card.highlight { border: 2px dashed #fa8c16; background: linear-gradient(135deg, #fffbe6 0%, #fff7e6 100%); }
+.balance-card .bc-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+.balance-card .bc-value { font-size: 32px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); line-height: 1.2; }
+.balance-card .bc-unit { font-size: 14px; color: var(--text-secondary); margin-left: 6px; font-weight: 400; }
+.balance-card .bc-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.balance-card .bc-badge { position: absolute; top: 10px; left: 10px; background: #ff4d4f; color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; }
+.balance-card .bc-warn { font-size: 12px; color: #fa8c16; margin-top: 8px; }
+.withdraw-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 240px; background: var(--bg-surface); border-radius: 8px; padding: 20px 24px; box-shadow: var(--shadow-card); }
+.withdraw-right .wr-label { font-size: 13px; color: var(--text-secondary); }
+.withdraw-right .wr-addr { font-size: 16px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); letter-spacing: 1px; }
+.withdraw-right .wr-chain { font-size: 12px; color: var(--text-secondary); }
+.withdraw-right .wr-bal { font-size: 12px; color: var(--text-secondary); }
+.withdraw-right .wr-bal .no-bal { color: #fa8c16; font-weight: 600; }
+.btn-withdraw { height: 36px; padding: 0 28px; border-radius: 6px; border: none; background: linear-gradient(135deg, #722ed1, #9254de); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-withdraw:hover { background: linear-gradient(135deg, #9254de, #b37feb); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(114,46,209,.3); }
+
+/* Merchant mgmt table extras */
+.mgmt-stats { display: flex; gap: 24px; padding: 12px 0; font-size: 13px; color: var(--text-body); flex-wrap: wrap; }
+.mgmt-stats b { color: var(--text-primary); }
+.mgmt-stats .stat-val { color: var(--danger); font-weight: 600; }
+.mgmt-actions { display: flex; gap: 8px; padding: 8px 0 12px; flex-wrap: wrap; }
+.btn-orange { background: #fa8c16; color: #fff; border-color: #fa8c16; }
+.btn-orange:hover { background: #ffa940; border-color: #ffa940; color: #fff; }
+.btn-red { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
+.btn-red:hover { background: #ff7875; border-color: #ff7875; color: #fff; }
+.btn-green { background: #52c41a; color: #fff; border-color: #52c41a; }
+.btn-green:hover { background: #73d13d; border-color: #73d13d; color: #fff; }
+.col-new { background: #f0fffe; }
+.op-btn { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; color: #fff; cursor: pointer; margin-right: 4px; border: none; }
+.op-blue { background: var(--primary); }
+.op-green { background: var(--success); }
+.op-orange { background: #fa8c16; }
+.op-link { background: none; color: var(--primary); border: none; cursor: pointer; font-size: 12px; padding: 0 2px; }
+.op-link:hover { color: var(--primary-dark); text-decoration: underline; }
+.toggle-on { display: inline-block; width: 36px; height: 20px; border-radius: 10px; background: var(--primary); position: relative; cursor: pointer; }
+.toggle-on::after { content: ''; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+
+/* System switch indicator */
+.sys-badge { position: fixed; top: 8px; right: 20px; z-index: 100; padding: 4px 14px; border-radius: 12px; font-size: 11px; font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: all .3s; user-select: none; }
+.sys-badge:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.sys-badge::before { content: '⇄ '; font-size: 12px; }
+.sys-badge.admin { background: var(--primary-soft); color: var(--primary); border: 1px solid var(--primary-border); }
+.sys-badge.merchant { background: #f6ffed; color: var(--success); border: 1px solid #b7eb8f; }
+</style>
+</head>
+<body>
+<div class="sys-badge admin" id="sysBadge" onclick="switchSystem()" title="点击切换系统">蓝盛后台</div>
+<div class="app">
+
+<!-- ===== Sidebar ===== -->
+<div class="sidebar">
+  <div class="sidebar-brand admin" id="brandBar"><div class="sidebar-brand-inner" id="brandText">蓝盛支付</div></div>
+  <div class="sidebar-menu" id="sideMenu"></div>
+  <div style="padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0">
+    <button onclick="switchSystem()" style="width:100%;height:36px;border-radius:6px;border:1px dashed var(--border-input);background:#fafafa;color:var(--text-secondary);font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)';this.style.background='var(--primary-soft)'" onmouseout="this.style.borderColor='var(--border-input)';this.style.color='var(--text-secondary)';this.style.background='#fafafa'">
+      ⇄ 切换到<span id="switchLabel">商户端</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== Main ===== -->
+<div class="main">
+  <div class="tabbar" id="tabbar"></div>
+  <div class="content-scroll" id="contentArea"></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Order detail modal -->
+<div class="modal-mask" id="detailModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>订单详情</h3><button class="modal-x" onclick="closeModal()">&times;</button></div>
+    <div class="modal-body"><table class="dtl">
+      <tr><td>平台订单号</td><td class="mono">LS20260727001</td></tr>
+      <tr><td>商户订单号</td><td class="mono">M202607270001</td></tr>
+      <tr><td>商户</td><td>M00000306</td></tr>
+      <tr><td>币种</td><td><span class="tag tag-blue">TRX</span></td></tr>
+      <tr><td>订单金额</td><td class="mono">1,500.000000 TRX</td></tr>
+      <tr><td>实际到账</td><td class="mono">1,500.000000 TRX</td></tr>
+      <tr><td>收款地址</td><td class="mono" style="word-break:break-all;font-size:11px">TXk9rF2vN8pLqW3yH5jD6sA1cE4gB7iO0uZf3Qz</td></tr>
+      <tr><td>交易哈希</td><td class="mono" style="font-size:11px">7a3b8c2d1e5f9a0b4c6d8e2f1a3b5c7d9e0f2a4b</td></tr>
+      <tr><td>地址分配单号</td><td class="mono">AP-TRX-20260727-001</td></tr>
+      <tr><td>通道</td><td>地址池 TRX</td></tr>
+      <tr><td>状态</td><td><span class="tag tag-green">支付成功</span></td></tr>
+      <tr><td>创建时间</td><td>2026/07/27 10:23:15</td></tr>
+      <tr><td>支付时间</td><td>2026/07/27 10:25:03</td></tr>
+      <tr><td>商户回调</td><td><span class="tag tag-green">已回调</span></td></tr>
+    </table></div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal()">关闭</button><button class="btn" onclick="toast('已发起状态同步')">手动同步状态</button></div>
+  </div>
+</div>
+
+<div class="modal-mask" id="withdrawRequestModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>发起 TRX 提现</h3><button class="modal-x" onclick="closeWithdrawRequestModal()">&times;</button></div>
+    <div class="modal-body">
+      <p style="margin:0 0 16px;color:var(--text-secondary)">沿用既有商户下分流程：商户提交后，由后台完成审核、TG 确认和出款。</p>
+      <div class="filter-card" style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center">
+        <span>下分单类型</span><select class="fc-select"><option>单商户</option><option>多商户组合</option></select>
+        <span>收款钱包地址</span><span class="mono">TMn5kR9xW2pLqY7vH3jF8sB1cD6gA4iN0tZw7Yp</span>
+        <span>协议类型</span><span>TRON</span>
+        <span>TRX 可提现余额</span><strong class="mono">1,500.000000 TRX</strong>
+        <label for="withdrawAmount">提现金额</label><input id="withdrawAmount" class="fc-input" placeholder="请输入提现金额（最多 6 位小数）">
+        <label for="withdrawRemark">备注</label><input id="withdrawRemark" class="fc-input" placeholder="请输入备注">
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeWithdrawRequestModal()">取消</button><button class="btn btn-primary" onclick="submitWithdrawRequest()">确认提交</button></div>
+  </div>
+</div>
+
+<script>
+// ===== Data =====
+const PAGES = {
+  // Admin pages
+  'order': { sys:'admin', title:'虚拟币充值订单管理', menu:'代收管理', type:'order' },
+  'mc-flow': { sys:'admin', title:'商户代收流水记录', menu:'账户记录', type:'flow', entity:'商户名称', cols:['序号','商户名称','平台订单号','商户订单号','类型','币种','原金额','变动金额','变动后金额','变动时间','备注'] },
+  'ch-flow': { sys:'admin', title:'通道代收流水记录', menu:'账户记录', type:'flow', entity:'通道名称', cols:['序号','通道名称','平台订单号','商户订单号','类型','币种','原金额','变动金额','变动后金额','变动时间','备注'] },
+  'mc-prepay': { sys:'admin', title:'商户代收预付记录', menu:'账户记录', type:'flow', entity:'商户名称', cols:['序号','商户名称','平台订单号','商户订单号','类型','币种','原金额','变动金额','变动后金额','变动时间','备注'] },
+  'daily': { sys:'admin', title:'商户代收日终统计', menu:'日终数据统计', type:'daily', cols:['商户名称','订单金额','订单单量','成功订单量','成功率','商户服务费','期初余额','末期余额','期初预付','末期预付','操作'] },
+  // Merchant pages
+  'm-order': { sys:'merchant', title:'代收订单', menu:'代收管理', type:'order' },
+  'm-account': { sys:'merchant', title:'代收账户记录', menu:'代收管理', type:'flow', entity:'', cols:['序号','平台订单号','商户订单号','类型','币种','原金额','变动金额','变动后金额','变动时间','备注'] },
+  'm-withdraw': { sys:'merchant', title:'商户下发提现', menu:'', type:'withdraw' },
+  'merchant-mgmt': { sys:'admin', title:'代收商户管理', menu:'代收管理', type:'merchant-mgmt' },
+};
+
+const MENU_ADMIN = [
+  { label:'支付订单管理', icon:true, children:[] },
+  { label:'地址查询', icon:true },
+  { label:'代付管理', icon:true, children:[] },
+  { label:'代收管理', icon:true, open:true, children:[
+    { label:'代收商户管理', page:'merchant-mgmt' },
+    { label:'虚拟币充值订单管理', page:'order' },
+    { label:'代收订单管理' },
+    { label:'代收产品管理' },
+    { label:'代收通道管理' },
+  ]},
+  { label:'代理管理', icon:true, children:[] },
+  { label:'日终数据统计', icon:true, open:true, children:[
+    { label:'商户代收日终统计', page:'daily' },
+  ]},
+  { label:'账户记录', icon:true, open:true, children:[
+    { label:'通道代收流水记录', page:'ch-flow' },
+    { label:'通道代付流水记录' },
+    { label:'商户代收流水记录', page:'mc-flow' },
+    { label:'商户代付流水记录', page:'mp-flow' },
+    { label:'商户代付预付记录', page:'mp-prepay' },
+    { label:'商户代收预付记录', page:'mc-prepay' },
+    { label:'代理流水记录' },
+  ]},
+];
+const MENU_MERCHANT = [
+  { label:'订单管理', icon:true, open:true, children:[
+    { label:'代收订单', page:'m-order' },
+    { label:'代付订单' },
+    { label:'虚拟币充值订单管理' },
+    { label:'虚拟币代付订单管理' },
+    { label:'手动下单 NEW' },
+  ]},
+  { label:'虚拟货币工单中心', icon:true, children:[] },
+  { label:'账户记录', icon:true, children:[] },
+  { label:'预付记录', icon:true, children:[] },
+  { label:'日终统计', icon:true, children:[] },
+  { label:'商户下发提现', icon:true, page:'m-withdraw' },
+  { label:'子商户数据 NEW', icon:true },
+  { label:'对接信息', icon:true },
+];
+
+// Mock data
+const FLOW_CNY = [
+  {idx:197,entity:'M00000306',plat:'–',merch:'–',type:'后台调整',cur:'CNY',orig:'40000.00',delta:'-30000.00',after:'10000.00',time:'2026/07/22 16:31:03',remark:''},
+  {idx:196,entity:'M00000306',plat:'–',merch:'–',type:'后台调整',cur:'CNY',orig:'30000.00',delta:'+10000.00',after:'40000.00',time:'2026/07/22 16:30:27',remark:''},
+  {idx:195,entity:'M00000306',plat:'–',merch:'–',type:'后台调整',cur:'CNY',orig:'30000.00',delta:'0.00',after:'30000.00',time:'2026/07/15 10:46:09',remark:''},
+  {idx:192,entity:'M00000140',plat:'858309116397694976',merch:'ORD2026062611335936…',type:'代收',cur:'CNY',orig:'32411.00',delta:'+1.00',after:'32412.00',time:'2026/06/26 11:37:40',remark:'商户代收成功增…'},
+  {idx:191,entity:'M00000284',plat:'857417717890908160',merch:'ORD2026062400315381…',type:'代收',cur:'CNY',orig:'40000.00',delta:'+20.00',after:'40020.00',time:'2026/06/24 00:35:10',remark:'商户代收成功增…'},
+  {idx:188,entity:'M00000284',plat:'–',merch:'–',type:'结算',cur:'CNY',orig:'15000.00',delta:'+15000.00',after:'0.00',time:'2026/06/20 14:22:18',remark:''},
+];
+const FLOW_USDT = [
+  {idx:85,entity:'M00000306',plat:'860123456789012345',merch:'ORD2026072010123456…',type:'代收',cur:'USDT',orig:'1200.000000',delta:'+500.000000',after:'1700.000000',time:'2026/07/20 10:15:22',remark:'商户代收成功增…'},
+  {idx:84,entity:'M00000140',plat:'–',merch:'–',type:'后台调整',cur:'USDT',orig:'0.000000',delta:'+1000.000000',after:'1000.000000',time:'2026/07/18 09:00:00',remark:''},
+];
+const FLOW_TRX = [
+  {idx:1,entity:'M00000306',plat:'LS20260727001',merch:'M202607270001',type:'代收',cur:'TRX',orig:'0.000000',delta:'+1500.000000',after:'1500.000000',time:'2026/07/27 10:25:03',remark:'商户代收成功增…'},
+  {idx:2,entity:'M00000284',plat:'–',merch:'–',type:'后台调整',cur:'TRX',orig:'0.000000',delta:'+5000.000000',after:'5000.000000',time:'2026/07/27 09:00:00',remark:''},
+];
+const CH_CNY = [{idx:320,entity:'CNY 通道A',plat:'–',merch:'–',type:'后台调整',cur:'CNY',orig:'500000.00',delta:'+50000.00',after:'550000.00',time:'2026/07/22 16:31:03',remark:''}];
+const CH_USDT = [{idx:120,entity:'地址池 USDT',plat:'860123456789012345',merch:'ORD2026072010123456…',type:'代收',cur:'USDT',orig:'8500.000000',delta:'+500.000000',after:'9000.000000',time:'2026/07/20 10:15:22',remark:'通道代收成功增…'}];
+const CH_TRX = [{idx:1,entity:'地址池 TRX',plat:'LS20260727001',merch:'M202607270001',type:'代收',cur:'TRX',orig:'0.000000',delta:'+1500.000000',after:'1500.000000',time:'2026/07/27 10:25:03',remark:'通道代收成功增…',isNew:true}];
+const PREPAY_CNY = [{idx:50,entity:'M00000306',plat:'–',merch:'–',type:'充值',cur:'CNY',orig:'0.00',delta:'+100000.00',after:'100000.00',time:'2026/07/01 10:00:00',remark:'预付充值'}];
+const PREPAY_USDT = [{idx:20,entity:'M00000306',plat:'–',merch:'–',type:'充值',cur:'USDT',orig:'0.000000',delta:'+5000.000000',after:'5000.000000',time:'2026/07/10 14:00:00',remark:'预付充值'}];
+const PREPAY_TRX = [{idx:1,entity:'M00000306',plat:'–',merch:'–',type:'充值',cur:'TRX',orig:'0.000000',delta:'+10000.000000',after:'10000.000000',time:'2026/07/27 08:00:00',remark:'预付充值',isNew:true}];
+const DAILY_CNY = [{entity:'M00000306',amt:'32411.00',cnt:15,ok:14,rate:'93.33%',fee:'324.11',b0:'10000.00',b1:'42087.89',p0:'100000.00',p1:'99675.89'},{entity:'M00000284',amt:'20020.00',cnt:8,ok:8,rate:'100%',fee:'200.20',b0:'40000.00',b1:'60020.00',p0:'0.00',p1:'0.00'}];
+const DAILY_USDT = [{entity:'M00000306',amt:'500.000000',cnt:1,ok:1,rate:'100%',fee:'5.000000',b0:'1200.000000',b1:'1700.000000',p0:'5000.000000',p1:'5000.000000'}];
+const DAILY_TRX = [{entity:'M00000306',amt:'1500.000000',cnt:1,ok:1,rate:'100%',fee:'15.000000',b0:'0.000000',b1:'1500.000000',p0:'10000.000000',p1:'10000.000000'}];
+const PAYOUT_FLOW_CNY = [
+  {idx:80,entity:'M00000306',plat:'–',merch:'–',type:'后台调整',cur:'CNY',orig:'100000.00',delta:'-20000.00',after:'80000.00',time:'2026/07/20 15:00:00',remark:''},
+  {idx:79,entity:'M00000284',plat:'857417717890908160',merch:'ORD2026062400315381…',type:'代付',cur:'CNY',orig:'40020.00',delta:'-20.00',after:'40000.00',time:'2026/06/24 01:00:00',remark:'代付出金'},
+];
+const PAYOUT_FLOW_USDT = [
+  {idx:30,entity:'M00000306',plat:'860999888777666555',merch:'ORD2026071900123456…',type:'代付',cur:'USDT',orig:'1700.000000',delta:'-200.000000',after:'1500.000000',time:'2026/07/19 14:30:00',remark:'代付出金'},
+];
+const PAYOUT_PREPAY_CNY = [
+  {idx:10,entity:'M00000306',plat:'–',merch:'–',type:'充值',cur:'CNY',orig:'0.00',delta:'+200000.00',after:'200000.00',time:'2026/06/01 10:00:00',remark:'代付预付充值'},
+];
+const PAYOUT_PREPAY_USDT = [
+  {idx:5,entity:'M00000306',plat:'–',merch:'–',type:'充值',cur:'USDT',orig:'0.000000',delta:'+10000.000000',after:'10000.000000',time:'2026/06/15 10:00:00',remark:'代付预付充值'},
+];
+const ORDERS = [
+  {idx:1,plat:'LS20260727001',merch:'M202607270001',name:'M00000306',cur:'TRX',amt:'1,500.000000',real:'1,500.000000',addr:'TXk9rF…f3Qz',status:'支付成功',statusCls:'tag-green',time:'2026/07/27 10:23:15',isNew:true},
+  {idx:2,plat:'LS20260727002',merch:'M202607270002',name:'M00000306',cur:'TRX',amt:'200.500000',real:'–',addr:'TNp2mK…k8Wd',status:'待支付',statusCls:'tag-orange',time:'2026/07/27 11:05:42',isNew:true},
+  {idx:3,plat:'LS20260727003',merch:'M202607270003',name:'M00000284',cur:'TRX',amt:'50.000000',real:'–',addr:'TQw7nL…m2Xa',status:'支付失败',statusCls:'tag-red',time:'2026/07/27 09:15:33',isNew:true},
+  {idx:4,plat:'LS20260727004',merch:'M202607270004',name:'M00000284',cur:'TRX',amt:'800.000000',real:'–',addr:'TRs4pJ…j9Lp',status:'已过期',statusCls:'tag-gray',time:'2026/07/27 08:00:12',isNew:true},
+  {idx:5,plat:'LS20260726015',merch:'M202607260015',name:'M00000140',cur:'USDT',amt:'500.000000',real:'500.000000',addr:'TYu3qH…n5Rb',status:'支付成功',statusCls:'tag-green',time:'2026/07/26 16:42:08'},
+];
+
+// ===== State =====
+let curPage = 'mc-flow';
+let curCurrency = 'CNY';
+let openTabs = ['order','mc-flow'];
+let curSys = 'admin';
+
+// ===== Helpers =====
+const $ = id => document.getElementById(id);
+let toastTimer;
+function toast(msg) { clearTimeout(toastTimer); const t=$('toast'); t.textContent=msg; t.classList.add('show'); toastTimer=setTimeout(()=>t.classList.remove('show'),2400); }
+function openModal() { $('detailModal').classList.add('show'); }
+function closeModal() { $('detailModal').classList.remove('show'); }
+$('detailModal').addEventListener('click', e => { if(e.target===$('detailModal')) closeModal(); });
+function openWithdrawRequestModal() { $('withdrawRequestModal').classList.add('show'); }
+function closeWithdrawRequestModal() { $('withdrawRequestModal').classList.remove('show'); }
+function submitWithdrawRequest() { closeWithdrawRequestModal(); toast('TRX 提现申请已提交，等待后台审核与 TG 确认'); }
+$('withdrawRequestModal').addEventListener('click', e => { if(e.target===$('withdrawRequestModal')) closeWithdrawRequestModal(); });
+
+function deltaClass(v) { if(v.startsWith('+')) return 'amt-pos'; if(v.startsWith('-')) return 'amt-neg'; return 'amt-zero'; }
+
+// ===== Render sidebar =====
+function renderMenu() {
+  const menu = curSys==='admin' ? MENU_ADMIN : MENU_MERCHANT;
+  let html = '';
+  menu.forEach(g => {
+    if(g.children && g.children.length) {
+      const open = g.open ? ' open' : '';
+      html += `<div class="menu-item" onclick="toggleMenu(this)"><span class="mi-icon"></span>${g.label}<span class="mi-arrow${open}">▾</span></div>`;
+      html += `<div class="menu-sub${g.open?'':' hidden'}">`;
+      g.children.forEach(c => {
+        const active = c.page === curPage ? ' active' : '';
+        const click = c.page ? ` onclick="go('${c.page}')"` : '';
+        html += `<div class="menu-item${active}"${click}>${c.label}</div>`;
+      });
+      html += '</div>';
+    } else if(g.children !== undefined) {
+      html += `<div class="menu-item" onclick="toggleMenu(this)"><span class="mi-icon"></span>${g.label}<span class="mi-arrow">▾</span></div><div class="menu-sub hidden"></div>`;
+    } else if(g.page) {
+      const active = g.page === curPage ? ' active' : '';
+      html += `<div class="menu-item${active}" onclick="go('${g.page}')"><span class="mi-icon"></span>${g.label}</div>`;
+    } else {
+      html += `<div class="menu-item"><span class="mi-icon"></span>${g.label}</div>`;
+    }
+  });
+  $('sideMenu').innerHTML = html;
+}
+function toggleMenu(el) {
+  const sub = el.nextElementSibling;
+  if(sub && sub.classList.contains('menu-sub')) { sub.classList.toggle('hidden'); const a=el.querySelector('.mi-arrow'); if(a) a.classList.toggle('open'); }
+}
+
+// ===== Render tab bar =====
+function renderTabs() {
+  $('tabbar').innerHTML = openTabs.map(k => {
+    const p = PAGES[k]; if(!p) return '';
+    const active = k===curPage ? ' active' : '';
+    return `<div class="ttab${active}" onclick="go('${k}')"><span class="tdot"></span>${p.title}<span class="tclose" onclick="event.stopPropagation();closeTab('${k}')">&times;</span></div>`;
+  }).join('');
+}
+function closeTab(k) {
+  openTabs = openTabs.filter(t=>t!==k);
+  if(curPage===k && openTabs.length) curPage=openTabs[openTabs.length-1];
+  if(!openTabs.length) { openTabs=['mc-flow']; curPage='mc-flow'; }
+  render();
+}
+
+// ===== Render page content =====
+function renderContent() {
+  const p = PAGES[curPage]; if(!p) return;
+  let html = `<div class="page-title">${p.title}</div>`;
+
+  if(p.type==='order') {
+    html += renderOrderPage(p);
+  } else if(p.type==='flow') {
+    html += renderFlowPage(p);
+  } else if(p.type==='daily') {
+    html += renderDailyPage(p);
+  } else if(p.type==='withdraw') {
+    html += renderWithdrawPage(p);
+  } else if(p.type==='merchant-mgmt') {
+    html += renderMerchantMgmtPage(p);
+  }
+  $('contentArea').innerHTML = html;
+  // bind tab clicks
+  document.querySelectorAll('.curr-tab').forEach(t => {
+    t.addEventListener('click', () => { curCurrency=t.dataset.cur; renderContent(); toast(curCurrency+' 数据已刷新'); });
+  });
+}
+
+function renderOrderPage(p) {
+  if(p.sys==='merchant') return renderMerchantCollectOrderPage();
+
+  const isMerchant = p.sys==='merchant';
+  let f = `<div class="filter-card">
+    <input class="fc-input" placeholder="平台订单号"><input class="fc-input" placeholder="商户订单号">
+    <select class="fc-select"><option>全部状态</option><option>待支付</option><option>支付成功</option><option>支付失败</option><option>已过期</option></select>
+    <select class="fc-select"><option>全部币种</option><option>USDT</option><option selected>TRX</option></select>`;
+  if(!isMerchant) f += `<input class="fc-input" placeholder="商户名称" style="width:120px">`;
+  f += `<input class="fc-input" type="date" value="2026-07-27" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" type="date" value="2026-07-27" style="width:130px">
+    <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button><button class="btn" onclick="toast('已重置')">重置</button>`;
+  if(!isMerchant) f += `<button class="btn" onclick="toast('已准备导出')">导出</button>`;
+  f += `</div>`;
+
+  const data = isMerchant ? ORDERS.filter(o=>o.cur==='TRX') : ORDERS;
+  let cols = isMerchant
+    ? ['序号','平台订单号','商户订单号','币种','订单金额','实际到账','状态','创建时间','操作']
+    : ['序号','平台订单号','商户订单号','商户名称','币种','订单金额','实际到账','收款地址','状态','创建时间','操作'];
+  let rows = data.map(o => {
+    let tds = `<td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.merch}</td>`;
+    if(!isMerchant) tds += `<td>${o.name}</td>`;
+    tds += `<td><span class="tag tag-blue">${o.cur}</span>${o.isNew?'<span class="badge-new">NEW</span>':''}</td>`;
+    tds += `<td class="mono">${o.amt}</td><td class="mono">${o.real}</td>`;
+    if(!isMerchant) tds += `<td class="mono" style="font-size:11px">${o.addr}</td>`;
+    tds += `<td><span class="tag ${o.statusCls}">${o.status}</span></td><td>${o.time}</td>`;
+    tds += `<td><button class="btn btn-sm" onclick="openModal()">详情</button></td>`;
+    return `<tr>${tds}</tr>`;
+  }).join('');
+
+  return f + `<div class="table-card"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span></div>
+  <div class="foot-note"><b>说明：</b>TRX 代收订单在既有${isMerchant?'商户端':''}代收订单列表中展示，币种筛选新增 TRX。金额 6 位小数，状态复用既有体系。</div>`;
+}
+
+function renderMerchantCollectOrderPage() {
+  const data = ORDERS.filter(o=>o.cur==='TRX');
+  const finishTime = {
+    LS20260727001:'2026/07/27 10:25:03',
+    LS20260727003:'2026/07/27 11:47:18',
+    LS20260727004:'2026/07/27 12:10:00'
+  };
+  const f = `<div class="filter-card merchant-order-filter">
+    <input class="fc-input" placeholder="平台订单号"><input class="fc-input" placeholder="商户订单号">
+    <select class="fc-select"><option>全部状态</option><option>待支付</option><option>支付成功</option><option>支付失败</option><option>已过期</option></select>
+    <select class="fc-select"><option>全部通道</option><option>蓝盛地址池（TRX）</option></select>
+    <select class="fc-select"><option>全部币种</option><option>USDT</option><option selected>TRX</option></select>
+    <input class="fc-input" placeholder="创建起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="创建结束时间" style="width:130px">
+    <input class="fc-input" placeholder="完成起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="完成结束时间" style="width:130px">
+    <label class="auto-refresh">自动刷新 <span class="switch"><i></i></span></label>
+    <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备导出')">导出</button>
+  </div>`;
+  const summaries = [
+    ['总金额','2,550.500000 TRX'],['订单量','4'],['成交金额','1,500.000000 TRX'],['成功订单量','1'],
+    ['商户服务费','0.000000 TRX'],['商户代理费','0.000000 TRX'],['通道服务费','0.000000 TRX'],['通道代理费','0.000000 TRX'],['平台利润','0.000000 TRX'],['成功率','25%']
+  ];
+  const summary = `<div class="order-summary">${summaries.map(([label,value])=>`<span>${label} <b>${value}</b></span>`).join('')}</div>`;
+  const cols = ['平台订单号','商户订单号','通道','产品','币种','订单金额','交易金额','状态','提交时间','结束时间'];
+  const rows = data.map(o => `<tr>
+    <td class="mono">${o.plat}</td><td class="mono">${o.merch}</td><td>蓝盛地址池（TRX）</td><td>TRX 代收</td>
+    <td><span class="tag tag-blue">TRX</span>${o.isNew?'<span class="badge-new">NEW</span>':''}</td><td class="mono">${o.amt}</td><td class="mono">${o.real}</td>
+    <td><span class="tag ${o.statusCls}">${o.status}</span></td><td>${o.time}</td><td>${finishTime[o.plat]||'—'}</td>
+  </tr>`).join('');
+
+  return f + summary + `<div class="table-card merchant-order-table"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="pager merchant-order-pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select"><option>10条/页</option></select><span>前往</span><input class="fc-input" value="1" style="width:48px"></div>
+  <div class="foot-note"><b>说明：</b>以现有商户端代收订单字段为基线，币种筛选与币种列支持 USDT / TRX；TRX 金额最多保留 6 位小数。</div>`;
+}
+
+function renderFlowPage(p) {
+  const datasets = { CNY: getFlowData(p,'CNY'), USDT: getFlowData(p,'USDT'), TRX: getFlowData(p,'TRX') };
+  let f = `<div class="filter-card">
+    <input class="fc-input" placeholder="平台订单号"><input class="fc-input" placeholder="商户订单号">
+    <select class="fc-select"><option>全部类型</option><option>代收</option><option>后台调整</option><option>结算</option><option>充值</option></select>
+    <input class="fc-input" placeholder="变更起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="变更结束时间" style="width:130px">`;
+  if(p.entity) f += `<select class="fc-select"><option>全部${p.entity.replace('名称','')}</option></select>`;
+  f += `<button class="btn btn-primary" onclick="toast('已搜索 '+curCurrency)">搜索</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备 '+curCurrency+' 导出')">导出</button></div>`;
+
+  let tabs = `<div class="curr-tabs">`;
+  ['CNY','USDT','TRX'].forEach(c => {
+    const active = c===curCurrency?' active':'';
+    const isNew = c==='TRX'?' is-new':'';
+    tabs += `<div class="curr-tab${active}${isNew}" data-cur="${c}">${c}</div>`;
+  });
+  tabs += `</div>`;
+
+  const data = datasets[curCurrency] || [];
+  const cols = p.cols;
+  let rows = data.map(r => {
+    let tds = '';
+    cols.forEach(c => {
+      if(c==='序号') tds += `<td>${r.idx}</td>`;
+      else if(c===p.entity) tds += `<td>${r.entity}${r.isNew?'<span class="badge-new">NEW</span>':''}</td>`;
+      else if(c==='平台订单号') tds += `<td class="mono">${r.plat}</td>`;
+      else if(c==='商户订单号') tds += `<td class="mono" style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${r.merch}</td>`;
+      else if(c==='类型') tds += `<td>${r.type}</td>`;
+      else if(c==='币种') tds += `<td>${r.cur}</td>`;
+      else if(c==='原金额') tds += `<td class="mono">${r.orig}</td>`;
+      else if(c==='变动金额') tds += `<td><span class="${deltaClass(r.delta)}">${r.delta}</span></td>`;
+      else if(c==='变动后金额') tds += `<td class="mono">${r.after}</td>`;
+      else if(c==='变动时间') tds += `<td>${r.time}</td>`;
+      else if(c==='备注') tds += `<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis" title="${r.remark}">${r.remark}</td>`;
+      else tds += `<td>–</td>`;
+    });
+    return `<tr>${tds}</tr>`;
+  }).join('');
+  if(!rows) rows = `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:#999">暂无 ${curCurrency} 数据</td></tr>`;
+
+  return f + tabs + `<div class="table-card"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span>${data.length>10?'<span class="pager-btn">2</span>':''}<span class="pager-btn disabled">&gt;</span></div>
+  <div class="foot-note"><b>说明：</b>TRX tab 为本期新增，与 CNY / USDT 并列。表头结构、筛选条件、分页、导出与既有 tab 完全一致。金额以 TRX 为单位，6 位小数。变动金额正数绿色、负数红色。</div>`;
+}
+
+function getFlowData(p, cur) {
+  if(p.title.includes('通道')) return cur==='CNY'?CH_CNY:cur==='USDT'?CH_USDT:CH_TRX;
+  if(p.title.includes('代收预付')) return cur==='CNY'?PREPAY_CNY:cur==='USDT'?PREPAY_USDT:PREPAY_TRX;
+  // merchant account - determine by menu
+  if(p.sys==='merchant') {
+    return cur==='CNY'?FLOW_CNY.filter(r=>r.type==='代收'):cur==='USDT'?FLOW_USDT.filter(r=>r.type==='代收'):FLOW_TRX.filter(r=>r.type==='代收');
+  }
+  return cur==='CNY'?FLOW_CNY:cur==='USDT'?FLOW_USDT:FLOW_TRX;
+}
+
+function renderDailyPage(p) {
+  const datasets = { CNY: DAILY_CNY, USDT: DAILY_USDT, TRX: DAILY_TRX };
+  let f = `<div class="filter-card">
+    <select class="fc-select"><option>全部商户</option><option>M00000306</option><option>M00000284</option></select>
+    <input class="fc-input" type="date" value="2026-07-27" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" type="date" value="2026-07-27" style="width:130px">
+    <button class="btn btn-primary" onclick="toast('已搜索 '+curCurrency)">搜索</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备 '+curCurrency+' 导出')">导出</button></div>`;
+
+  let tabs = `<div class="curr-tabs">`;
+  ['CNY','USDT','TRX'].forEach(c => {
+    const active = c===curCurrency?' active':'';
+    const isNew = c==='TRX'?' is-new':'';
+    tabs += `<div class="curr-tab${active}${isNew}" data-cur="${c}">${c}</div>`;
+  });
+  tabs += `</div>`;
+
+  const data = datasets[curCurrency] || [];
+  const cols = p.cols;
+  let rows = data.map(r => {
+    return `<tr><td>${r.entity}</td><td class="mono">${r.amt}</td><td>${r.cnt}</td><td>${r.ok}</td><td>${r.rate}</td><td class="mono">${r.fee}</td><td class="mono">${r.b0}</td><td class="mono">${r.b1}</td><td class="mono">${r.p0}</td><td class="mono">${r.p1}</td><td><button class="btn btn-sm">详情</button></td></tr>`;
+  }).join('');
+  if(!rows) rows = `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:#999">暂无 ${curCurrency} 数据</td></tr>`;
+
+  return f + tabs + `<div class="table-card"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span></div>
+  <div class="foot-note"><b>说明：</b>TRX tab 新增。宽表指标（订单金额、服务费、余额、预付）以 TRX 为单位，6 位小数。合计只合计当前 tab 币种。导出只导出当前 tab。</div>`;
+}
+
+// ===== System switch =====
+function switchSystem() {
+  if(curSys === 'admin') {
+    go('m-withdraw');
+  } else {
+    go('mc-flow');
+  }
+  toast('已切换到' + (curSys==='admin' ? '蓝盛后台' : '商户端后台'));
+}
+
+// ===== Navigation =====
+function go(pageKey, skipHash) {
+  const p = PAGES[pageKey]; if(!p) return;
+  if(p.sys !== curSys) {
+    curSys = p.sys;
+    $('brandBar').className = 'sidebar-brand ' + curSys;
+    $('brandText').textContent = curSys==='admin' ? '蓝盛支付' : '商户中心';
+    $('sysBadge').className = 'sys-badge ' + curSys;
+    $('sysBadge').textContent = curSys==='admin' ? '蓝盛后台' : '商户端后台';
+  }
+  curPage = pageKey;
+  curCurrency = 'CNY';
+  if(!openTabs.includes(pageKey)) openTabs.push(pageKey);
+  if(!skipHash) {
+    try {
+      const url = new URL(location.href);
+      url.hash = pageKey;
+      history.replaceState(null, '', url);
+    } catch (_) {}
+  }
+  render();
+}
+
+function render() {
+  renderMenu();
+  renderTabs();
+  renderContent();
+  var sl = document.getElementById('switchLabel');
+  if(sl) sl.textContent = curSys==='admin' ? '商户端' : '蓝盛后台';
+}
+
+// ===== Withdraw page (商户下发提现) =====
+function renderWithdrawPage(p) {
+  let html = `<div class="page-title" style="display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:var(--primary);border-radius:2px;display:inline-block"></span>余额下发提现</div>`;
+
+  // Balance cards row
+  html += `<div class="balance-row">
+    <div class="balance-card">
+      <div class="bc-label">商户 USDT 余额（可提现）</div>
+      <div class="bc-value">5,000.00<span class="bc-unit">USDT</span></div>
+      <div class="bc-sub">来源：主池收款，提现上限即此可提现余额</div>
+    </div>
+    <div class="balance-card" style="border:2px solid #13c2c2;background:linear-gradient(135deg,#e6fffb 0%,#f0fffe 100%)">
+      <div class="bc-badge" style="background:#13c2c2">NEW</div>
+      <div class="bc-label" style="margin-top:8px">商户 TRX 余额（可提现）</div>
+      <div class="bc-value">1,500.000000<span class="bc-unit">TRX</span></div>
+      <div class="bc-sub">来源：TRX 代收成功入账</div>
+    </div>
+    <div class="balance-card highlight">
+      <div class="bc-badge">NEW</div>
+      <div class="bc-label" style="margin-top:8px">📋 自有地址累计收款</div>
+      <div class="bc-value">¥ 0.00</div>
+      <div class="bc-sub">0.00 USDT</div>
+      <div class="bc-warn">⚠ 此金额不参与提现（资金沉淀在商户自有钱包）</div>
+    </div>
+    <div class="withdraw-right">
+      <div class="wr-label">TRX 提现钱包地址</div>
+      <div class="wr-addr">TMn5kR9x******4iN0tZw7Yp</div>
+      <div class="wr-chain">TRON · 如需修改请联系客服</div>
+      <div class="wr-bal">当前余额：<span class="no-bal">1,500.000000 TRX</span></div>
+      <button class="btn-withdraw" onclick="openWithdrawRequestModal()">📋 发起 TRX 提现</button>
+    </div>
+  </div>`;
+
+  // Filters
+  html += `<div class="filter-card" style="margin-bottom:16px">
+    <select class="fc-select"><option>下分单类型</option><option>单</option><option>组合</option></select>
+    <select class="fc-select"><option>状态</option><option>已完成</option><option>已取消</option><option>审核中</option></select>
+    <select class="fc-select"><option>币种</option><option>USDT</option><option selected>TRX</option></select>
+    <select class="fc-select"><option>协议类型</option><option>TRC20</option></select>
+    <input class="fc-input" placeholder="请输入收款地址" style="width:200px">
+    <button class="btn btn-primary" onclick="toast('已搜索')">🔍 搜索</button>
+    <button class="btn" onclick="toast('已准备导出')">📥 导出数据</button>
+  </div>`;
+
+  // Table
+  const cols = ['序号','单号','下分单类型','提现商户','提现金额','手续费','审核图片','到账金额','币种','收款钱包地址','协议类型','状态','备注'];
+  const rows = [
+    {idx:3,no:'LS-W20260727001',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'500.000000',fee:'2.500000',img:'–',real:'497.500000',cur:'TRX',addr:'TMn5kR9xW2pLqY7vH3jF8sB1cD6gA4iN0tZw7Yp',proto:'TRON',status:'待处理',statusCls:'tag-orange',remark:'等待后台审核与 TG 确认',isNew:true},
+    {idx:2,no:'CMB2026052010392365000l',type:'组合<br><span style="color:#fa8c16;font-size:11px">+2户</span>',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'600.00',fee:'0.00',img:'–',real:'600.00',cur:'USDT',addr:'TYvJU4XQ9XEw9ouJkBb7bsjfJ8EcaH1i',proto:'TRC20',status:'已取消',statusCls:'tag-gray',remark:''},
+    {idx:1,no:'ORD2026051414295098000l',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'5,000.00',fee:'2.00',img:'–',real:'4,998.00',cur:'USDT',addr:'TYvJU4XQ9XEw9ouJkBb7bsjfJ8EcaH1i',proto:'TRC20',status:'已完成',statusCls:'tag-green',remark:''},
+  ];
+  let trs = rows.map(r => `<tr${r.isNew?' style="background:#f0fffe"':''}>
+    <td>${r.idx}</td><td class="mono" style="font-size:11px">${r.no}</td><td>${r.type}</td><td>${r.merchant}</td>
+    <td class="mono">${r.amt}</td><td class="mono" style="color:var(--danger)">${r.fee}</td><td>${r.img}</td>
+    <td class="mono" style="color:var(--success)">${r.real}</td><td>${r.cur}${r.isNew?'<span class="badge-new">NEW</span>':''}</td>
+    <td class="mono" style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${r.addr}</td>
+    <td><span class="tag tag-blue">${r.proto}</span></td><td><span class="tag ${r.statusCls}">${r.status}</span></td><td>${r.remark}</td>
+  </tr>`).join('');
+
+  html += `<div class="table-card"><table style="min-width:1300px"><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${trs}</tbody></table></div>`;
+  html += `<div class="pager"><span>共 3 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select" style="height:28px;min-width:80px"><option>10条/页</option></select><span style="font-size:12px">前往</span><input class="fc-input" style="width:40px;height:28px;text-align:center" value="1"><span style="font-size:12px">页</span></div>`;
+
+  html += `<div class="foot-note"><b>说明：</b>TRX 余额卡片展示商户 TRX 代收成功后的可提现余额。商户只能在本页发起 TRX 提现，后台按既有商户下分流程审核、TG 确认和出款；不提供 TRX 代付入口。</div>`;
+  return html;
+}
+
+// ===== Merchant management page (代收商户管理) =====
+function renderMerchantMgmtPage(p) {
+  let html = `<div class="page-title">代收商户管理</div>`;
+
+  // Filters
+  html += `<div class="filter-card">
+    <span style="font-size:13px;color:var(--text-secondary)">商户号</span><input class="fc-input" placeholder="请输入商户号">
+    <span style="font-size:13px;color:var(--text-secondary)">商户名称</span><input class="fc-input" value="PM" style="width:100px">
+    <span style="font-size:13px;color:var(--text-secondary)">账户状态</span><select class="fc-select"><option>请选择</option></select>
+    <select class="fc-select"><option>直接输入或选择代理</option></select>
+    <button class="btn btn-primary" onclick="toast('已查询')">查询</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备导出')">导出</button>
+  </div>`;
+
+  // Stats
+  html += `<div class="mgmt-stats">
+    <span>商户数量：<b>1</b></span>
+    <span>总余额：<span class="stat-val">0.00元</span></span>
+    <span>剩余预付：<span class="stat-val">0.00元</span></span>
+    <span>总代收交易笔数：<span class="stat-val">0</span></span>
+  </div>`;
+
+  // Action buttons
+  html += `<div class="mgmt-actions">
+    <button class="btn btn-orange" onclick="toast('已全部开启')">全部开启</button>
+    <button class="btn btn-red" onclick="toast('已全部关闭')">全部关闭</button>
+    <button class="btn btn-orange" onclick="toast('已结算人民币余额')">一键结算人民币余额</button>
+    <button class="btn btn-orange" onclick="toast('已结算USDT余额')">一键结算USDT余额</button>
+  </div>`;
+
+  // Table
+  const cols = ['','今日成交','余额','预付','剩余预付','代收状态','操作'];
+  let row = `<tr>
+    <td><input type="checkbox"></td>
+    <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value mono">0</span></div><div class="asset-line"><span class="tag tag-blue">USDT</span><span class="asset-value mono">0</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value mono">1500.000000</span></div></div></td>
+    <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value mono">0.00 <button class="op-link">调整</button> <button class="op-link">下发</button></span></div><div class="asset-line"><span class="tag tag-blue">USDT</span><span class="asset-value mono">5000.00 <button class="op-link">调整</button> <button class="op-link">下发</button></span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value mono">1500.000000</span></div></div></td>
+    <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value mono">0.00 <button class="op-link">调整</button></span></div><div class="asset-line"><span class="tag tag-blue">USDT</span><span class="asset-value mono">220.00 <button class="op-link">调整</button></span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value asset-empty">—</span></div></div></td>
+    <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value mono">0.00 <button class="op-link" style="color:var(--success)">结算</button></span></div><div class="asset-line"><span class="tag tag-blue">USDT</span><span class="asset-value mono">-4780.00 <button class="op-link" style="color:var(--success)">结算</button></span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value asset-empty">—</span></div></div></td>
+    <td><span class="toggle-on"></span></td>
+    <td><button class="op-btn op-blue">代收产品</button><button class="op-btn op-green">测试下单</button><button class="op-btn op-orange">对接</button></td>
+  </tr>`;
+
+  html += `<div class="table-card"><table style="min-width:1020px"><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${row}</tbody></table></div>`;
+  html += `<div class="pager"><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select" style="height:28px;min-width:80px"><option>10条/页</option></select><span style="font-size:12px">共 1 条</span></div>`;
+
+  html += `<div class="foot-note"><b>说明：</b>余额、预付及剩余预付均在同一栏位内按 CNY、USDT、TRX 分行展示，操作只作用于同行币种。TRX 仅展示代收成功后的可用余额，不提供调整、下发、结算或一键结算，商户转出只能从商户下分发起。</div>`;
+  return html;
+}
+
+// Init：统一入口注入 __BP_BOOT__ / __BP_SURFACE__；hash / ?page= 兜底
+const surface = (typeof window !== 'undefined' && window.__BP_SURFACE__) || '';
+const bootKey = (typeof window !== 'undefined' && window.__BP_BOOT__) || location.hash.slice(1) || new URLSearchParams(location.search).get('page') || '';
+let start = 'mc-flow';
+if (PAGES[bootKey]) start = bootKey;
+else if (surface === 'MERCHANT') start = 'm-order';
+else if (surface === 'ADMIN') start = 'merchant-mgmt';
+// 端锁定：禁止切到另一端
+const _go = go;
+go = function(pageKey, skipHash) {
+  const p = PAGES[pageKey]; if (!p) return;
+  if (surface === 'MERCHANT' && p.sys !== 'merchant') { toast('当前为商户端'); return; }
+  if (surface === 'ADMIN' && p.sys !== 'admin') { toast('当前为后台'); return; }
+  _go(pageKey, skipHash || !!(typeof window !== 'undefined' && window.__BP_EMBED__));
+};
+if (typeof window !== 'undefined' && window.__BP_EMBED__) {
+  const badge = document.getElementById('sysBadge');
+  if (badge) badge.style.display = 'none';
+}
+go(start, true);
+</script>
+</body>
+</html>

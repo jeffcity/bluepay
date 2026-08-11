@@ -21,12 +21,49 @@
     .nav-btn:hover{color:var(--blue);background:#f8faff}
     .nav-btn:focus-visible{outline:3px solid rgba(56,103,214,.24);outline-offset:-4px}
     .nav-btn.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--blue-soft)}
+    .body{min-height:0;display:grid;grid-template-columns:220px minmax(0,1fr)}
+    .side{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:auto}
+    .side-head{padding:14px 16px 6px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+    .side-group{padding:4px 0 8px}
+    .side-group-title{padding:8px 16px 4px;font-size:12px;color:#98a2b3;font-weight:650}
+    .side-btn{width:100%;text-align:left;border:0;border-radius:0;background:transparent;color:#4b5568;padding:10px 16px 10px 28px;font-size:13px;font-weight:650;line-height:1.35;border-left:3px solid transparent}
+    .side-btn:hover{background:#f5f8ff;color:var(--blue)}
+    .side-btn:focus-visible{outline:3px solid rgba(56,103,214,.24);outline-offset:-3px}
+    .side-btn.active{background:var(--blue-soft);color:var(--blue);border-left-color:var(--blue);font-weight:750}
+    .side-empty{padding:18px 16px;color:var(--muted);font-size:13px;line-height:1.55}
+    .merchant-crumb{display:none;align-items:center;height:100%;padding:0 28px;color:#647085;font-size:14px;font-weight:650}
+    .merchant-reference-mode .topbar{padding:0;background:#fff}
+    .merchant-reference-mode .brand{width:220px;height:64px;margin:0;padding:0 22px;color:#fff;background:#1b2940;box-shadow:none;border-radius:0;font-size:18px}
+    .merchant-reference-mode .brand-mark{width:34px;height:34px;border-radius:8px;background:#6e5bc5;box-shadow:none}
+    .merchant-reference-mode .main-nav{display:none}
+    .merchant-reference-mode .merchant-crumb{display:flex}
+    .side.merchant-reference{background:linear-gradient(180deg,#1b2940 0%,#142036 100%);border-right:0}
+    .side.merchant-reference .side-head{display:none}
+    .merchant-reference .side-nav{padding:12px 10px}
+    .merchant-reference-group{margin:0 0 8px}
+    .merchant-reference-head,.merchant-reference-leaf{width:100%;min-height:46px;display:flex;align-items:center;gap:11px;padding:0 12px;color:#c3ccdb;background:transparent;border:0;border-radius:7px;font-size:14px;font-weight:650;text-align:left}
+    .merchant-reference-head{cursor:pointer}
+    .merchant-reference-head:hover,.merchant-reference-leaf:hover{color:#fff;background:rgba(255,255,255,.06)}
+    .merchant-reference-icon{width:16px;height:16px;flex:0 0 auto;border:1.5px solid currentColor;border-radius:3px;opacity:.85}
+    .merchant-reference-arrow{margin-left:auto;color:#aab6c7;font-size:13px;transition:transform .18s ease}
+    .merchant-reference-head[aria-expanded="true"] .merchant-reference-arrow{transform:rotate(180deg)}
+    .merchant-reference-sub{display:grid;gap:3px;margin:4px 0 8px;padding-left:0}
+    .merchant-reference-sub[hidden]{display:none}
+    .merchant-reference-sub .side-btn{width:100%;min-height:42px;padding:0 14px 0 43px;color:#bdc6d5;background:transparent;border:0;border-radius:7px;font-size:14px;font-weight:600;text-align:left}
+    .merchant-reference-sub .side-btn:hover{color:#fff;background:rgba(255,255,255,.07)}
+    .merchant-reference-sub .side-btn.active{color:#fff;background:#725bc4;box-shadow:none}
+    .merchant-reference-sub .side-btn.static{cursor:default}
+    .merchant-reference-sub .side-btn.static:hover{color:#bdc6d5;background:transparent}
+    .merchant-reference-leaf.direct{cursor:pointer}
+    .merchant-reference-leaf.direct.active{color:#fff;background:#725bc4}
+    .merchant-reference-badge{margin-left:3px;padding:2px 6px;border-radius:8px;color:#fff;background:#ff6a37;font-size:10px;font-weight:800;line-height:1}
     .workspace{min-height:0;position:relative}
     .frame-wrap{position:absolute;inset:0;overflow:hidden;background:var(--surface)}
     iframe{width:100%;height:100%;display:block;border:0;background:var(--surface)}
     .empty{height:100%;display:grid;place-items:center;padding:24px;color:var(--muted);background:var(--canvas);font-size:14px;text-align:center}
     .toast{position:fixed;right:18px;bottom:18px;z-index:100;padding:10px 13px;border-radius:8px;color:#fff;background:#30394b;box-shadow:0 10px 24px rgba(20,28,44,.22);font-size:12px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s ease}
     .toast.show{opacity:1;transform:none}
+    @media(max-width:900px){.body{grid-template-columns:180px minmax(0,1fr)}.side-btn{font-size:12px;padding:9px 12px 9px 20px}}
     @media(max-width:600px){.topbar{padding:0 12px}.brand{margin-right:12px;font-size:18px}.nav-btn{min-width:64px;padding:0 12px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
   </style>
@@ -35,77 +72,244 @@
   <div class="app">
     <header class="topbar">
       <div class="brand"><span class="brand-mark">BP</span><span id="projectName">Bluepay</span></div>
-      <nav class="main-nav" id="mainNav" aria-label="Demo 分类"></nav>
+      <nav class="main-nav" id="mainNav" aria-label="端分类"></nav>
+      <div class="merchant-crumb" id="merchantCrumb" aria-label="面包屑"></div>
     </header>
-    <main class="workspace">
-      <div class="frame-wrap" id="frameWrap"><iframe id="demoFrame" title="需求 Demo"></iframe></div>
-      <div class="empty" id="emptyState" hidden>后台暂未接入 Demo</div>
-    </main>
+    <div class="body">
+      <aside class="side" id="sidePanel" aria-label="产品导航">
+        <div class="side-head" id="sideHead">页面</div>
+        <nav class="side-nav" id="sideNav"></nav>
+      </aside>
+      <main class="workspace">
+        <div class="frame-wrap" id="frameWrap"><iframe id="demoFrame" title="页面 Demo"></iframe></div>
+        <div class="empty" id="emptyState" hidden>该端暂未接入页面</div>
+      </main>
+    </div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script>
     const PROJECT=__PROJECT__;
     const MODULES=__MODULES__;
-    const PAGES=__PAGES__;
+    const NAV=__NAV__;
     const DOCUMENTS=__DOCUMENTS__;
     const mainNav=document.getElementById("mainNav");
+    const sideHead=document.getElementById("sideHead");
+    const sideNav=document.getElementById("sideNav");
+    const side=document.getElementById("sidePanel");
+    const merchantCrumb=document.getElementById("merchantCrumb");
     const frame=document.getElementById("demoFrame");
     const frameWrap=document.getElementById("frameWrap");
     const emptyState=document.getElementById("emptyState");
     const toast=document.getElementById("toast");
-    let currentId="";
     let currentModuleCode=MODULES[0]?.[0]||"";
+    let currentPageId="";
     let toastTimer;
 
     document.getElementById("projectName").textContent=PROJECT.name;
 
     function escapeHtml(value){return String(value).replace(/[&<>"']/g,function(char){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char];});}
     function notify(message){toast.textContent=message;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){toast.classList.remove("show");},1800);}
+    function moduleLabel(code){const hit=MODULES.find(function(m){return m[0]===code;});return hit?hit[1]:code;}
+    function flatNav(code){
+      const groups=NAV[code]||[];
+      const items=[];
+      groups.forEach(function(g){(g.items||[]).forEach(function(item){if(item&&item.id&&item.doc)items.push(item);});});
+      return items;
+    }
+    function findPage(id){
+      for(const code of Object.keys(NAV||{})){
+        const hit=flatNav(code).find(function(item){return item.id===id;});
+        if(hit) return {item:hit, moduleCode:code};
+      }
+      return null;
+    }
     function renderNav(){
+      const merchant=currentModuleCode==="MERCHANT";
+      document.body.classList.toggle("merchant-reference-mode",merchant);
+      side.classList.toggle("merchant-reference",merchant);
       mainNav.innerHTML=MODULES.map(function(module){
         const code=module[0],label=module[1],active=currentModuleCode===code;
         return '<button class="nav-btn'+(active?" active":"")+'" type="button" data-module="'+escapeHtml(code)+'">'+escapeHtml(label)+'</button>';
       }).join("");
     }
-    function selectPage(id,updateHash,moduleCode){
-      const page=PAGES.find(function(item){return item.id===id;});
-      if(!page)return;
-      currentId=page.id;
-      currentModuleCode=page.moduleCodes.includes(moduleCode)?moduleCode:page.moduleCodes[0];
+    function renderSide(){
+      const groups=NAV[currentModuleCode]||[];
+      sideHead.textContent=moduleLabel(currentModuleCode)+"导航";
+      sideHead.hidden=currentModuleCode==="MERCHANT";
+      if(currentModuleCode==="MERCHANT"){
+        const current=findPage(currentPageId);
+        merchantCrumb.textContent="首页 / "+(current?current.item.title:"商户端");
+        sideNav.innerHTML=groups.map(function(group,index){
+          const items=group.items||[];
+          if(group.direct){
+            const item=items[0];
+            const active=item&&item.id===currentPageId;
+            return '<div class="merchant-reference-group"><button class="merchant-reference-leaf direct'+(active?' active':'')+'" type="button" data-page="'+escapeHtml(item.id)+'"><span class="merchant-reference-icon"></span><span>'+escapeHtml(group.label)+'</span></button></div>';
+          }
+          if(items.length){
+            const body=items.map(function(item){
+              const active=item.id===currentPageId;
+              const page=item.id&&item.doc?' data-page="'+escapeHtml(item.id)+'"':'';
+              return '<button class="side-btn'+(active?' active':'')+(!page?' static':'')+'" type="button"'+page+'>'+escapeHtml(item.title)+(item.badge?'<span class="merchant-reference-badge">'+escapeHtml(item.badge)+'</span>':'')+'</button>';
+            }).join('');
+            return '<div class="merchant-reference-group"><button class="merchant-reference-head" type="button" data-merchant-toggle="'+index+'" aria-expanded="'+(group.expanded?'true':'false')+'"><span class="merchant-reference-icon"></span><span>'+escapeHtml(group.label)+'</span><span class="merchant-reference-arrow">⌃</span></button><div class="merchant-reference-sub"'+(group.expanded?'':' hidden')+'>'+body+'</div></div>';
+          }
+          return '<div class="merchant-reference-group"><div class="merchant-reference-leaf"><span class="merchant-reference-icon"></span><span>'+escapeHtml(group.label)+'</span>'+(group.collapsed?'<span class="merchant-reference-arrow">⌄</span>':'')+(group.badge?'<span class="merchant-reference-badge">'+escapeHtml(group.badge)+'</span>':'')+'</div></div>';
+        }).join('');
+        return;
+      }
+      merchantCrumb.textContent="";
+      if(!groups.length || !groups.some(function(g){return (g.items||[]).length;})){
+        sideNav.innerHTML='<div class="side-empty">该端暂未接入页面</div>';
+        return;
+      }
+      sideNav.innerHTML=groups.map(function(group){
+        if(!(group.items||[]).length) return "";
+        const buttons=group.items.map(function(item){
+          const active=item.id===currentPageId;
+          return '<button class="side-btn'+(active?" active":"")+'" type="button" data-page="'+escapeHtml(item.id)+'">'+escapeHtml(item.title)+'</button>';
+        }).join("");
+        return '<div class="side-group"><div class="side-group-title">'+escapeHtml(group.label)+'</div>'+buttons+'</div>';
+      }).join("");
+    }
+    function buildSrcdoc(item){
+      const html=DOCUMENTS[item.doc];
+      if(!html) return "<p>缺少页面源："+escapeHtml(item.doc)+"</p>";
+      const boot=item.boot||"";
+      const inject=`<!doctype html><html><head><meta charset="utf-8">
+<script>window.__BP_EMBED__=true;window.__BP_SURFACE__=${JSON.stringify(currentModuleCode)};window.__BP_BOOT__=${JSON.stringify(boot)};window.__BP_PAGE_ID__=${JSON.stringify(item.id)};<\/script>
+<style id="bp-embed-chrome">
+html.bp-embed .sidebar,
+html.bp-embed aside.rail,
+html.bp-embed .rail,
+html.bp-embed #sideMenu,
+html.bp-embed .sys-badge,
+html.bp-embed #sysBadge,
+html.bp-embed #brandBar,
+html.bp-embed .sidebar-brand,
+html.bp-embed .topbar,
+html.bp-embed header.top,
+html.bp-embed .tabs-shell,
+html.bp-embed .tabs:not(.curr-tabs),
+html.bp-embed body > .app > .sidebar{display:none!important}
+html.bp-embed .workspace{margin-left:0!important;padding-top:0!important}
+html.bp-embed body > .app{display:block!important;height:auto!important}
+html.bp-embed .main{width:100%!important;min-height:100vh}
+html.bp-embed .app{grid-template-columns:1fr!important;display:block!important;min-height:100vh}
+html.bp-embed .titlebar{padding-top:12px}
+html.bp-embed body{overflow:auto!important;height:auto!important}
+/* hide dual-system switch in TRX source when embedded */
+html.bp-embed .sidebar > div:last-child button[onclick*="switchSystem"],
+html.bp-embed button[onclick*="switchSystem"]{display:none!important}
+</style>
+<script>
+(function(){
+  function mark(){document.documentElement.classList.add("bp-embed");}
+  if(document.documentElement) mark();
+  document.addEventListener("DOMContentLoaded", mark);
+})();
+<\/script>
+</head><body>
+`;
+      // Strip outer html wrapper from source and append body content if full document
+      let body=html;
+      const bodyMatch=html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+      if(bodyMatch){
+        const headMatch=html.match(/<head[^>]*>([\s\S]*)<\/head>/i);
+        const headInner=headMatch?headMatch[1]:"";
+        return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">${headInner}
+<script>window.__BP_EMBED__=true;window.__BP_SURFACE__=${JSON.stringify(currentModuleCode)};window.__BP_BOOT__=${JSON.stringify(boot)};window.__BP_PAGE_ID__=${JSON.stringify(item.id)};<\/script>
+<style id="bp-embed-chrome">
+html.bp-embed .sidebar,
+html.bp-embed aside.rail,
+html.bp-embed .rail,
+html.bp-embed #sideMenu,
+html.bp-embed .sys-badge,
+html.bp-embed #sysBadge,
+html.bp-embed #brandBar,
+html.bp-embed .sidebar-brand,
+html.bp-embed body > .topbar,
+html.bp-embed .topbar,
+html.bp-embed header.top,
+html.bp-embed .tabs-shell,
+html.bp-embed .tabs:not(.curr-tabs){display:none!important}
+html.bp-embed .workspace{margin-left:0!important;padding-top:0!important}
+html.bp-embed body > .app{display:block!important}
+html.bp-embed .main{width:100%!important;min-height:100vh}
+html.bp-embed .app{grid-template-columns:1fr!important;display:block!important;min-height:100vh}
+html.bp-embed body{overflow:auto!important;height:auto!important}
+html.bp-embed button[onclick*="switchSystem"],
+html.bp-embed .sys-badge{display:none!important}
+</style>
+<script>(function(){function m(){document.documentElement.classList.add("bp-embed");}m();document.addEventListener("DOMContentLoaded",m);})();<\/script>
+</head><body>${bodyMatch[1]}</body></html>`;
+      }
+      return inject+body+"</body></html>";
+    }
+    function selectNavPage(pageId, updateHash){
+      const found=findPage(pageId);
+      if(!found) return;
+      const item=found.item;
+      currentPageId=item.id;
+      currentModuleCode=found.moduleCode;
+      if(!DOCUMENTS[item.doc]){
+        frameWrap.hidden=true;
+        emptyState.hidden=false;
+        emptyState.textContent="缺少页面源："+item.doc;
+        renderNav();
+        renderSide();
+        return;
+      }
       frameWrap.hidden=false;
       emptyState.hidden=true;
-      frame.title=page.title+" Demo";
-      frame.srcdoc=DOCUMENTS[page.doc];
-      if(updateHash&&location.hash!=="#"+page.id)history.replaceState(null,"","#"+page.id);
+      frame.title=item.title;
+      frame.srcdoc=buildSrcdoc(item);
+      if(updateHash && location.hash!=="#"+item.id) history.replaceState(null,"","#"+item.id);
       renderNav();
+      renderSide();
+    }
+    function showModule(code, updateHash){
+      currentModuleCode=code;
+      const items=flatNav(code);
+      renderNav();
+      if(!items.length){
+        currentPageId="";
+        frameWrap.hidden=true;
+        emptyState.hidden=false;
+        emptyState.textContent=moduleLabel(code)+"暂未接入页面";
+        frame.removeAttribute("srcdoc");
+        renderSide();
+        notify(moduleLabel(code)+"暂未接入页面");
+        return;
+      }
+      const keep=items.find(function(item){return item.id===currentPageId;});
+      selectNavPage((keep||items[0]).id, updateHash);
     }
     mainNav.addEventListener("click",function(event){
       const button=event.target.closest("[data-module]");
       if(!button)return;
-      currentModuleCode=button.dataset.module;
-      const pages=PAGES.filter(function(page){return page.moduleCodes.includes(currentModuleCode);});
-      if(!pages.length){
-        frameWrap.hidden=true;
-        emptyState.hidden=false;
-        emptyState.textContent=button.textContent.trim()+"暂未接入 Demo";
-        renderNav();
-        notify(button.textContent.trim()+"暂未接入 Demo");
+      showModule(button.dataset.module, true);
+    });
+    sideNav.addEventListener("click",function(event){
+      const toggle=event.target.closest("[data-merchant-toggle]");
+      if(toggle){
+        const sub=toggle.nextElementSibling;
+        const isOpen=toggle.getAttribute("aria-expanded")==="true";
+        toggle.setAttribute("aria-expanded",String(!isOpen));
+        sub.hidden=isOpen;
         return;
       }
-      selectPage(pages[0].id,true,currentModuleCode);
+      const button=event.target.closest("[data-page]");
+      if(!button)return;
+      selectNavPage(button.dataset.page, true);
     });
     addEventListener("hashchange",function(){
       const id=location.hash.slice(1);
-      if(PAGES.some(function(page){return page.id===id;}))selectPage(id,false,currentModuleCode);
+      if(findPage(id)) selectNavPage(id, false);
     });
     const initial=location.hash.slice(1);
-    if(PAGES.length){
-      selectPage(PAGES.some(function(page){return page.id===initial;})?initial:PAGES[0].id,false,currentModuleCode);
-    }else{
-      frameWrap.hidden=true;
-      emptyState.hidden=false;
-      renderNav();
-    }
+    if(findPage(initial)) selectNavPage(initial, false);
+    else showModule(currentModuleCode, false);
   </script>
 </body>
 </html>

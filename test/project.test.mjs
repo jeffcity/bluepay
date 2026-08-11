@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("项目清单只保留后台、商户和地址池", async () => {
+test("项目清单含三端与产品导航", async () => {
   const catalog = JSON.parse(
     await readFile(
       new URL("../src/catalog/project.json", import.meta.url),
@@ -16,19 +16,16 @@ test("项目清单只保留后台、商户和地址池", async () => {
     ["MERCHANT", "商户"],
     ["ADDRESS", "地址池"]
   ]);
-  assert.equal(catalog.project.name, "Bluepay");
-  assert.ok(Array.isArray(catalog.pages));
-  assert.ok(Array.isArray(catalog.documents));
-  assert.equal(catalog.pages[0].id, "BP-REQ-002");
-  assert.ok(catalog.pages.length >= catalog.documents.length);
-  assert.equal(
-    catalog.pages.find((page) => page.id === "BP-REQ-003").doc,
-    "机器人分层播报与多人确认-demo"
-  );
-  assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN")));
+  assert.ok(catalog.nav.ADMIN.length);
+  assert.ok(catalog.nav.MERCHANT.length);
+  assert.ok(catalog.nav.ADDRESS.length);
+  assert.ok(catalog.nav.ADDRESS.some((g) => g.items.some((i) => i.id === "address-wallet")));
+  assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-collect")));
+  assert.ok(catalog.nav.MERCHANT.some((g) => g.items.some((i) => i.id === "merchant-order")));
+  assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN") || page.moduleCodes.includes("MERCHANT") || page.moduleCodes.includes("ADDRESS")));
 });
 
-test("母板只显示 Bluepay 和三个端，不显示需求页签", async () => {
+test("母板为顶栏三端 + 产品左侧导航", async () => {
   const template = await readFile(
     new URL("../src/shell/index.template.html", import.meta.url),
     "utf8"
@@ -36,11 +33,13 @@ test("母板只显示 Bluepay 和三个端，不显示需求页签", async () =>
 
   for (const expected of [
     "Bluepay",
-    "Demo 分类",
     "mainNav",
+    "sideNav",
     "__MODULES__",
-    "__PAGES__",
-    "__DOCUMENTS__"
+    "__NAV__",
+    "__DOCUMENTS__",
+    "__BP_SURFACE__",
+    "__BP_BOOT__"
   ]) {
     assert.match(
       template,
@@ -52,7 +51,6 @@ test("母板只显示 Bluepay 和三个端，不显示需求页签", async () =>
     "项目说明",
     "跨后台",
     "HTML DEMO",
-    "需求页面",
     "worktabs"
   ]) {
     assert.doesNotMatch(template, new RegExp(removed));

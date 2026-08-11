@@ -1,5 +1,5 @@
 <!-- PROJECT: bluepay-bot-layered-broadcast-multi-confirm -->
-<!-- PAGES: 商户管理 / 商户下分 / 商户充值订单 / 代付商户管理 / 代收商户管理 -->
+<!-- PAGES: 商户管理 / 商户下分 / 商户充值订单 / 代付商户管理 / 代收商户管理 / 虚拟币充值订单 / 账户流水 / 日终统计（含 TRX） -->
 <!-- FIDELITY: high / desktop-admin / synthetic-data -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -38,7 +38,7 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body {
-      min-width: 1180px;
+      min-width: 0;
       color: var(--regular);
       background: var(--page);
       font: 14px/1.5 var(--font-ui);
@@ -772,6 +772,23 @@
     .white-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
     .white-empty { color: var(--muted); font-size: 12px; }
     .balance-action { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+    .asset-stack { display: grid; gap: 8px; min-width: 210px; }
+    .asset-line { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: start; gap: 8px; min-height: 22px; }
+    .asset-line .tag { min-width: 39px; justify-content: center; font-size: 11px; }
+    .asset-line.cny .tag { color: #3f8ed9; background: #ecf5ff; }
+    .asset-line.trx .tag { color: #0f8d91; background: #e6fffb; }
+    .asset-value { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; min-width: 0; line-height: 22px; }
+    .asset-empty { color: var(--muted); }
+    .collect-table-wrap { overflow-x: hidden; }
+    .collect-table { width: 100%; min-width: 0 !important; table-layout: fixed; }
+    .collect-table th, .collect-table td { padding: 8px; white-space: normal; }
+    .collect-table .asset-stack { min-width: 0; }
+    .collect-table .asset-line { gap: 6px; }
+    .collect-table .asset-line .tag { min-width: 38px; padding: 0 6px; }
+    .collect-table .asset-value { gap: 2px 7px; }
+    .collect-table .switch-line { justify-content: center; }
+    .collect-table .op-links { display: grid; gap: 5px; line-height: normal; }
+    .collect-table .op-links .btn { width: 100%; min-width: 0; padding: 0 5px; }
     .transfer-link { color: var(--primary); background: transparent; border: 0; padding: 0; font: inherit; cursor: pointer; }
     .transfer-link:hover { color: var(--primary-hover); text-decoration: underline; }
     .transfer-note { margin: 0 0 14px; padding: 10px 12px; color: #336f9f; background: #eef8ff; border: 1px solid #cce7fb; border-radius: 4px; font-size: 13px; line-height: 1.6; }
@@ -917,7 +934,7 @@
 
     @media (max-width: 1000px) {
       :root { --sidebar-width: 68px; }
-      body { min-width: 980px; }
+      body { min-width: 0; }
       .brand { padding-left: 12px; font-size: 0; letter-spacing: 0; }
       .brand::after { content: "蓝盛"; font-size: 18px; }
       .menu-row { justify-content: center; padding: 0; }
@@ -967,10 +984,17 @@
       recharge: { title: "商户充值订单", href: "/merchant/merchant-recharge-order" },
       payout: { title: "代付商户管理", href: "/daifu/daifu-merchant" },
       collect: { title: "代收商户管理", href: "/daishou/daishou/collect-merchant" },
-      merchant: { title: "商户管理", href: "/merchant/merchant" }
+      merchant: { title: "商户管理", href: "/merchant/merchant" },
+      cryptoOrder: { title: "虚拟币充值订单管理", href: "/crypto/recharge-order" },
+      mcFlow: { title: "商户代收流水记录", href: "/account/mc-flow" },
+      chFlow: { title: "通道代收流水记录", href: "/account/ch-flow" },
+      mcPrepay: { title: "商户代收预付记录", href: "/account/mc-prepay" },
+      mpFlow: { title: "商户代付流水记录", href: "/account/mp-flow" },
+      mpPrepay: { title: "商户代付预付记录", href: "/account/mp-prepay" },
+      daily: { title: "商户代收日终统计", href: "/daily/collect" }
     };
 
-    const tabOrder = ["address", "withdraw", "recharge", "payout", "collect", "merchant"];
+    const tabOrder = ["address", "withdraw", "recharge", "payout", "collect", "merchant", "cryptoOrder", "mcFlow", "daily"];
     let currentPage = "merchant";
     let toastTimer;
 
@@ -980,7 +1004,9 @@
         ["merchant", "商户管理"], ["withdraw", "商户下分"],
         [null, "商户手续费配置"], ["recharge", "商户充值订单"]
       ]},
-      { label: "虚拟币订单管理", icon: "wallet" },
+      { label: "虚拟币订单管理", icon: "wallet", key: "wallet-group", children: [
+        ["cryptoOrder", "虚拟币充值订单管理"], [null, "虚拟币代付订单管理"], [null, "USDT异常工单"]
+      ]},
       { label: "美人桥业务", icon: "pin" },
       { label: "地址查询", icon: "address", key: "address" },
       { label: "代付管理", icon: "payout", key: "payout-group", children: [
@@ -992,8 +1018,15 @@
         [null, "代收产品管理"], [null, "代收通道管理"]
       ]},
       { label: "代理管理", icon: "agent" },
-      { label: "日终数据统计", icon: "stats" },
-      { label: "账户记录", icon: "record" },
+      { label: "日终数据统计", icon: "stats", key: "stats-group", children: [
+        ["daily", "商户代收日终统计"]
+      ]},
+      { label: "账户记录", icon: "record", key: "record-group", children: [
+        ["chFlow", "通道代收流水记录"], [null, "通道代付流水记录"],
+        ["mcFlow", "商户代收流水记录"], ["mpFlow", "商户代付流水记录"],
+        ["mpPrepay", "商户代付预付记录"], ["mcPrepay", "商户代收预付记录"],
+        [null, "代理流水记录"]
+      ]},
       { label: "TG 通知管理", icon: "bell" },
       { label: "系统管理", icon: "settings" },
       { label: "基础设施", icon: "infra" },
@@ -1070,12 +1103,12 @@
     }
 
     const withdrawRows = [
-      ["1", "ORD-DEMO-0001", "单", "示例商户 A/M00000901", "200.00", "4.00", "196.00", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
-      ["2", "ORD-DEMO-0002", "单", "示例商户 B/M00000902", "120.00", "2.00", "118.00", "待处理", "待确认", "1/2", "审核员甲、审核员乙", "取消"],
-      ["3", "ORD-DEMO-0003", "单", "示例商户 C/M00000903", "80.00", "1.00", "79.00", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
-      ["4", "ORD-DEMO-0004", "单", "示例商户 D/M00000904", "50.00", "1.00", "49.00", "已取消", "待确认", "0/0", "—", "-"],
-      ["5", "ORD-DEMO-0005", "单", "示例商户 E/M00000905", "350.00", "5.00", "345.00", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
-      ["6", "ORD-DEMO-0006", "单", "示例商户 F/M00000906", "900.00", "9.00", "891.00", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
+      ["1", "ORD-TRX-DEMO-0001", "单", "示例商户 A/M00000901", "200.000000", "4.000000", "196.000000", "TRX", "TRON", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
+      ["2", "ORD-DEMO-0002", "单", "示例商户 B/M00000902", "120.00", "2.00", "118.00", "USDT", "TRC20", "待处理", "待确认", "1/2", "审核员甲、审核员乙", "取消"],
+      ["3", "ORD-DEMO-0003", "单", "示例商户 C/M00000903", "80.00", "1.00", "79.00", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
+      ["4", "ORD-DEMO-0004", "单", "示例商户 D/M00000904", "50.00", "1.00", "49.00", "USDT", "TRC20", "已取消", "待确认", "0/0", "—", "-"],
+      ["5", "ORD-DEMO-0005", "单", "示例商户 E/M00000905", "350.00", "5.00", "345.00", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
+      ["6", "ORD-DEMO-0006", "单", "示例商户 F/M00000906", "900.00", "9.00", "891.00", "USDT", "TRC20", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
     ];
 
     const rechargeOrders = [
@@ -1112,7 +1145,10 @@
     function renderSidebar() {
       const activeParent = currentPage === "merchant" || currentPage === "withdraw" || currentPage === "recharge"
         ? "merchant-group" : currentPage === "payout" ? "payout-group"
-        : currentPage === "collect" ? "collect-group" : "";
+        : currentPage === "collect" ? "collect-group"
+        : currentPage === "cryptoOrder" ? "wallet-group"
+        : currentPage === "daily" ? "stats-group"
+        : ["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay"].includes(currentPage) ? "record-group" : "";
       document.getElementById("sidebar").innerHTML = menus.map((menu) => {
         const isOpen = menu.key === activeParent;
         const directActive = menu.key === currentPage;
@@ -1688,14 +1724,14 @@
       </tr>`).join("");
       const rows = transferRows + withdrawRows.map((r, i) => `<tr>
         <td></td><td class="cell-center">${r[0]}</td><td>${r[1]}</td><td><span class="tag">${r[2]}</span></td>
-        <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>USDT</td>
-        <td><div class="ellipsis" title="TDEMO${i}XXXXXXXXXXXXXXXXXXXXXXXX">TDEMO${i}…WALLET</div></td><td>TRC20</td>
+        <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td>
+        <td><div class="ellipsis" title="TDEMO${i}XXXXXXXXXXXXXXXXXXXXXXXX">TDEMO${i}…WALLET</div></td><td>${r[8]}</td>
         <td><div class="ellipsis">${i < 2 ? "TDEMO-SOURCE…ADDR" : "—"}</div></td>
-        <td><span class="tag ${r[7] === "待处理" ? "warning" : r[7] === "已取消" ? "danger" : "success"}">${r[7]}</span></td>
-        <td><span class="tag ${r[8] === "已确认" ? "success" : "warning"}">${r[8]}</span></td><td>${r[9]}</td><td class="wrap">${r[10]}</td>
+        <td><span class="tag ${r[9] === "待处理" ? "warning" : r[9] === "已取消" ? "danger" : "success"}">${r[9]}</span></td>
+        <td><span class="tag ${r[10] === "已确认" ? "success" : "warning"}">${r[10]}</span></td><td>${r[11]}</td><td class="wrap">${r[12]}</td>
         <td>${i === 0 ? "优先处理" : ""}</td><td>2026-08-04 10:2${i}:00</td><td>${i < 3 ? "2026-08-04 10:30:00" : "—"}</td>
         <td>${i < 3 ? "运营员" : "—"}</td><td>${i === 1 ? "等待第二人确认" : ""}</td><td>${i < 3 ? "查看" : "—"}</td>
-        <td class="op-links">${r[11].split("　").map(mockLink).join("")}</td>
+        <td class="op-links">${r[13].split("　").map(mockLink).join("")}</td>
       </tr>`).join("");
       return `<div class="subtabs"><button class="subtab active" type="button">商户下分记录</button><button class="subtab" type="button" data-action="平台收款钱包余额">平台收款钱包余额</button></div>
       <div class="filters" style="margin-top:14px">
@@ -1733,15 +1769,19 @@
     }
 
     function collectPage() {
-      const rows = merchants.map((m, i) => `<tr>
-        <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td><td>${m[0]}</td><td>0</td><td>${i === 3 ? "30.01" : "0"}</td>
-        <td>${i === 4 ? "11205.00" : i === 2 ? "19.00" : "0.00"}　${mockLink("调整")} ${mockLink("下发")}</td>
-        <td>${i === 4 ? "30000.00" : i === 2 ? "30.00" : "0.00"}　${mockLink("调整")}</td>
-        <td>${i === 4 ? "18795.00" : i === 2 ? "11.00" : "0.00"}　${mockLink("结算")}</td>
-        <td><span class="balance-action">${m[2]}　${mockLink("调整")} ${mockLink("下发")} ${transferLink("collect", i)}</span></td><td>${m[3]}　${mockLink("调整")}</td>
-        <td>${i === 3 ? "-70.00" : "0.00"}　${mockLink("结算")}</td><td>${switchControl(true)}</td>
+      const rows = merchants.map((m, i) => {
+        const trxBal = i === 0 ? "1500.000000" : "0.000000";
+        const trxVolume = i === 0 ? "1500.000000" : "0.000000";
+        return `<tr>
+        <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td><td>${m[0]}</td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>0</span></span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${i === 3 ? "30.01" : "0"}</span></span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span>${trxVolume}</span></span></div></div></td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "11205.00" : i === 2 ? "19.00" : "0.00"}</span>${mockLink("调整")}${mockLink("下发")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${m[2]}</span>${mockLink("调整")}${mockLink("下发")}${transferLink("collect", i)}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span>${trxBal}</span></span></div></div></td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "30000.00" : i === 2 ? "30.00" : "0.00"}</span>${mockLink("调整")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${m[3]}</span>${mockLink("调整")}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span class="asset-empty">—</span></span></div></div></td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "18795.00" : i === 2 ? "11.00" : "0.00"}</span>${mockLink("结算")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${i === 3 ? "-70.00" : "0.00"}</span>${mockLink("结算")}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span class="asset-empty">—</span></span></div></div></td>
+        <td>${switchControl(true)}</td>
         <td class="op-links">${button("代收产品","primary small")}${button("测试下单","success small")}${button("对接","warning small")}</td>
-      </tr>`).join("");
+      </tr>`;
+      }).join("");
       return `<div class="filters">
         ${field("商户号", input("请输入商户号"))}${field("商户名称", input("请输入商户名称"))}
         ${field("账户状态", select("请选择", 150))}${field("所属代理", select("直接输入或选择代理", 200))}
@@ -1750,10 +1790,110 @@
       <div class="summary"><span>商户数量：<strong class="red">10</strong></span><span>总余额：<strong class="red">11234.00元</strong></span>
         <span>剩余预付：<strong class="red">27845.00元</strong></span><span>总代收交易笔数：<strong class="red">0</strong></span></div>
       <div class="button-row action-line">${button("全部开启","warning")}${button("全部关闭","danger")}${button("一键结算人民币余额","warning")}${button("一键结算USDT余额","warning")}</div>
-      <div class="table-wrap"><table style="min-width:1680px">
-        <colgroup><col style="width:48px"><col style="width:130px"><col style="width:120px"><col style="width:140px"><col style="width:170px"><col style="width:135px"><col style="width:145px"><col style="width:170px"><col style="width:150px"><col style="width:155px"><col style="width:110px"><col style="width:240px"></colgroup>
-        <thead><tr><th></th><th>商户名称</th><th>今日成交</th><th>USDT累计跑量</th><th>代收账户余额</th><th>预付</th><th>剩余预付</th><th>USDT余额</th><th>USDT预付</th><th>USDT剩余预付</th><th>代收状态</th><th>操作</th></tr></thead>
+      <div class="table-wrap collect-table-wrap"><table class="collect-table">
+        <colgroup><col style="width:42px"><col style="width:9%"><col style="width:11%"><col style="width:21%"><col style="width:15%"><col style="width:15%"><col style="width:64px"><col style="width:74px"></colgroup>
+        <thead><tr><th></th><th>商户名称</th><th>今日成交</th><th>余额</th><th>预付</th><th>剩余预付</th><th>代收状态</th><th>操作</th></tr></thead>
         <tbody>${rows}</tbody></table></div>${pagination(96)}`;
+    }
+
+    const trxOrders = [
+      {idx:1,plat:"LS20260727001",merch:"M202607270001",name:"M00000306",cur:"TRX",amt:"1,500.000000",real:"1,500.000000",addr:"TXk9rF…f3Qz",status:"支付成功",cls:"success",time:"2026/07/27 10:23:15"},
+      {idx:2,plat:"LS20260727002",merch:"M202607270002",name:"M00000306",cur:"TRX",amt:"200.500000",real:"—",addr:"TNp2mK…k8Wd",status:"待支付",cls:"warning",time:"2026/07/27 11:05:42"},
+      {idx:3,plat:"LS20260727003",merch:"M202607270003",name:"M00000284",cur:"TRX",amt:"50.000000",real:"—",addr:"TQw7nL…m2Xa",status:"支付失败",cls:"danger",time:"2026/07/27 09:15:33"},
+      {idx:4,plat:"LS20260726015",merch:"M202607260015",name:"M00000140",cur:"USDT",amt:"500.000000",real:"500.000000",addr:"TYu3qH…n5Rb",status:"支付成功",cls:"success",time:"2026/07/26 16:42:08"}
+    ];
+    const flowByCur = {
+      CNY: [{idx:197,entity:"M00000306",plat:"—",merch:"—",type:"后台调整",cur:"CNY",orig:"40000.00",delta:"-30000.00",after:"10000.00",time:"2026/07/22 16:31:03",remark:""}],
+      USDT: [{idx:85,entity:"M00000306",plat:"860123456789012345",merch:"ORD2026072010123456…",type:"代收",cur:"USDT",orig:"1200.000000",delta:"+500.000000",after:"1700.000000",time:"2026/07/20 10:15:22",remark:"商户代收成功增…"}],
+      TRX: [{idx:1,entity:"M00000306",plat:"LS20260727001",merch:"M202607270001",type:"代收",cur:"TRX",orig:"0.000000",delta:"+1500.000000",after:"1500.000000",time:"2026/07/27 10:25:03",remark:"商户代收成功增…"}]
+    };
+    const chFlowByCur = {
+      CNY: [{idx:320,entity:"CNY 通道A",plat:"—",merch:"—",type:"后台调整",cur:"CNY",orig:"500000.00",delta:"+50000.00",after:"550000.00",time:"2026/07/22 16:31:03",remark:""}],
+      USDT: [{idx:120,entity:"地址池 USDT",plat:"860123456789012345",merch:"ORD…",type:"代收",cur:"USDT",orig:"8500.000000",delta:"+500.000000",after:"9000.000000",time:"2026/07/20 10:15:22",remark:"通道代收成功增…"}],
+      TRX: [{idx:1,entity:"地址池 TRX",plat:"LS20260727001",merch:"M202607270001",type:"代收",cur:"TRX",orig:"0.000000",delta:"+1500.000000",after:"1500.000000",time:"2026/07/27 10:25:03",remark:"通道代收成功增…"}]
+    };
+    const dailyByCur = {
+      CNY: [{entity:"M00000306",amt:"32411.00",cnt:15,ok:14,rate:"93.33%",fee:"324.11",b0:"10000.00",b1:"42087.89",p0:"100000.00",p1:"99675.89"}],
+      USDT: [{entity:"M00000306",amt:"500.000000",cnt:1,ok:1,rate:"100%",fee:"5.000000",b0:"1200.000000",b1:"1700.000000",p0:"5000.000000",p1:"5000.000000"}],
+      TRX: [{entity:"M00000306",amt:"1500.000000",cnt:1,ok:1,rate:"100%",fee:"15.000000",b0:"0.000000",b1:"1500.000000",p0:"10000.000000",p1:"10000.000000"}]
+    };
+    let accountCurrency = "TRX";
+
+    function currencyTabs(active) {
+      return `<div style="display:flex;gap:0;border-bottom:1px solid var(--line);background:#fff;padding:0 8px;margin:0 0 0">
+        ${["CNY","USDT","TRX"].map((c) => `<button type="button" data-currency="${c}" class="btn ${c===active?"primary":""}" style="border-radius:0;border:0;border-bottom:2px solid ${c===active?"var(--primary)":"transparent"};background:transparent;color:${c===active?"var(--primary)":"var(--regular)"}">${c}</button>`).join("")}
+      </div>`;
+    }
+    function deltaHtml(v) {
+      const color = String(v).startsWith("+") ? "var(--success)" : String(v).startsWith("-") ? "var(--danger)" : "inherit";
+      return `<span style="color:${color};font-weight:600">${v}</span>`;
+    }
+    function cryptoOrderPage() {
+      const rows = trxOrders.map((o) => `<tr>
+        <td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.merch}</td><td>${o.name}</td>
+        <td><span class="tag">${o.cur}</span></td>
+        <td class="mono">${o.amt}</td><td class="mono">${o.real}</td><td class="mono">${o.addr}</td>
+        <td><span class="status ${o.cls==="success"?"done":o.cls==="warning"?"processing":o.cls==="danger"?"rejected":"expired"}">${o.status}</span></td>
+        <td>${o.time}</td><td>${mockLink("详情")}</td>
+      </tr>`).join("");
+      return `<div class="filters">
+        ${field("平台订单号", input("平台订单号"))}${field("商户订单号", input("商户订单号"))}
+        ${field("状态", select("全部状态", 120))}${field("币种", '<select class="control" style="width:110px"><option>全部币种</option><option>USDT</option><option selected>TRX</option></select>')}
+        ${field("商户名称", input("商户名称", 120))}
+        ${button("搜索","primary")}${button("重置")}${button("导出")}
+      </div>
+      <div class="table-wrap"><table style="min-width:1200px">
+        <thead><tr><th>序号</th><th>平台订单号</th><th>商户订单号</th><th>商户名称</th><th>币种</th><th>订单金额</th><th>实际到账</th><th>收款地址</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>${pagination(trxOrders.length)}
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">TRX 代收订单在既有虚拟币充值订单列表中展示，币种筛选新增 TRX；金额 6 位小数，状态复用既有体系。收款地址由地址池按 TRX 类型下发，流程同 USDT 虚拟币代收。</p>`;
+    }
+    function accountFlowPage(kind) {
+      const entityLabel = kind === "chFlow" ? "通道名称" : "商户名称";
+      const hasEntity = kind !== "mcFlow" && kind !== "mpFlow" || true;
+      const titleEntity = kind.startsWith("ch") ? "通道名称" : "商户名称";
+      const source = kind === "chFlow" ? chFlowByCur : flowByCur;
+      // 代付流水用同结构演示数据
+      const data = (source[accountCurrency] || []).map((r) => {
+        if (kind === "chFlow") return r;
+        if (kind === "mpFlow" || kind === "mpPrepay") return { ...r, type: kind === "mpPrepay" ? "充值" : (r.type === "代收" ? "代付" : r.type) };
+        if (kind === "mcPrepay") return { ...r, type: r.type === "代收" ? "充值" : r.type };
+        return r;
+      });
+      const cols = kind.startsWith("ch") || kind.includes("mc") || kind.includes("mp")
+        ? ["序号", titleEntity, "平台订单号", "商户订单号", "类型", "币种", "原金额", "变动金额", "变动后金额", "变动时间", "备注"]
+        : ["序号", "平台订单号", "商户订单号", "类型", "币种", "原金额", "变动金额", "变动后金额", "变动时间", "备注"];
+      const rows = data.length ? data.map((r) => `<tr>
+        <td>${r.idx}</td><td>${r.entity}</td>
+        <td class="mono">${r.plat}</td><td class="mono">${r.merch}</td><td>${r.type}</td><td>${r.cur}</td>
+        <td class="mono">${r.orig}</td><td>${deltaHtml(r.delta)}</td><td class="mono">${r.after}</td><td>${r.time}</td><td>${r.remark||"—"}</td>
+      </tr>`).join("") : `<tr><td colspan="11" style="text-align:center;padding:36px;color:var(--muted)">暂无 ${accountCurrency} 数据</td></tr>`;
+      return `<div class="filters">
+        ${field("平台订单号", input("平台订单号"))}${field("商户订单号", input("商户订单号"))}
+        ${field("类型", select("全部类型", 120))}
+        ${button("搜索","primary")}${button("重置")}${button("导出")}
+      </div>
+      ${currencyTabs(accountCurrency)}
+      <div class="table-wrap"><table style="min-width:1100px">
+        <thead><tr>${cols.map((c)=>`<th>${c}</th>`).join("")}</tr></thead>
+        <tbody>${rows}</tbody></table></div>${pagination(data.length)}
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">TRX tab 与 CNY / USDT 并列；搜索/重置/导出只作用于当前币种；金额 6 位小数。</p>`;
+    }
+    function dailyPage() {
+      const data = dailyByCur[accountCurrency] || [];
+      const rows = data.length ? data.map((r) => `<tr>
+        <td>${r.entity}</td><td class="mono">${r.amt}</td><td>${r.cnt}</td><td>${r.ok}</td><td>${r.rate}</td>
+        <td class="mono">${r.fee}</td><td class="mono">${r.b0}</td><td class="mono">${r.b1}</td>
+        <td class="mono">${r.p0}</td><td class="mono">${r.p1}</td><td>${mockLink("详情")}</td>
+      </tr>`).join("") : `<tr><td colspan="11" style="text-align:center;padding:36px;color:var(--muted)">暂无 ${accountCurrency} 数据</td></tr>`;
+      return `<div class="filters">
+        ${field("商户", select("全部商户", 160))}
+        ${button("搜索","primary")}${button("重置")}${button("导出")}
+      </div>
+      ${currencyTabs(accountCurrency)}
+      <div class="table-wrap"><table style="min-width:1200px">
+        <thead><tr><th>商户名称</th><th>订单金额</th><th>订单单量</th><th>成功订单量</th><th>成功率</th><th>商户服务费</th><th>期初余额</th><th>末期余额</th><th>期初预付</th><th>末期预付</th><th>操作</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>${pagination(data.length)}
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">TRX tab 宽表金额以 TRX 为单位；合计/导出仅当前 tab 币种。</p>`;
     }
 
     function renderPage() {
@@ -1761,20 +1901,30 @@
       document.title = `蓝盛支付 - ${meta.title}`;
       document.getElementById("pageTitle").textContent = meta.heading || meta.title;
       document.getElementById("titleActions").innerHTML = currentPage === "payout" ? button("关闭进单", "danger") : "";
-      const renderers = { merchant: merchantPage, withdraw: withdrawPage, recharge: rechargePage, payout: payoutPage, collect: collectPage };
+      const renderers = {
+        merchant: merchantPage, withdraw: withdrawPage, recharge: rechargePage, payout: payoutPage, collect: collectPage,
+        cryptoOrder: cryptoOrderPage,
+        mcFlow: () => accountFlowPage("mcFlow"),
+        chFlow: () => accountFlowPage("chFlow"),
+        mcPrepay: () => accountFlowPage("mcPrepay"),
+        mpFlow: () => accountFlowPage("mpFlow"),
+        mpPrepay: () => accountFlowPage("mpPrepay"),
+        daily: dailyPage
+      };
       document.getElementById("pagePanel").innerHTML = renderers[currentPage]();
       renderSidebar();
       renderTabs();
       if (currentPage === "recharge") setupRechargePage();
-      location.hash = currentPage;
+      if (!(typeof window !== "undefined" && window.__BP_EMBED__)) location.hash = currentPage;
     }
 
     function navigateTo(page) {
       if (!page || !pageMeta[page] || page === "address") {
-        showToast(page === "address" ? "地址查询仅保留页签，本页面聚焦四个目标页面" : "此菜单仅用于还原现状导航");
+        showToast(page === "address" ? "地址查询仅保留页签展示" : "此菜单仅用于还原现状导航");
         return;
       }
       currentPage = page;
+      if (["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"].includes(page)) accountCurrency = "TRX";
       renderPage();
       document.querySelector(".page").scrollTop = 0;
     }
@@ -1897,6 +2047,12 @@
         setConfigSectionState(configToggle, enabled);
         return;
       }
+      if (target.dataset.currency) {
+        accountCurrency = target.dataset.currency;
+        renderPage();
+        showToast(accountCurrency + " 数据已刷新");
+        return;
+      }
       const page = target.dataset.page;
       if (page !== undefined && page !== "") { navigateTo(page); return; }
       const group = target.dataset.group;
@@ -1926,8 +2082,10 @@
       else closeMerchantModal();
     });
 
-    const hashPage = location.hash.replace("#", "");
-    if (["merchant", "withdraw", "recharge", "payout", "collect"].includes(hashPage)) currentPage = hashPage;
+    const openPages = ["merchant","withdraw","recharge","payout","collect","cryptoOrder","mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"];
+    const bootPage = (typeof window !== "undefined" && window.__BP_BOOT__) || location.hash.replace("#", "") || new URLSearchParams(location.search).get("page") || "";
+    if (openPages.includes(bootPage)) currentPage = bootPage;
+    if (["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"].includes(currentPage)) accountCurrency = "TRX";
     renderPage();
   </script>
 </body>
