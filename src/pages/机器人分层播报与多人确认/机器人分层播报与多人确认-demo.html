@@ -985,7 +985,9 @@
       payout: { title: "代付商户管理", href: "/daifu/daifu-merchant" },
       collect: { title: "代收商户管理", href: "/daishou/daishou/collect-merchant" },
       merchant: { title: "商户管理", href: "/merchant/merchant" },
-      cryptoOrder: { title: "虚拟币充值订单管理", href: "/crypto/recharge-order" },
+      feeConfig: { title: "商户手续费配置", href: "/merchant/merchant/withdraw-fee-config" },
+      cryptoConfig: { title: "虚拟币充值配置", href: "/virtual/config" },
+      cryptoOrder: { title: "虚拟币充值订单管理", href: "/virtual/orderManagement" },
       mcFlow: { title: "商户代收流水记录", href: "/account/mc-flow" },
       chFlow: { title: "通道代收流水记录", href: "/account/ch-flow" },
       mcPrepay: { title: "商户代收预付记录", href: "/account/mc-prepay" },
@@ -994,7 +996,7 @@
       daily: { title: "商户代收日终统计", href: "/daily/collect" }
     };
 
-    const tabOrder = ["address", "withdraw", "recharge", "payout", "collect", "merchant", "cryptoOrder", "mcFlow", "daily"];
+    const tabOrder = ["address", "withdraw", "recharge", "payout", "collect", "merchant", "feeConfig", "cryptoConfig", "cryptoOrder", "mcFlow", "daily"];
     let currentPage = "merchant";
     let toastTimer;
 
@@ -1002,10 +1004,10 @@
       { label: "首页", icon: "home" },
       { label: "商户管理", icon: "merchant", key: "merchant-group", children: [
         ["merchant", "商户管理"], ["withdraw", "商户下分"],
-        [null, "商户手续费配置"], ["recharge", "商户充值订单"]
+        ["feeConfig", "商户手续费配置"], ["recharge", "商户充值订单"]
       ]},
       { label: "虚拟币订单管理", icon: "wallet", key: "wallet-group", children: [
-        ["cryptoOrder", "虚拟币充值订单管理"], [null, "虚拟币代付订单管理"], [null, "USDT异常工单"]
+        ["cryptoConfig", "虚拟币充值配置"], ["cryptoOrder", "虚拟币充值订单管理"], [null, "虚拟币代付订单管理"], [null, "USDT异常工单"]
       ]},
       { label: "美人桥业务", icon: "pin" },
       { label: "地址查询", icon: "address", key: "address" },
@@ -1034,19 +1036,25 @@
     ];
 
     const merchants = [
-      ["示例商户 A", "M00000901", "500.00", "1,000.00"],
-      ["示例商户 B", "M00000902", "120.00", "360.00"],
-      ["示例商户 C", "M00000903", "0.00", "0.00"],
-      ["示例商户 D", "M00000904", "75.50", "680.00"],
-      ["示例商户 E", "M00000905", "18.00", "280.00"],
-      ["示例商户 F", "M00000906", "0.00", "150.00"]
+      ["远航商户", "M00000901", "500.00", "1,000.00"],
+      ["北辰商户", "M00000902", "120.00", "360.00"],
+      ["星河商户", "M00000903", "0.00", "0.00"],
+      ["晨曦商户", "M00000904", "75.50", "680.00"],
+      ["启明商户", "M00000905", "18.00", "280.00"],
+      ["云帆商户", "M00000906", "0.00", "150.00"]
     ];
-
     let tierRules = [
       { start: 0, groupId: "-10088000001", people: ["@finance_a", "@risk_a", "@ops_a"], required: 2 },
       { start: 10000, groupId: "-10088000002", people: ["@finance_a", "@risk_b", "@ops_b", "@manager_a"], required: 3 },
       { start: 50000, groupId: "-10088000003", people: ["@finance_a", "@risk_lead", "@ops_lead", "@manager_a", "@director_a"], required: 4 }
     ];
+    const demoState = (window.parent !== window && window.parent.__BP_DEMO_STATE__) || (window.__BP_DEMO_STATE__ ||= {});
+    const withdrawFeeRules = demoState.withdrawFeeRules ||= {
+      USDT: [{ start: 0, fee: 0 }, { start: 50, fee: 1 }, { start: 200, fee: 2 }],
+      TRX: [{ start: 0, fee: 0 }, { start: 50, fee: 2 }, { start: 200, fee: 4 }]
+    };
+    let activeWithdrawFeeCurrency = "USDT";
+    let editingWithdrawFeeIndex = null;
 
     // 商户互转关系按一对商户双向维护；划转审核群与确认人独立，审核机器人共用商户下分确认配置。
     const transferRelations = {
@@ -1068,7 +1076,7 @@
       M00000905: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], required: 2 }
     };
     const transferOrders = [
-      { no: "TRF-DEMO-0001", sourceNo: "M00000901", targetNo: "M00000902", sourceWallet: "collect", targetWallet: "payout", amount: "120.000000", bot: "商户下分确认机器人 A", group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2, created: "2026-08-05 11:40:00" }
+      { no: "TRF202608050001", sourceNo: "M00000901", targetNo: "M00000902", sourceWallet: "collect", targetWallet: "payout", amount: "120.000000", bot: "商户下分确认机器人 A", group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2, created: "2026-08-05 11:40:00" }
     ];
     let transferSequence = 2;
 
@@ -1103,23 +1111,23 @@
     }
 
     const withdrawRows = [
-      ["1", "ORD-TRX-DEMO-0001", "单", "示例商户 A/M00000901", "200.000000", "4.000000", "196.000000", "TRX", "TRON", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
-      ["2", "ORD-DEMO-0002", "单", "示例商户 B/M00000902", "120.00", "2.00", "118.00", "USDT", "TRC20", "待处理", "待确认", "1/2", "审核员甲、审核员乙", "取消"],
-      ["3", "ORD-DEMO-0003", "单", "示例商户 C/M00000903", "80.00", "1.00", "79.00", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
-      ["4", "ORD-DEMO-0004", "单", "示例商户 D/M00000904", "50.00", "1.00", "49.00", "USDT", "TRC20", "已取消", "待确认", "0/0", "—", "-"],
-      ["5", "ORD-DEMO-0005", "单", "示例商户 E/M00000905", "350.00", "5.00", "345.00", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
-      ["6", "ORD-DEMO-0006", "单", "示例商户 F/M00000906", "900.00", "9.00", "891.00", "USDT", "TRC20", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
+      ["1", "LS-W202608120001", "单", "远航商户/M00000901", "200.000000", "4.000000", "200.000000", "TRX", "TRON", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
+      ["2", "LS-W202608120002", "单", "北辰商户/M00000902", "120.000000", "2.000000", "120.000000", "USDT", "TRC20", "待处理", "待确认", "1/2", "审核员甲、审核员乙", "取消"],
+      ["3", "LS-W202608120003", "单", "星河商户/M00000903", "80.000000", "1.000000", "80.000000", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
+      ["4", "LS-W202608120004", "单", "晨曦商户/M00000904", "50.000000", "1.000000", "50.000000", "USDT", "TRC20", "已取消", "待确认", "0/0", "—", "-"],
+      ["5", "LS-W202608120005", "单", "启明商户/M00000905", "350.000000", "5.000000", "350.000000", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
+      ["6", "LS-W202608120006", "单", "云帆商户/M00000906", "900.000000", "9.000000", "900.000000", "USDT", "TRC20", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
     ];
 
     const rechargeOrders = [
-      { no: "MRC-DEMO-0001", merchant: "M00000001 / 远航商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "f64a9032…31b9", confirm: "18 / 16", status: "done", created: "2026-08-03 11:23:19" },
-      { no: "MRC-DEMO-0002", merchant: "M00000002 / 北辰商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "aa29e10b…8c62", confirm: "18 / 16", status: "done", created: "2026-08-03 10:37:37" },
-      { no: "MRC-DEMO-0003", merchant: "M00000003 / 星河商户", amount: 4000, fee: 0, net: 4000, address: "TNq4mL6s…P2wK", txid: "3d9b4f71…c2a1", confirm: "16 / 16", status: "done", created: "2026-08-01 11:24:42" },
-      { no: "MRC-DEMO-0004", merchant: "M00000004 / 晨曦商户", amount: 3000, fee: 0, net: 3000, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "expired", created: "2026-08-01 10:53:28" },
-      { no: "MRC-DEMO-0005", merchant: "M00000005 / 启明商户", amount: 3000, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "closed", created: "2026-08-01 10:09:40" },
-      { no: "MRC-DEMO-0006", merchant: "M00000006 / 云帆商户", amount: 1300, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "db3f2e71…1a09", confirm: "12 / 16", status: "processing", created: "2026-08-03 09:44:12" },
-      { no: "MRC-DEMO-0007", merchant: "M00000007 / 长风商户", amount: 600, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "review", created: "2026-08-02 15:11:08" },
-      { no: "MRC-DEMO-0008", merchant: "M00000008 / 海潮商户", amount: 1200, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "—", confirm: "0 / 16", status: "rejected", created: "2026-08-02 08:26:55" }
+      { no: "MRC202608030001", merchant: "M00000001 / 远航商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "f64a9032…31b9", confirm: "18 / 16", status: "done", created: "2026-08-03 11:23:19" },
+      { no: "MRC202608030002", merchant: "M00000002 / 北辰商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "aa29e10b…8c62", confirm: "18 / 16", status: "done", created: "2026-08-03 10:37:37" },
+      { no: "MRC202608010003", merchant: "M00000003 / 星河商户", amount: 4000, fee: 0, net: 4000, address: "TNq4mL6s…P2wK", txid: "3d9b4f71…c2a1", confirm: "16 / 16", status: "done", created: "2026-08-01 11:24:42" },
+      { no: "MRC202608010004", merchant: "M00000004 / 晨曦商户", amount: 3000, fee: 0, net: 3000, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "expired", created: "2026-08-01 10:53:28" },
+      { no: "MRC202608010005", merchant: "M00000005 / 启明商户", amount: 3000, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "closed", created: "2026-08-01 10:09:40" },
+      { no: "MRC202608030006", merchant: "M00000006 / 云帆商户", amount: 1300, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "db3f2e71…1a09", confirm: "12 / 16", status: "processing", created: "2026-08-03 09:44:12" },
+      { no: "MRC202608020007", merchant: "M00000007 / 长风商户", amount: 600, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "review", created: "2026-08-02 15:11:08" },
+      { no: "MRC202608020008", merchant: "M00000008 / 海潮商户", amount: 1200, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "—", confirm: "0 / 16", status: "rejected", created: "2026-08-02 08:26:55" }
     ];
 
     function iconSvg(kind) {
@@ -1143,7 +1151,7 @@
     }
 
     function renderSidebar() {
-      const activeParent = currentPage === "merchant" || currentPage === "withdraw" || currentPage === "recharge"
+      const activeParent = currentPage === "merchant" || currentPage === "feeConfig" || currentPage === "withdraw" || currentPage === "recharge"
         ? "merchant-group" : currentPage === "payout" ? "payout-group"
         : currentPage === "collect" ? "collect-group"
         : currentPage === "cryptoOrder" ? "wallet-group"
@@ -1270,6 +1278,24 @@
         });
       });
       renderRechargeOrders();
+    }
+
+    function feeConfigPage() {
+      const currencies = Object.keys(withdrawFeeRules);
+      const rules = withdrawFeeRules[activeWithdrawFeeCurrency] || [];
+      const rows = rules.map((rule, index) => {
+        const next = rules[index + 1];
+        const interval = next ? `[${rule.start}, ${next.start})` : `[${rule.start}, ∞)`;
+        return `<tr><td>${rule.start}${index === 0 ? ' <span class="tag">起始档</span>' : ''}</td><td>${rule.fee === 0 ? '免费' : `${rule.fee} ${activeWithdrawFeeCurrency}`}</td><td>下发 ${interval} ${rule.fee === 0 ? '免手续费' : `手续费 ${rule.fee} ${activeWithdrawFeeCurrency}`}</td><td class="op-links"><button type="button" class="link" data-fee-edit="${index}">修改</button>${index ? `<button type="button" class="link" data-fee-delete="${index}">删除</button>` : ''}</td></tr>`;
+      }).join('') || `<tr><td colspan="4" style="text-align:center;padding:28px;color:var(--muted)">暂未配置 ${activeWithdrawFeeCurrency} 下分手续费</td></tr>`;
+      const tabs = currencies.map((currency) => `<button type="button" class="btn ${currency === activeWithdrawFeeCurrency ? 'primary' : ''}" data-fee-currency="${currency}">币种：${currency}</button>`).join('');
+      const editing = editingWithdrawFeeIndex === null ? null : rules[editingWithdrawFeeIndex];
+      return `<div class="panel" style="margin:0"><div class="section-title">商户手续费配置</div>
+        <div class="modal-alert">按币种维护下发手续费阶梯：金额区间左闭右开，最高档一直到无穷；手续费填 0 表示该档免费。保存后立即生效，不影响已创建订单。</div>
+        <div class="button-row action-line" style="margin-top:16px">${tabs}</div>
+        <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>金额起始（>=）</th><th>下发手续费</th><th>生效区间（规则说明）</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="config-card" style="margin-top:16px"><div class="modal-section-head"><strong>${editing ? '修改规则' : '新增规则'} · ${activeWithdrawFeeCurrency}</strong></div><div class="config-inline"><input id="feeRuleStart" class="modal-control" type="number" min="0" step="0.000001" value="${editing ? editing.start : ''}" placeholder="金额起始（>=）"><input id="feeRuleAmount" class="modal-control" type="number" min="0" step="0.000001" value="${editing ? editing.fee : ''}" placeholder="下发手续费（${activeWithdrawFeeCurrency}）"><button type="button" class="btn primary" data-fee-save>${editing ? '保存修改' : '保存规则'}</button>${editing ? '<button type="button" class="btn" data-fee-cancel>取消</button>' : ''}</div><p class="modal-alert" style="margin:12px 0 0">手续费在下发金额之外额外扣除。商户余额扣减 = 下发金额 + 手续费；收款方到账金额 = 下发金额。币种之间不换算、不共用阶梯。</p></div>
+      </div>`;
     }
 
     function merchantPage() {
@@ -1426,7 +1452,7 @@
       tierRules.sort((a, b) => a.start - b.start);
       renderTierRuleRows();
       closeTierRuleEditor();
-      showToast(index >= 0 ? "金额区间配置已更新（演示）" : "金额区间配置已新增（演示）");
+      showToast(index >= 0 ? "金额区间配置已更新" : "金额区间配置已新增");
     }
 
     function openMerchantModal(index, focusTransfer = false) {
@@ -1677,10 +1703,10 @@
       if (!sharedBot || !config || !config.group || !config.reviewers.length || !config.required) return fail("请先完整配置被划出商户的下分确认机器人，以及资金划转审核群、确认人和确认人数。");
       if (!Number.isFinite(amount) || amount <= 0) return fail("请输入大于 0 的划转金额。");
       if (amount > walletBalance(sourceNo, sourceWallet)) return fail(`划转金额不能超过该商户的模拟${walletLabel(sourceWallet)}。`);
-      transferOrders.unshift({ no: `TRF-DEMO-${String(transferSequence++).padStart(4, "0")}`, sourceNo, targetNo, sourceWallet, targetWallet, amount: amount.toFixed(6), bot: sharedBot, group: config.group, reviewers: config.reviewers, required: config.required, created: "2026-08-05 12:00:00" });
+      transferOrders.unshift({ no: `TRF20260805${String(transferSequence++).padStart(4, "0")}`, sourceNo, targetNo, sourceWallet, targetWallet, amount: amount.toFixed(6), bot: sharedBot, group: config.group, reviewers: config.reviewers, required: config.required, created: "2026-08-05 12:00:00" });
       closeTransferModal();
       navigateTo("withdraw");
-      showToast("资金划转订单已提交，等待审核群多人确认（演示）。");
+      showToast("资金划转订单已提交，等待审核群多人确认。");
     }
 
     function saveTransferConfig(root) {
@@ -1725,8 +1751,8 @@
       const rows = transferRows + withdrawRows.map((r, i) => `<tr>
         <td></td><td class="cell-center">${r[0]}</td><td>${r[1]}</td><td><span class="tag">${r[2]}</span></td>
         <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td>
-        <td><div class="ellipsis" title="TDEMO${i}XXXXXXXXXXXXXXXXXXXXXXXX">TDEMO${i}…WALLET</div></td><td>${r[8]}</td>
-        <td><div class="ellipsis">${i < 2 ? "TDEMO-SOURCE…ADDR" : "—"}</div></td>
+        <td><div class="ellipsis" title="TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n">TYvJU4…H1r3n</div></td><td>${r[8]}</td>
+        <td><div class="ellipsis">${i < 2 ? "TNq4mL…Y2wK" : "—"}</div></td>
         <td><span class="tag ${r[9] === "待处理" ? "warning" : r[9] === "已取消" ? "danger" : "success"}">${r[9]}</span></td>
         <td><span class="tag ${r[10] === "已确认" ? "success" : "warning"}">${r[10]}</span></td><td>${r[11]}</td><td class="wrap">${r[12]}</td>
         <td>${i === 0 ? "优先处理" : ""}</td><td>2026-08-04 10:2${i}:00</td><td>${i < 3 ? "2026-08-04 10:30:00" : "—"}</td>
@@ -1796,11 +1822,22 @@
         <tbody>${rows}</tbody></table></div>${pagination(96)}`;
     }
 
-    const trxOrders = [
-      {idx:1,plat:"LS20260727001",merch:"M202607270001",name:"M00000306",cur:"TRX",amt:"1,500.000000",real:"1,500.000000",addr:"TXk9rF…f3Qz",status:"支付成功",cls:"success",time:"2026/07/27 10:23:15"},
-      {idx:2,plat:"LS20260727002",merch:"M202607270002",name:"M00000306",cur:"TRX",amt:"200.500000",real:"—",addr:"TNp2mK…k8Wd",status:"待支付",cls:"warning",time:"2026/07/27 11:05:42"},
-      {idx:3,plat:"LS20260727003",merch:"M202607270003",name:"M00000284",cur:"TRX",amt:"50.000000",real:"—",addr:"TQw7nL…m2Xa",status:"支付失败",cls:"danger",time:"2026/07/27 09:15:33"},
-      {idx:4,plat:"LS20260726015",merch:"M202607260015",name:"M00000140",cur:"USDT",amt:"500.000000",real:"500.000000",addr:"TYu3qH…n5Rb",status:"支付成功",cls:"success",time:"2026/07/26 16:42:08"}
+    let cryptoRateRows = [
+      { cur: "CNY", source: "欧易（OKX）", base: "7.1523", effective: "7.1723", min: "1 USDT", enabled: "开启" },
+      { cur: "VND", source: "XE 汇率网", base: "26,150.00", effective: "26,150.02", min: "1 USDT", enabled: "开启" }
+    ];
+    const cryptoCurrencyOptions = [
+      { cur: "THB", source: "Wise 汇率", base: "34.58", effective: "34.60" },
+      { cur: "MYR", source: "XE 汇率网", base: "4.47", effective: "4.49" },
+      { cur: "PHP", source: "汇率 API", base: "57.82", effective: "57.84" },
+      { cur: "IDR", source: "Wise 汇率", base: "16,255.00", effective: "16,255.02" }
+    ];
+    const cryptoOrders = [
+      {idx:1,plat:"LS20260727001",channel:"CH202607270001",merch:"M202607270001",name:"M00000306",cur:"TRX",amt:"1,500.000000",fee:"15.000000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"1,500.000000",addr:"TXk9rF…f3Qz",payAddr:"TNp2mK…k8Wd",hash:"a8f2…d71c",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/07/27 10:23:15",callbackTime:"2026/07/27 10:23:19",remark:"",ip:"203.0.113.21",time:"2026/07/27 10:20:03"},
+      {idx:2,plat:"LS20260727002",channel:"CH202607270002",merch:"M202607270002",name:"M00000306",cur:"TRX",amt:"200.500000",fee:"2.005000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"—",addr:"TNp2mK…k8Wd",payAddr:"—",hash:"—",status:"待支付",cls:"warning",notify:"未通知",payTime:"—",callbackTime:"—",remark:"",ip:"203.0.113.87",time:"2026/07/27 11:05:42"},
+      {idx:3,plat:"LS20260727003",channel:"CH202607270003",merch:"M202607270003",name:"M00000284",cur:"TRX",amt:"50.000000",fee:"0.500000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"否",pool:"普通池",real:"—",addr:"TQw7nL…m2Xa",payAddr:"—",hash:"—",status:"支付失败",cls:"danger",notify:"通知成功",payTime:"—",callbackTime:"2026/07/27 09:16:01",remark:"付款地址命中风险名单",ip:"198.51.100.32",time:"2026/07/27 09:15:33"},
+      {idx:4,plat:"LS20260811001",channel:"CH202608110001",merch:"M202608110001",name:"M00000306",cur:"VND",amt:"100,000",fee:"0.00",rate:"26,150.00 → 26,150.02",floatRate:"0.0200 VND/USDT",floatAmount:"—",protocol:"TRC20",ipWhite:"是",pool:"白名单池",real:"3.82408886 USDT",addr:"TQx7aJ…Z8qH",payAddr:"TLm8pQ…Y1uA",hash:"aa29…31b9",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/08/11 10:37:12",callbackTime:"2026/08/11 10:37:15",remark:"锁定汇率，USDT 向上取整至 8 位",ip:"198.51.100.14",time:"2026/08/11 10:34:40"},
+      {idx:5,plat:"LS20260726015",channel:"CH202607260015",merch:"M202607260015",name:"M00000140",cur:"USDT",amt:"500.000000",fee:"5.000000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRC20",ipWhite:"否",pool:"普通池",real:"500.000000",addr:"TYu3qH…n5Rb",payAddr:"TNq4mL…Y2wK",hash:"e723…16af",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/07/26 16:42:08",callbackTime:"2026/07/26 16:42:11",remark:"",ip:"192.0.2.55",time:"2026/07/26 16:40:12"}
     ];
     const flowByCur = {
       CNY: [{idx:197,entity:"M00000306",plat:"—",merch:"—",type:"后台调整",cur:"CNY",orig:"40000.00",delta:"-30000.00",after:"10000.00",time:"2026/07/22 16:31:03",remark:""}],
@@ -1828,24 +1865,31 @@
       const color = String(v).startsWith("+") ? "var(--success)" : String(v).startsWith("-") ? "var(--danger)" : "inherit";
       return `<span style="color:${color};font-weight:600">${v}</span>`;
     }
+    function cryptoConfigPage() {
+      const rows = cryptoRateRows.map((r) => `<tr><td><span class="tag">${r.cur}</span></td><td>${r.source}</td><td>${r.base}</td><td>${r.effective}</td><td>${r.min}</td><td><button type="button" class="switch ${r.enabled === "开启" ? "on" : ""}" data-crypto-rate-toggle="${r.cur}" aria-label="${r.cur} 汇率状态"></button><span style="margin-left:8px">${r.enabled}</span></td><td>${mockLink("编辑")}</td></tr>`).join("");
+      const available = cryptoCurrencyOptions.filter((item) => !cryptoRateRows.some((row) => row.cur === item.cur));
+      const addControl = available.length
+        ? `<select class="control" id="cryptoNewCurrency" style="width:180px">${available.map((item) => `<option value="${item.cur}">${item.cur}</option>`).join("")}</select>${button("新增币种")}`
+        : `<span style="color:var(--muted)">暂无可新增币种</span>`;
+      return `<div class="panel" style="margin:0"><div class="section-title">汇率设置</div>
+        <div class="filters">${field("统一汇率浮动加点", input("0.02", 160))}${field("同 IP 每分钟下单次数限制", input("5", 160))}${button("提交保存", "primary")}</div>
+        <div class="section-title" style="margin-top:18px">指定币种汇率配置（从平台支持清单新增）</div>
+        <div class="table-wrap"><table style="min-width:900px"><thead><tr><th>币种</th><th>汇率来源</th><th>基准汇率</th><th>有效汇率</th><th>最低下单金额</th><th>状态</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="button-row action-line" style="margin-top:12px">${addControl}</div>
+        <p style="margin:12px 0 0;color:var(--muted);font-size:12px">从平台支持清单选择法币，币种资料由系统带出；已取得报价、完成配置且开启的币种才开放代收。有效汇率 = 基准汇率 + 汇率浮动加点；VND 下单时锁定有效汇率，按既有 USDT 规则向上取整至 8 位。既有 CNY、USDT、TRX 配置与订单逻辑不变。</p></div>`;
+    }
     function cryptoOrderPage() {
-      const rows = trxOrders.map((o) => `<tr>
-        <td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.merch}</td><td>${o.name}</td>
-        <td><span class="tag">${o.cur}</span></td>
-        <td class="mono">${o.amt}</td><td class="mono">${o.real}</td><td class="mono">${o.addr}</td>
-        <td><span class="status ${o.cls==="success"?"done":o.cls==="warning"?"processing":o.cls==="danger"?"rejected":"expired"}">${o.status}</span></td>
-        <td>${o.time}</td><td>${mockLink("详情")}</td>
+      const rows = cryptoOrders.map((o) => `<tr>
+        <td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.channel}<br>${o.merch}</td><td>${o.name}</td><td>虚拟币充值</td><td class="mono">${o.amt}</td><td><span class="tag">${o.cur}</span></td><td>${o.fee}</td><td>${o.rate}</td><td>${o.floatRate}</td><td>${o.floatAmount}</td><td>${o.protocol}</td><td>${o.ipWhite}</td><td>${o.pool}</td><td class="mono">${o.real}</td><td class="mono">${o.addr}</td><td class="mono">${o.payAddr}</td><td class="mono">${o.hash}</td><td><span class="status ${o.cls==="success"?"done":o.cls==="warning"?"processing":o.cls==="danger"?"rejected":"expired"}">${o.status}</span></td><td>${o.notify}</td><td>${o.payTime}</td><td>${o.callbackTime}</td><td>${o.remark || "—"}</td><td>${o.ip}</td><td>${o.time}</td><td>${mockLink("详情")}</td>
       </tr>`).join("");
       return `<div class="filters">
-        ${field("平台订单号", input("平台订单号"))}${field("商户订单号", input("商户订单号"))}
-        ${field("状态", select("全部状态", 120))}${field("币种", '<select class="control" style="width:110px"><option>全部币种</option><option>USDT</option><option selected>TRX</option></select>')}
-        ${field("商户名称", input("商户名称", 120))}
-        ${button("搜索","primary")}${button("重置")}${button("导出")}
+        ${field("系统订单号", input("请输入系统订单号"))}${field("通道订单号", input("请输入通道订单号"))}${field("商家订单号", input("请输入商家订单号"))}${field("商户", select("全部商户", 120))}${field("币种", '<select class="control" style="width:110px"><option>全部币种</option><option>USDT</option><option>TRX</option><option>VND</option></select>')}${field("支付状态", select("支付状态", 120))}${field("通知状态", select("通知状态", 120))}${field("协议类型", select("协议类型", 120))}
+        ${button("搜索","primary")}${button("导出数据")}${button("导出任务列表")}
       </div>
-      <div class="table-wrap"><table style="min-width:1200px">
-        <thead><tr><th>序号</th><th>平台订单号</th><th>商户订单号</th><th>商户名称</th><th>币种</th><th>订单金额</th><th>实际到账</th><th>收款地址</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
-        <tbody>${rows}</tbody></table></div>${pagination(trxOrders.length)}
-      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">TRX 代收订单在既有虚拟币充值订单列表中展示，币种筛选新增 TRX；金额 6 位小数，状态复用既有体系。收款地址由地址池按 TRX 类型下发，流程同 USDT 虚拟币代收。</p>`;
+      <div class="table-wrap"><table style="min-width:2800px">
+        <thead><tr><th>序号</th><th>系统订单号</th><th>通道订单号/商家订单号</th><th>商户名/商户号</th><th>类型</th><th>交易金额</th><th>币种</th><th>服务费</th><th>汇率</th><th>浮动费率</th><th>浮动金额</th><th>协议类型</th><th>IP白名单</th><th>地址池类型</th><th>到账金额</th><th>收款钱包地址</th><th>付款地址</th><th>Hash</th><th>支付状态</th><th>通知状态</th><th>支付时间</th><th>回调时间</th><th>驳回描述</th><th>IP</th><th>提交时间</th><th>操作</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>${pagination(cryptoOrders.length)}
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">本页是统一的虚拟币充值订单管理页。VND 订单：交易金额为原始 VND；汇率展示锁定的基准 → 有效值；浮动费率为 VND/USDT 加点，浮动金额无既有数据时显示 —；到账金额为按既有规则向上取整的实际 USDT。USDT 与 TRX 订单继续按原有规则展示。</p>`;
     }
     function accountFlowPage(kind) {
       const entityLabel = kind === "chFlow" ? "通道名称" : "商户名称";
@@ -1902,7 +1946,8 @@
       document.getElementById("pageTitle").textContent = meta.heading || meta.title;
       document.getElementById("titleActions").innerHTML = currentPage === "payout" ? button("关闭进单", "danger") : "";
       const renderers = {
-        merchant: merchantPage, withdraw: withdrawPage, recharge: rechargePage, payout: payoutPage, collect: collectPage,
+        merchant: merchantPage, feeConfig: feeConfigPage, withdraw: withdrawPage, recharge: rechargePage, payout: payoutPage, collect: collectPage,
+        cryptoConfig: cryptoConfigPage,
         cryptoOrder: cryptoOrderPage,
         mcFlow: () => accountFlowPage("mcFlow"),
         chFlow: () => accountFlowPage("chFlow"),
@@ -1960,6 +2005,44 @@
         openMerchantModal(Number(target.dataset.transferConfigIndex), true);
         return;
       }
+      if (target.dataset.feeCurrency !== undefined) {
+        activeWithdrawFeeCurrency = target.dataset.feeCurrency;
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        return;
+      }
+      if (target.dataset.feeEdit !== undefined) {
+        editingWithdrawFeeIndex = Number(target.dataset.feeEdit);
+        renderPage();
+        return;
+      }
+      if (target.dataset.feeCancel !== undefined) {
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        return;
+      }
+      if (target.dataset.feeSave !== undefined) {
+        const start = Number(document.getElementById("feeRuleStart")?.value);
+        const fee = Number(document.getElementById("feeRuleAmount")?.value);
+        const rules = withdrawFeeRules[activeWithdrawFeeCurrency];
+        if (!Number.isFinite(start) || start < 0 || !Number.isFinite(fee) || fee < 0) return showToast("请输入合法的起始金额和手续费。");
+        if (rules.some((rule, index) => index !== editingWithdrawFeeIndex && rule.start === start)) return showToast("金额起始不能与已有阶梯相同。");
+        if (editingWithdrawFeeIndex === 0 && start !== 0) return showToast("起始档金额必须为 0。");
+        if (editingWithdrawFeeIndex === null) rules.push({ start, fee });
+        else rules[editingWithdrawFeeIndex] = { start, fee };
+        rules.sort((a, b) => a.start - b.start);
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        showToast(`${activeWithdrawFeeCurrency} 阶梯手续费已保存。`);
+        return;
+      }
+      if (target.dataset.feeDelete !== undefined) {
+        withdrawFeeRules[activeWithdrawFeeCurrency].splice(Number(target.dataset.feeDelete), 1);
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        showToast("阶梯手续费已删除。");
+        return;
+      }
       if (target.dataset.transferAddRelation !== undefined) {
         const section = target.closest("[data-transfer-config]");
         const sourceNo = section.dataset.transferConfig;
@@ -1970,7 +2053,7 @@
         if (!transferRelations[sourceNo].includes(targetNo)) transferRelations[sourceNo].push(targetNo);
         if (!transferRelations[targetNo].includes(sourceNo)) transferRelations[targetNo].push(sourceNo);
         refreshRelationTags(section);
-        showToast("已更新可互转商户关系（演示）。");
+        showToast("已更新可互转商户关系。");
         return;
       }
       if (target.dataset.transferRemoveRelation !== undefined) {
@@ -1980,7 +2063,7 @@
         transferRelations[sourceNo] = (transferRelations[sourceNo] || []).filter((item) => item !== targetNo);
         transferRelations[targetNo] = (transferRelations[targetNo] || []).filter((item) => item !== sourceNo);
         refreshRelationTags(section);
-        showToast("已移除可互转商户关系（演示）。");
+        showToast("已移除可互转商户关系。");
         return;
       }
       if (target.dataset.transferAddReviewer !== undefined) {
@@ -1993,7 +2076,7 @@
         if (!transferReviewConfigs[sourceNo].reviewers.includes(reviewer)) transferReviewConfigs[sourceNo].reviewers.push(reviewer);
         input.value = "";
         refreshReviewerTags(section);
-        showToast("已添加有效确认人（演示）。");
+        showToast("已添加有效确认人。");
         return;
       }
       if (target.dataset.transferRemoveReviewer !== undefined) {
@@ -2001,7 +2084,7 @@
         const sourceNo = section.dataset.transferConfig;
         transferReviewConfigs[sourceNo].reviewers = transferReviewConfigs[sourceNo].reviewers.filter((item) => item !== target.dataset.transferRemoveReviewer);
         refreshReviewerTags(section);
-        showToast("已移除有效确认人（演示）。");
+        showToast("已移除有效确认人。");
         return;
       }
       if (target.dataset.modalClose !== undefined) {
@@ -2012,7 +2095,7 @@
         saveWithdrawConfirmConfig(document.getElementById("merchantModalRoot"));
         saveTransferConfig(document.getElementById("merchantModalRoot"));
         closeMerchantModal();
-        showToast("商户与资金划转配置已保存（演示）");
+        showToast("商户与资金划转配置已保存");
         return;
       }
       const modalSectionTarget = target.dataset.modalSectionTarget;
@@ -2034,7 +2117,7 @@
             tierRules.splice(index, 1);
             renderTierRuleRows();
             closeTierRuleEditor();
-            showToast("金额阶梯配置已删除（演示）");
+            showToast("金额阶梯配置已删除");
           }
         }
         return;
@@ -2051,6 +2134,23 @@
         accountCurrency = target.dataset.currency;
         renderPage();
         showToast(accountCurrency + " 数据已刷新");
+        return;
+      }
+      if (target.dataset.cryptoRateToggle) {
+        const rate = cryptoRateRows.find((item) => item.cur === target.dataset.cryptoRateToggle);
+        if (!rate) return;
+        rate.enabled = rate.enabled === "开启" ? "关闭" : "开启";
+        renderPage();
+        showToast(rate.cur + " 汇率配置已" + rate.enabled);
+        return;
+      }
+      if (target.dataset.action === "新增币种") {
+        const select = document.getElementById("cryptoNewCurrency");
+        const option = cryptoCurrencyOptions.find((item) => item.cur === select?.value);
+        if (!option || cryptoRateRows.some((item) => item.cur === option.cur)) return showToast("该币种已配置");
+        cryptoRateRows.push({ ...option, min: "1 USDT", enabled: "开启" });
+        renderPage();
+        showToast(option.cur + " 已加入指定币种汇率配置");
         return;
       }
       const page = target.dataset.page;
@@ -2082,7 +2182,7 @@
       else closeMerchantModal();
     });
 
-    const openPages = ["merchant","withdraw","recharge","payout","collect","cryptoOrder","mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"];
+    const openPages = ["merchant","feeConfig","withdraw","recharge","payout","collect","cryptoConfig","cryptoOrder","mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"];
     const bootPage = (typeof window !== "undefined" && window.__BP_BOOT__) || location.hash.replace("#", "") || new URLSearchParams(location.search).get("page") || "";
     if (openPages.includes(bootPage)) currentPage = bootPage;
     if (["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"].includes(currentPage)) accountCurrency = "TRX";

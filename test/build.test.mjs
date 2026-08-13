@@ -38,14 +38,15 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /<th>剩余预付<\/th>/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /USDT/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /TRX/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /VND/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /cryptoConfig|虚拟币充值配置/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /新增币种|不同法币/);
   assert.ok(documents["TRX代收通道-demo"]);
   assert.match(documents["TRX代收通道-demo"], /m-order|代收订单/);
   assert.match(documents["TRX代收通道-demo"], /全部通道/);
   assert.match(documents["TRX代收通道-demo"], /完成起始时间/);
   assert.match(documents["TRX代收通道-demo"], /商户代理费/);
   assert.match(documents["TRX代收通道-demo"], /交易金额/);
-  assert.ok(documents["VND法币代收-demo"]);
-  assert.match(documents["VND法币代收-demo"], /虚拟币充值配置|汇率/);
 });
 
 test("后台默认进产品导航页且商户不串后台", async () => {
@@ -92,6 +93,8 @@ test("后台默认进产品导航页且商户不串后台", async () => {
   });
 
   assert.match(element("sideNav").innerHTML, /代收商户管理|商户充值订单|虚拟币充值/);
+  assert.match(element("sideNav").innerHTML, /通道代收流水记录/);
+  assert.doesNotMatch(element("sideNav").innerHTML, /data-page="undefined"/);
   assert.match(element("demoFrame").srcdoc, /__BP_SURFACE__=\"ADMIN\"|__BP_SURFACE__='ADMIN'|__BP_SURFACE__=\"ADMIN\"/);
   assert.match(element("demoFrame").srcdoc, /__BP_BOOT__/);
   assert.match(element("demoFrame").srcdoc, /bp-embed|__BP_EMBED__/);

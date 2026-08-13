@@ -15,7 +15,7 @@ npm run check
 
 ## 目录
 
-- `src/pages/`：各需求的正式 Demo 源文件
+- `src/pages/`：按业务页面维护的正式 Demo 源文件；后续需求优先更新既有页面，不按需求复制同一页面
 - `src/catalog/project.json`：页面、后台归属和源文件清单
 - `src/shell/index.template.html`：统一 Demo 入口母板
 - `scripts/`：构建与完整性检查
@@ -30,12 +30,12 @@ npm run check
 
 新需求仍在上级产品资料库中按完整需求包维护；只有确认用于评审或展示的 Demo 文件复制到本仓库。
 
-## 接入新 Demo
+## 新需求接入与页面迭代
 
-1. 在 `src/pages/<需求名称>/` 新增确认后的 Demo。
-2. 在 `src/catalog/project.json` 登记页面、源文件和影响端。
-3. 同时影响多个端时只保留一份 Demo，并在 `moduleCodes` 登记多个端。
-4. 运行 `npm run check`。
-5. 本地确认展示正常后再提交和推送。
+1. 先从 `src/catalog/project.json` 定位受影响业务页的 `doc` 和 `boot`，并更新该业务页的既有源文件。
+2. 新增字段、状态、币种或交互时，保留该页面原有能力；同一页面不得复制出第二份 Demo。
+3. 只有新增真实产品页面或独立端时，才在 `src/pages/` 新增源文件，并在 `src/catalog/project.json` 登记。
+4. 同时影响多个端时只保留一份 Demo，并在 `moduleCodes` 登记多个端。
+5. 运行 `npm run check`，确认统一入口和既有页面正常后再提交和推送。
 
 不要直接修改 `index.html` 或 `dist/`，它们是构建产物。
