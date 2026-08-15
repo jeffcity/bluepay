@@ -14,7 +14,7 @@
         "label": "商户管理",
         "items": [
           { "id": "admin-merchant", "title": "商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "merchant", "req": ["BP-REQ-002", "BP-REQ-003"] },
-          { "id": "admin-withdraw", "title": "商户下分", "doc": "机器人分层播报与多人确认-demo", "boot": "withdraw", "req": ["BP-REQ-002", "BP-REQ-005"] },
+          { "id": "admin-withdraw", "title": "商户下分", "doc": "机器人分层播报与多人确认-demo", "boot": "withdraw", "req": ["BP-REQ-002", "BP-REQ-005", "BP-REQ-007"] },
           { "id": "admin-withdraw-fee", "title": "商户手续费配置", "doc": "机器人分层播报与多人确认-demo", "boot": "feeConfig", "req": ["BP-REQ-005"] },
           { "id": "admin-recharge", "title": "商户充值订单", "doc": "商户充值订单统计栏位-demo", "boot": "", "req": ["BP-REQ-001"] }
         ]
@@ -136,6 +136,13 @@
       "summary": "代收新增 TRX（同 USDT 虚拟币链路）：地址池归属沿用蓝盛，按币种锁定地址用途；商户仅能从既有商户下分发起 TRX 提现，不做 TRX 代付。",
       "moduleCodes": ["ADMIN", "MERCHANT", "ADDRESS"],
       "doc": "TRX代收通道-demo"
+    },
+    {
+      "id": "BP-REQ-007",
+      "title": "商户下分统计与导出",
+      "summary": "在商户下分记录的筛选区下方按币种展示状态、申请金额、实际到账和手续费统计，并按当前筛选条件导出完整明细。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "机器人分层播报与多人确认-demo"
     }
   ],
   "documents": [
