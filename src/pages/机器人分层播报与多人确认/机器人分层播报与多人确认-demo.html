@@ -223,6 +223,31 @@
       gap: 14px 28px;
     }
     .filters.two-line { max-width: 1480px; }
+    .withdraw-summary {
+      margin: 16px 0;
+      overflow-x: auto;
+      background: #fff;
+      border-top: 1px solid #edf1f6;
+      border-bottom: 1px solid #edf1f6;
+    }
+    .withdraw-summary-strip {
+      min-width: 1320px;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+    }
+    .withdraw-summary-item { min-width: 164px; padding: 0 16px; border-right: 1px solid #edf1f6; }
+    .withdraw-summary-item:first-child { min-width: 210px; }
+    .withdraw-summary-item:last-child { border-right: 0; }
+    .withdraw-summary-label { display: block; color: var(--regular); white-space: nowrap; }
+    .withdraw-summary-values { display: flex; gap: 10px; margin-top: 5px; white-space: nowrap; }
+    .withdraw-summary-value { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .withdraw-summary-value em { margin-right: 3px; color: var(--muted); font-size: 11px; font-style: normal; font-weight: 400; }
+    .withdraw-summary-value.done { color: var(--success); }
+    .withdraw-summary-value.pending { color: var(--warning); }
+    .withdraw-summary-value.cancelled { color: var(--danger); }
+    .withdraw-summary-value.amount { color: #2d78d1; }
+    .withdraw-summary-note { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; white-space: nowrap; }
     .field {
       display: inline-flex;
       align-items: center;
@@ -1118,6 +1143,7 @@
       ["5", "LS-W202608120005", "单", "启明商户/M00000905", "350.000000", "5.000000", "350.000000", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
       ["6", "LS-W202608120006", "单", "云帆商户/M00000906", "900.000000", "9.000000", "900.000000", "USDT", "TRC20", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
     ];
+    let withdrawQuery = { order: "", type: "", status: "" };
 
     const rechargeOrders = [
       { no: "MRC202608030001", merchant: "M00000001 / 远航商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "f64a9032…31b9", confirm: "18 / 16", status: "done", created: "2026-08-03 11:23:19" },
@@ -1741,35 +1767,80 @@
     }
 
     function withdrawPage() {
-      const transferRows = transferOrders.map((order) => `<tr>
-        <td></td><td class="cell-center">—</td><td>${order.no}</td><td><span class="tag">划转</span></td>
-        <td class="wrap">${merchantLabel(order.sourceNo)}</td><td>${order.amount}</td><td>0.000000</td><td>${order.amount}</td><td>USDT</td>
-        <td class="wrap">${order.targetNo} / ${walletLabel(order.targetWallet)}</td><td>内部划转</td><td class="wrap">${order.sourceNo} / ${walletLabel(order.sourceWallet)}</td>
-        <td><span class="tag warning">待审核</span></td><td><span class="tag warning">待确认</span></td><td>0/${order.required}</td><td class="wrap">${order.reviewers.join("、")}</td>
-        <td class="wrap">审核机器人：${order.bot}；审核群：${order.group}</td><td>${order.created}</td><td>—</td><td>运营员</td><td>等待${order.required}人确认</td><td>—</td><td class="op-links">${mockLink("查看")}</td>
-      </tr>`).join("");
-      const rows = transferRows + withdrawRows.map((r, i) => `<tr>
+      const records = withdrawRecords();
+      const rows = records.map((record) => {
+        if (record.kind === "transfer") return `<tr>
+          <td></td><td class="cell-center">—</td><td>${record.no}</td><td><span class="tag">划转</span></td>
+          <td class="wrap">${record.merchant}</td><td>${record.amount}</td><td>0.000000</td><td>${record.net}</td><td>${record.currency}</td>
+          <td class="wrap">${record.target}</td><td>内部划转</td><td class="wrap">${record.source}</td>
+          <td><span class="tag warning">待审核</span></td><td><span class="tag warning">待确认</span></td><td>${record.confirmed}</td><td class="wrap">${record.reviewers}</td>
+          <td class="wrap">${record.remark}</td><td>${record.created}</td><td>—</td><td>运营员</td><td>${record.operationRemark}</td><td>—</td><td class="op-links">${mockLink("查看")}</td>
+        </tr>`;
+        const r = record.raw;
+        return `<tr>
         <td></td><td class="cell-center">${r[0]}</td><td>${r[1]}</td><td><span class="tag">${r[2]}</span></td>
         <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td>
         <td><div class="ellipsis" title="TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n">TYvJU4…H1r3n</div></td><td>${r[8]}</td>
-        <td><div class="ellipsis">${i < 2 ? "TNq4mL…Y2wK" : "—"}</div></td>
+        <td><div class="ellipsis">${record.index < 2 ? "TNq4mL…Y2wK" : "—"}</div></td>
         <td><span class="tag ${r[9] === "待处理" ? "warning" : r[9] === "已取消" ? "danger" : "success"}">${r[9]}</span></td>
         <td><span class="tag ${r[10] === "已确认" ? "success" : "warning"}">${r[10]}</span></td><td>${r[11]}</td><td class="wrap">${r[12]}</td>
-        <td>${i === 0 ? "优先处理" : ""}</td><td>2026-08-04 10:2${i}:00</td><td>${i < 3 ? "2026-08-04 10:30:00" : "—"}</td>
-        <td>${i < 3 ? "运营员" : "—"}</td><td>${i === 1 ? "等待第二人确认" : ""}</td><td>${i < 3 ? "查看" : "—"}</td>
+        <td>${record.index === 0 ? "优先处理" : ""}</td><td>2026-08-04 10:2${record.index}:00</td><td>${record.index < 3 ? "2026-08-04 10:30:00" : "—"}</td>
+        <td>${record.index < 3 ? "运营员" : "—"}</td><td>${record.index === 1 ? "等待第二人确认" : ""}</td><td>${record.index < 3 ? "查看" : "—"}</td>
         <td class="op-links">${r[13].split("　").map(mockLink).join("")}</td>
-      </tr>`).join("");
+      </tr>`;
+      }).join("") || '<tr><td colspan="23" style="padding:42px;text-align:center;color:var(--muted)">当前筛选条件下暂无下分记录</td></tr>';
       return `<div class="subtabs"><button class="subtab active" type="button">商户下分记录</button><button class="subtab" type="button" data-action="平台收款钱包余额">平台收款钱包余额</button></div>
       <div class="filters" style="margin-top:14px">
-        ${field("单号", input("输入单号搜索", 200))}${field("下分单类型", select("全部", 140))}
-        ${field("状态", select("全部", 140))}
+        ${field("单号", `<input id="withdrawOrder" class="control" style="width:200px" placeholder="输入单号搜索" value="${withdrawQuery.order}">`)}
+        ${field("下分单类型", `<select id="withdrawType" class="control" style="width:140px"><option value="">全部</option><option value="单" ${withdrawQuery.type === "单" ? "selected" : ""}>单</option><option value="划转" ${withdrawQuery.type === "划转" ? "selected" : ""}>划转</option></select>`)}
+        ${field("状态", `<select id="withdrawStatus" class="control" style="width:140px"><option value="">全部</option><option value="待处理" ${withdrawQuery.status === "待处理" ? "selected" : ""}>待处理</option><option value="已处理" ${withdrawQuery.status === "已处理" ? "selected" : ""}>已处理</option><option value="已取消" ${withdrawQuery.status === "已取消" ? "selected" : ""}>已取消</option></select>`)}
         ${field("提交时间", '<div class="control range" style="width:280px"><span>◷　开始时间</span><strong>-</strong><span>结束时间</span></div>')}
-        ${button("搜索","primary")}
+        <button type="button" class="btn primary" data-withdraw-search>搜索</button>
+        <button type="button" class="btn" data-withdraw-export>导出</button>
       </div>
+      ${withdrawSummary(records)}
       <div class="table-wrap"><table style="min-width:2600px">
         <colgroup><col style="width:45px"><col style="width:60px"><col style="width:150px"><col style="width:100px"><col style="width:170px"><col style="width:90px"><col style="width:85px"><col style="width:90px"><col style="width:75px"><col style="width:210px"><col style="width:90px"><col style="width:210px"><col style="width:100px"><col style="width:105px"><col style="width:85px"><col style="width:190px"><col style="width:120px"><col style="width:145px"><col style="width:145px"><col style="width:100px"><col style="width:150px"><col style="width:100px"><col style="width:150px"></colgroup>
         <thead><tr><th></th><th>序号</th><th>单号</th><th>下分单类型</th><th>商户名称/商户号</th><th>提现金额</th><th>手续费</th><th>到账金额</th><th>币种</th><th>收款钱包地址</th><th>协议类型</th><th>付款地址</th><th>状态</th><th>TG确认状态</th><th>确认人数</th><th>确认人</th><th>备注</th><th>提交时间</th><th>操作时间</th><th>操作人</th><th>操作备注</th><th>审核图片</th><th>操作</th></tr></thead>
-        <tbody>${rows}</tbody></table></div>${pagination(229)}`;
+        <tbody>${rows}</tbody></table></div>${pagination(records.length)}`;
+    }
+
+    function withdrawRecords() {
+      const transfers = transferOrders.map((order) => ({
+        kind: "transfer", no: order.no, type: "划转", status: "待处理", merchant: merchantLabel(order.sourceNo),
+        amount: Number(order.amount), fee: 0, net: Number(order.amount), currency: "USDT",
+        target: `${order.targetNo} / ${walletLabel(order.targetWallet)}`, source: `${order.sourceNo} / ${walletLabel(order.sourceWallet)}`,
+        confirmed: `0/${order.required}`, reviewers: order.reviewers.join("、"), remark: `审核机器人：${order.bot}；审核群：${order.group}`,
+        created: order.created, operationRemark: `等待${order.required}人确认`
+      }));
+      const withdrawals = withdrawRows.map((raw, index) => ({
+        kind: "withdraw", raw, index, no: raw[1], type: raw[2], status: raw[9], merchant: raw[3],
+        amount: Number(raw[4]), fee: Number(raw[5]), net: Number(raw[6]), currency: raw[7]
+      }));
+      return [...transfers, ...withdrawals].filter((record) =>
+        (!withdrawQuery.order || record.no.toLowerCase().includes(withdrawQuery.order.toLowerCase())) &&
+        (!withdrawQuery.type || record.type === withdrawQuery.type) &&
+        (!withdrawQuery.status || record.status === withdrawQuery.status)
+      );
+    }
+
+    function withdrawSummary(records) {
+      const statisticRecords = records.filter((record) => record.type !== "划转");
+      const currencies = [...new Set(["USDT", "TRX", ...statisticRecords.map((record) => record.currency)])];
+      const recordsFor = (currency) => statisticRecords.filter((record) => record.currency === currency);
+      const count = (currency, status) => recordsFor(currency).filter((record) => record.status === status).length;
+      const total = (currency, key, onlyProcessed = false) => recordsFor(currency).reduce((sum, record) => sum + ((!onlyProcessed || record.status === "已处理") ? record[key] : 0), 0);
+      const rows = [
+        ["总下分笔数", (currency) => recordsFor(currency).length, ""],
+        ["待处理笔数", (currency) => count(currency, "待处理"), "pending"],
+        ["已处理笔数", (currency) => count(currency, "已处理"), "done"],
+        ["已取消笔数", (currency) => count(currency, "已取消"), "cancelled"],
+        ["下分申请金额", (currency) => total(currency, "amount").toFixed(2), "amount"],
+        ["实际到账金额", (currency) => total(currency, "net", true).toFixed(2), "done"],
+        ["已收手续费", (currency) => total(currency, "fee", true).toFixed(2), "amount"]
+      ];
+      const items = rows.map(([label, calculate, tone], index) => `<div class="withdraw-summary-item"><span class="withdraw-summary-label">${label}</span><div class="withdraw-summary-values">${currencies.map((currency) => `<span class="withdraw-summary-value ${tone}"><em>${currency}</em>${calculate(currency)}</span>`).join("")}</div>${index === 0 ? '<span class="withdraw-summary-note">按当前筛选汇总，不含划转类型</span>' : ""}</div>`).join("");
+      return `<section class="withdraw-summary" aria-label="商户下分统计" aria-live="polite"><div class="withdraw-summary-strip">${items}</div></section>`;
     }
 
     function payoutPage() {
@@ -1987,6 +2058,21 @@
       if (!target) return;
       if (target.dataset.transferOpen !== undefined) {
         renderTransferModal(target.dataset.transferOpen, Number(target.dataset.transferIndex));
+        return;
+      }
+      if (target.dataset.withdrawSearch !== undefined) {
+        withdrawQuery = {
+          order: document.getElementById("withdrawOrder")?.value.trim() || "",
+          type: document.getElementById("withdrawType")?.value || "",
+          status: document.getElementById("withdrawStatus")?.value || ""
+        };
+        renderPage();
+        showToast("已按当前筛选条件刷新下分统计与记录。");
+        return;
+      }
+      if (target.dataset.withdrawExport !== undefined) {
+        const records = withdrawRecords();
+        showToast(records.length ? `已按当前筛选条件生成 ${records.length} 条模拟导出（完整结果）。` : "当前筛选条件下暂无可导出数据。");
         return;
       }
       if (target.dataset.transferClose !== undefined) {
