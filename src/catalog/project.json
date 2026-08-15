@@ -51,6 +51,14 @@
           { "id": "admin-mc-flow", "title": "商户代收流水记录", "doc": "机器人分层播报与多人确认-demo", "boot": "mcFlow", "req": ["BP-REQ-005"] },
           { "id": "admin-mc-prepay", "title": "商户代收预付记录", "doc": "机器人分层播报与多人确认-demo", "boot": "mcPrepay", "req": ["BP-REQ-005"] }
         ]
+      },
+      {
+        "label": "TG 通知管理",
+        "items": [
+          { "title": "转发消息模板配置", "static": true },
+          { "title": "关键词配置", "static": true },
+          { "id": "admin-tg-system-message", "title": "TG系统消息配置", "doc": "TG系统消息配置-demo", "boot": "", "req": ["BP-REQ-006"] }
+        ]
       }
     ],
     "MERCHANT": [
@@ -143,6 +151,13 @@
       "summary": "在商户下分记录的筛选区下方按币种展示状态、申请金额、实际到账和手续费统计，并按当前筛选条件导出完整明细。",
       "moduleCodes": ["ADMIN"],
       "doc": "机器人分层播报与多人确认-demo"
+    },
+    {
+      "id": "BP-REQ-006",
+      "title": "TG 系统消息配置现状复刻",
+      "summary": "复刻蓝盛后台 TG 系统消息配置的筛选、列表、新增编辑、启停、删除确认与特殊类型专属配置，作为后续新增消息类型的页面基线。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "TG系统消息配置-demo"
     }
   ],
   "documents": [
@@ -165,6 +180,10 @@
     {
       "id": "目标池金额层级配置-demo",
       "source": "pages/目标池金额层级配置/目标池金额层级配置-demo.html"
+    },
+    {
+      "id": "TG系统消息配置-demo",
+      "source": "pages/TG系统消息配置/TG系统消息配置-demo.html"
     }
   ]
 }
