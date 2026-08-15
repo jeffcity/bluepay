@@ -159,15 +159,15 @@
 
   <script>
     const CURRENCIES = [
-      { id: "USDT", label: "USDT", prefix: "USDT", isNew: false },
-      { id: "TRX", label: "TRX", prefix: "TRX", isNew: true }
+      { id: "USDT", label: "USDT", prefix: "LS-USDT" },
+      { id: "TRX", label: "TRX", prefix: "LS-TRX" }
     ];
     const POOLS = [
       { type: 0, code: "N", label: "普通池" },
       { type: 1, code: "W", label: "白名单池" }
     ];
 
-    // 分开设置：各币种独立层级（演示初始值不同）
+    // 各币种使用独立的层级配置。
     const store = {
       USDT: [
         { lower: 0, upper: 100 },
@@ -181,7 +181,7 @@
       ]
     };
 
-    // 演示地址库存（按币种×池×层）；地址归属固定沿用蓝盛。
+    // 地址库存按币种×池×层维护；地址归属固定沿用蓝盛。
     const inventory = {
       "USDT|0|1": { total: 40, avail: 28 },
       "USDT|0|2": { total: 22, avail: 15 },
@@ -219,7 +219,7 @@
     function renderOwnerTabs() {
       $("ownerTabs").innerHTML = CURRENCIES.map((o) => `
         <button type="button" class="owner-tab ${o.id === currency ? "active" : ""}" data-currency="${o.id}">
-          ${o.label}${o.isNew ? '<span class="new">NEW</span>' : ""}
+          ${o.label}
         </button>
       `).join("");
       $("ownerHint").textContent = `正在编辑 ${currency} 的金额分层；地址归属固定沿用蓝盛，地址仅可用于该币种`;
@@ -357,7 +357,7 @@
       $("btnSave").onclick = () => {
         const err = validateTiers();
         if (err) { toast(err); render(); return; }
-        toast(`已保存 ${currencyMeta().label} 分层配置（演示）`);
+        toast(`已保存 ${currencyMeta().label} 分层配置`);
         render();
       };
       $("tierBody").addEventListener("click", (e) => {

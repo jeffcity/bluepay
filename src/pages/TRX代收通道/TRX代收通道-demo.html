@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TRX 代收通道 — 蓝盛后台 + 商户端 Demo</title>
+<title>蓝盛商户端</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -271,15 +271,20 @@ tbody tr:hover { background: #fafcff; }
 
 <div class="modal-mask" id="withdrawRequestModal">
   <div class="modal-box">
-    <div class="modal-head"><h3>发起 TRX 提现</h3><button class="modal-x" onclick="closeWithdrawRequestModal()">&times;</button></div>
+    <div class="modal-head"><h3>发起提现</h3><button class="modal-x" onclick="closeWithdrawRequestModal()">&times;</button></div>
     <div class="modal-body">
       <p style="margin:0 0 16px;color:var(--text-secondary)">沿用既有商户下分流程：商户提交后，由后台完成审核、TG 确认和出款。</p>
       <div class="filter-card" style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center">
+        <span>币种</span><select id="withdrawCurrency" class="fc-select" onchange="setWithdrawCurrency(this.value)"><option value="USDT">USDT</option><option value="TRX">TRX</option></select>
         <span>下分单类型</span><select class="fc-select"><option>单商户</option><option>多商户组合</option></select>
-        <span>收款钱包地址</span><span class="mono">TMn5kR9xW2pLqY7vH3jF8sB1cD6gA4iN0tZw7Yp</span>
-        <span>协议类型</span><span>TRON</span>
-        <span>TRX 可提现余额</span><strong class="mono">1,500.000000 TRX</strong>
-        <label for="withdrawAmount">提现金额</label><input id="withdrawAmount" class="fc-input" placeholder="请输入提现金额（最多 6 位小数）">
+        <span>收款钱包地址</span><span id="withdrawAddress" class="mono">TMn5kR9xW2pLqY7vH3jF8sB1cD6gA4iN0tZw7Yp</span>
+        <span>协议类型</span><span id="withdrawProtocol">TRON</span>
+        <span>可提现余额</span><strong id="withdrawAvailable" class="mono">1,500.000000 TRX</strong>
+        <span>手续费规则</span><span id="withdrawRule" style="color:var(--text-secondary)">—</span>
+        <label for="withdrawAmount">提现金额</label><input id="withdrawAmount" class="fc-input" oninput="updateWithdrawFeePreview()" placeholder="请输入提现金额（最多 6 位小数）">
+        <span>手续费</span><strong id="withdrawFeePreview" class="mono">—</strong>
+        <span>余额扣减</span><strong id="withdrawDeductPreview" class="mono">—</strong>
+        <span>到账金额</span><strong id="withdrawNetPreview" class="mono">—</strong>
         <label for="withdrawRemark">备注</label><input id="withdrawRemark" class="fc-input" placeholder="请输入备注">
       </div>
     </div>
@@ -397,6 +402,7 @@ let curPage = 'mc-flow';
 let curCurrency = 'CNY';
 let openTabs = ['order','mc-flow'];
 let curSys = 'admin';
+let merchantOrderCurrency = '';
 
 // ===== Helpers =====
 const $ = id => document.getElementById(id);
@@ -405,9 +411,62 @@ function toast(msg) { clearTimeout(toastTimer); const t=$('toast'); t.textConten
 function openModal() { $('detailModal').classList.add('show'); }
 function closeModal() { $('detailModal').classList.remove('show'); }
 $('detailModal').addEventListener('click', e => { if(e.target===$('detailModal')) closeModal(); });
-function openWithdrawRequestModal() { $('withdrawRequestModal').classList.add('show'); }
+const demoState = (window.parent !== window && window.parent.__BP_DEMO_STATE__) || (window.__BP_DEMO_STATE__ ||= {});
+const withdrawFeeRules = demoState.withdrawFeeRules ||= {
+  USDT: [{ start: 0, fee: 0 }, { start: 50, fee: 1 }, { start: 200, fee: 2 }],
+  TRX: [{ start: 0, fee: 0 }, { start: 50, fee: 2 }, { start: 200, fee: 4 }]
+};
+const WITHDRAW_CONFIG = {
+  USDT: { balance: 5000, address: 'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n', protocol: 'TRC20' },
+  TRX: { balance: 1500, address: 'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n', protocol: 'TRON' }
+};
+let withdrawCurrency = 'TRX';
+function withdrawRules(currency) { return withdrawFeeRules[currency] || []; }
+function withdrawRuleText(currency) {
+  return withdrawRules(currency).map((rule, index, rules) => {
+    const next = rules[index + 1];
+    return rule.fee === 0 ? `${next ? `< ${next.start}` : '全部'} 免费` : `≥ ${rule.start}：${rule.fee} ${currency}/笔`;
+  }).join('；');
+}
+function setWithdrawCurrency(currency) {
+  withdrawCurrency = currency;
+  const config = WITHDRAW_CONFIG[currency];
+  $('withdrawCurrency').value = currency;
+  $('withdrawAddress').textContent = config.address;
+  $('withdrawProtocol').textContent = config.protocol;
+  $('withdrawAvailable').textContent = `${config.balance.toFixed(6)} ${currency}`;
+  $('withdrawRule').textContent = withdrawRuleText(currency);
+  $('withdrawAmount').value = '';
+  updateWithdrawFeePreview();
+}
+function updateWithdrawFeePreview() {
+  const rawAmount = $('withdrawAmount').value.trim();
+  const amount = Number(rawAmount);
+  if (!/^\d+(?:\.\d{1,6})?$/.test(rawAmount) || !Number.isFinite(amount) || amount <= 0) {
+    $('withdrawFeePreview').textContent = '—';
+    $('withdrawDeductPreview').textContent = '—';
+    $('withdrawNetPreview').textContent = '—';
+    return;
+  }
+  const rule = withdrawRules(withdrawCurrency).filter(item => amount >= item.start).at(-1);
+  const fee = rule ? rule.fee : 0;
+  $('withdrawFeePreview').textContent = `${fee.toFixed(6)} ${withdrawCurrency}`;
+  $('withdrawDeductPreview').textContent = `${(amount + fee).toFixed(6)} ${withdrawCurrency}`;
+  $('withdrawNetPreview').textContent = `${amount.toFixed(6)} ${withdrawCurrency}`;
+}
+function openWithdrawRequestModal(currency = 'TRX') { $('withdrawRequestModal').classList.add('show'); setWithdrawCurrency(currency); }
 function closeWithdrawRequestModal() { $('withdrawRequestModal').classList.remove('show'); }
-function submitWithdrawRequest() { closeWithdrawRequestModal(); toast('TRX 提现申请已提交，等待后台审核与 TG 确认'); }
+function submitWithdrawRequest() {
+  const rawAmount = $('withdrawAmount').value.trim();
+  const amount = Number(rawAmount);
+  const config = WITHDRAW_CONFIG[withdrawCurrency];
+  if (!/^\d+(?:\.\d{1,6})?$/.test(rawAmount) || !Number.isFinite(amount) || amount <= 0) return toast('提现金额最多支持 6 位小数');
+  const rule = withdrawRules(withdrawCurrency).filter(item => amount >= item.start).at(-1);
+  const fee = rule ? rule.fee : 0;
+  if (amount + fee > config.balance) return toast('提现金额加手续费不得超过可提现余额');
+  closeWithdrawRequestModal();
+  toast(`${withdrawCurrency} 提现申请已提交，等待后台审核与 TG 确认`);
+}
 $('withdrawRequestModal').addEventListener('click', e => { if(e.target===$('withdrawRequestModal')) closeWithdrawRequestModal(); });
 
 function deltaClass(v) { if(v.startsWith('+')) return 'amt-pos'; if(v.startsWith('-')) return 'amt-neg'; return 'amt-zero'; }
@@ -479,6 +538,10 @@ function renderContent() {
   document.querySelectorAll('.curr-tab').forEach(t => {
     t.addEventListener('click', () => { curCurrency=t.dataset.cur; renderContent(); toast(curCurrency+' 数据已刷新'); });
   });
+  document.getElementById('merchantOrderCurrency')?.addEventListener('change', (event) => {
+    merchantOrderCurrency = event.target.value;
+    renderContent();
+  });
 }
 
 function renderOrderPage(p) {
@@ -502,7 +565,7 @@ function renderOrderPage(p) {
   let rows = data.map(o => {
     let tds = `<td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.merch}</td>`;
     if(!isMerchant) tds += `<td>${o.name}</td>`;
-    tds += `<td><span class="tag tag-blue">${o.cur}</span>${o.isNew?'<span class="badge-new">NEW</span>':''}</td>`;
+    tds += `<td><span class="tag tag-blue">${o.cur}</span></td>`;
     tds += `<td class="mono">${o.amt}</td><td class="mono">${o.real}</td>`;
     if(!isMerchant) tds += `<td class="mono" style="font-size:11px">${o.addr}</td>`;
     tds += `<td><span class="tag ${o.statusCls}">${o.status}</span></td><td>${o.time}</td>`;
@@ -511,12 +574,11 @@ function renderOrderPage(p) {
   }).join('');
 
   return f + `<div class="table-card"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span></div>
-  <div class="foot-note"><b>说明：</b>TRX 代收订单在既有${isMerchant?'商户端':''}代收订单列表中展示，币种筛选新增 TRX。金额 6 位小数，状态复用既有体系。</div>`;
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span></div>`;
 }
 
 function renderMerchantCollectOrderPage() {
-  const data = ORDERS.filter(o=>o.cur==='TRX');
+  const data = merchantOrderCurrency ? ORDERS.filter(o=>o.cur===merchantOrderCurrency) : ORDERS;
   const finishTime = {
     LS20260727001:'2026/07/27 10:25:03',
     LS20260727003:'2026/07/27 11:47:18',
@@ -526,27 +588,31 @@ function renderMerchantCollectOrderPage() {
     <input class="fc-input" placeholder="平台订单号"><input class="fc-input" placeholder="商户订单号">
     <select class="fc-select"><option>全部状态</option><option>待支付</option><option>支付成功</option><option>支付失败</option><option>已过期</option></select>
     <select class="fc-select"><option>全部通道</option><option>蓝盛地址池（TRX）</option></select>
-    <select class="fc-select"><option>全部币种</option><option>USDT</option><option selected>TRX</option></select>
+    <select class="fc-select" id="merchantOrderCurrency"><option value="">全部币种</option><option value="USDT" ${merchantOrderCurrency==='USDT'?'selected':''}>USDT</option><option value="TRX" ${merchantOrderCurrency==='TRX'?'selected':''}>TRX</option></select>
     <input class="fc-input" placeholder="创建起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="创建结束时间" style="width:130px">
     <input class="fc-input" placeholder="完成起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="完成结束时间" style="width:130px">
     <label class="auto-refresh">自动刷新 <span class="switch"><i></i></span></label>
     <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备导出')">导出</button>
   </div>`;
+  const currencyLabel = merchantOrderCurrency || '按币种';
+  const amountTotal = merchantOrderCurrency ? data.reduce((total, order) => total + Number(order.amt.replace(/,/g,'')), 0) : 0;
+  const success = data.filter(order => order.status==='支付成功');
+  const successTotal = merchantOrderCurrency ? success.reduce((total, order) => total + Number(String(order.real).replace(/,/g,'')), 0) : 0;
   const summaries = [
-    ['总金额','2,550.500000 TRX'],['订单量','4'],['成交金额','1,500.000000 TRX'],['成功订单量','1'],
-    ['商户服务费','0.000000 TRX'],['商户代理费','0.000000 TRX'],['通道服务费','0.000000 TRX'],['通道代理费','0.000000 TRX'],['平台利润','0.000000 TRX'],['成功率','25%']
+    ['总金额',merchantOrderCurrency?`${amountTotal.toFixed(6)} ${currencyLabel}`:'—'],['订单量',String(data.length)],['成交金额',merchantOrderCurrency?`${successTotal.toFixed(6)} ${currencyLabel}`:'—'],['成功订单量',String(success.length)],
+    ['商户服务费',merchantOrderCurrency?`0.000000 ${currencyLabel}`:'—'],['商户代理费',merchantOrderCurrency?`0.000000 ${currencyLabel}`:'—'],['通道服务费',merchantOrderCurrency?`0.000000 ${currencyLabel}`:'—'],['通道代理费',merchantOrderCurrency?`0.000000 ${currencyLabel}`:'—'],['平台利润',merchantOrderCurrency?`0.000000 ${currencyLabel}`:'—'],['成功率',data.length?`${(success.length / data.length * 100).toFixed(2)}%`:'0.00%']
   ];
   const summary = `<div class="order-summary">${summaries.map(([label,value])=>`<span>${label} <b>${value}</b></span>`).join('')}</div>`;
   const cols = ['平台订单号','商户订单号','通道','产品','币种','订单金额','交易金额','状态','提交时间','结束时间'];
   const rows = data.map(o => `<tr>
     <td class="mono">${o.plat}</td><td class="mono">${o.merch}</td><td>蓝盛地址池（TRX）</td><td>TRX 代收</td>
-    <td><span class="tag tag-blue">TRX</span>${o.isNew?'<span class="badge-new">NEW</span>':''}</td><td class="mono">${o.amt}</td><td class="mono">${o.real}</td>
+    <td><span class="tag tag-blue">${o.cur}</span></td><td class="mono">${o.amt}</td><td class="mono">${o.real}</td>
     <td><span class="tag ${o.statusCls}">${o.status}</span></td><td>${o.time}</td><td>${finishTime[o.plat]||'—'}</td>
   </tr>`).join('');
 
-  return f + summary + `<div class="table-card merchant-order-table"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <div class="pager merchant-order-pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select"><option>10条/页</option></select><span>前往</span><input class="fc-input" value="1" style="width:48px"></div>
-  <div class="foot-note"><b>说明：</b>以现有商户端代收订单字段为基线，币种筛选与币种列支持 USDT / TRX；TRX 金额最多保留 6 位小数。</div>`;
+  const tableRows = rows || `<tr><td colspan="10" style="text-align:center;color:var(--text-secondary)">暂无 ${merchantOrderCurrency || '符合条件的'} 订单</td></tr>`;
+  return f + summary + `<div class="table-card merchant-order-table"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${tableRows}</tbody></table></div>
+  <div class="pager merchant-order-pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select"><option>10条/页</option></select><span>前往</span><input class="fc-input" value="1" style="width:48px"></div>`;
 }
 
 function renderFlowPage(p) {
@@ -572,7 +638,7 @@ function renderFlowPage(p) {
     let tds = '';
     cols.forEach(c => {
       if(c==='序号') tds += `<td>${r.idx}</td>`;
-      else if(c===p.entity) tds += `<td>${r.entity}${r.isNew?'<span class="badge-new">NEW</span>':''}</td>`;
+      else if(c===p.entity) tds += `<td>${r.entity}</td>`;
       else if(c==='平台订单号') tds += `<td class="mono">${r.plat}</td>`;
       else if(c==='商户订单号') tds += `<td class="mono" style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${r.merch}</td>`;
       else if(c==='类型') tds += `<td>${r.type}</td>`;
@@ -589,8 +655,7 @@ function renderFlowPage(p) {
   if(!rows) rows = `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:#999">暂无 ${curCurrency} 数据</td></tr>`;
 
   return f + tabs + `<div class="table-card"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span>${data.length>10?'<span class="pager-btn">2</span>':''}<span class="pager-btn disabled">&gt;</span></div>
-  <div class="foot-note"><b>说明：</b>TRX tab 为本期新增，与 CNY / USDT 并列。表头结构、筛选条件、分页、导出与既有 tab 完全一致。金额以 TRX 为单位，6 位小数。变动金额正数绿色、负数红色。</div>`;
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span>${data.length>10?'<span class="pager-btn">2</span>':''}<span class="pager-btn disabled">&gt;</span></div>`;
 }
 
 function getFlowData(p, cur) {
@@ -626,8 +691,7 @@ function renderDailyPage(p) {
   if(!rows) rows = `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:#999">暂无 ${curCurrency} 数据</td></tr>`;
 
   return f + tabs + `<div class="table-card"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span></div>
-  <div class="foot-note"><b>说明：</b>TRX tab 新增。宽表指标（订单金额、服务费、余额、预付）以 TRX 为单位，6 位小数。合计只合计当前 tab 币种。导出只导出当前 tab。</div>`;
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span></div>`;
 }
 
 // ===== System switch =====
@@ -683,7 +747,6 @@ function renderWithdrawPage(p) {
       <div class="bc-sub">来源：主池收款，提现上限即此可提现余额</div>
     </div>
     <div class="balance-card" style="border:2px solid #13c2c2;background:linear-gradient(135deg,#e6fffb 0%,#f0fffe 100%)">
-      <div class="bc-badge" style="background:#13c2c2">NEW</div>
       <div class="bc-label" style="margin-top:8px">商户 TRX 余额（可提现）</div>
       <div class="bc-value">1,500.000000<span class="bc-unit">TRX</span></div>
       <div class="bc-sub">来源：TRX 代收成功入账</div>
@@ -697,10 +760,10 @@ function renderWithdrawPage(p) {
     </div>
     <div class="withdraw-right">
       <div class="wr-label">TRX 提现钱包地址</div>
-      <div class="wr-addr">TMn5kR9x******4iN0tZw7Yp</div>
+      <div class="wr-addr">TYvJU4******EcaH1r3n</div>
       <div class="wr-chain">TRON · 如需修改请联系客服</div>
       <div class="wr-bal">当前余额：<span class="no-bal">1,500.000000 TRX</span></div>
-      <button class="btn-withdraw" onclick="openWithdrawRequestModal()">📋 发起 TRX 提现</button>
+      <button class="btn-withdraw" onclick="openWithdrawRequestModal('TRX')">发起提现</button>
     </div>
   </div>`;
 
@@ -709,23 +772,23 @@ function renderWithdrawPage(p) {
     <select class="fc-select"><option>下分单类型</option><option>单</option><option>组合</option></select>
     <select class="fc-select"><option>状态</option><option>已完成</option><option>已取消</option><option>审核中</option></select>
     <select class="fc-select"><option>币种</option><option>USDT</option><option selected>TRX</option></select>
-    <select class="fc-select"><option>协议类型</option><option>TRC20</option></select>
+    <select class="fc-select"><option>协议类型</option><option>TRON</option><option>TRC20</option></select>
     <input class="fc-input" placeholder="请输入收款地址" style="width:200px">
-    <button class="btn btn-primary" onclick="toast('已搜索')">🔍 搜索</button>
-    <button class="btn" onclick="toast('已准备导出')">📥 导出数据</button>
+    <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button>
+    <button class="btn" onclick="toast('已准备导出')">导出数据</button>
   </div>`;
 
   // Table
   const cols = ['序号','单号','下分单类型','提现商户','提现金额','手续费','审核图片','到账金额','币种','收款钱包地址','协议类型','状态','备注'];
   const rows = [
-    {idx:3,no:'LS-W20260727001',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'500.000000',fee:'2.500000',img:'–',real:'497.500000',cur:'TRX',addr:'TMn5kR9xW2pLqY7vH3jF8sB1cD6gA4iN0tZw7Yp',proto:'TRON',status:'待处理',statusCls:'tag-orange',remark:'等待后台审核与 TG 确认',isNew:true},
-    {idx:2,no:'CMB2026052010392365000l',type:'组合<br><span style="color:#fa8c16;font-size:11px">+2户</span>',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'600.00',fee:'0.00',img:'–',real:'600.00',cur:'USDT',addr:'TYvJU4XQ9XEw9ouJkBb7bsjfJ8EcaH1i',proto:'TRC20',status:'已取消',statusCls:'tag-gray',remark:''},
-    {idx:1,no:'ORD2026051414295098000l',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'5,000.00',fee:'2.00',img:'–',real:'4,998.00',cur:'USDT',addr:'TYvJU4XQ9XEw9ouJkBb7bsjfJ8EcaH1i',proto:'TRC20',status:'已完成',statusCls:'tag-green',remark:''},
+    {idx:3,no:'LS-W20260727001',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'500.000000',fee:'2.500000',img:'–',real:'500.000000',cur:'TRX',addr:'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n',proto:'TRON',status:'待处理',statusCls:'tag-orange',remark:'等待后台审核与 TG 确认'},
+    {idx:2,no:'CMB2026052010392365000l',type:'组合<br><span style="color:#fa8c16;font-size:11px">+2户</span>',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'600.000000',fee:'0.000000',img:'–',real:'600.000000',cur:'USDT',addr:'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n',proto:'TRC20',status:'已取消',statusCls:'tag-gray',remark:''},
+    {idx:1,no:'ORD2026051414295098000l',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'5,000.000000',fee:'2.000000',img:'–',real:'5,000.000000',cur:'USDT',addr:'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n',proto:'TRC20',status:'已完成',statusCls:'tag-green',remark:''},
   ];
-  let trs = rows.map(r => `<tr${r.isNew?' style="background:#f0fffe"':''}>
+  let trs = rows.map(r => `<tr>
     <td>${r.idx}</td><td class="mono" style="font-size:11px">${r.no}</td><td>${r.type}</td><td>${r.merchant}</td>
     <td class="mono">${r.amt}</td><td class="mono" style="color:var(--danger)">${r.fee}</td><td>${r.img}</td>
-    <td class="mono" style="color:var(--success)">${r.real}</td><td>${r.cur}${r.isNew?'<span class="badge-new">NEW</span>':''}</td>
+    <td class="mono" style="color:var(--success)">${r.real}</td><td>${r.cur}</td>
     <td class="mono" style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${r.addr}</td>
     <td><span class="tag tag-blue">${r.proto}</span></td><td><span class="tag ${r.statusCls}">${r.status}</span></td><td>${r.remark}</td>
   </tr>`).join('');
@@ -733,7 +796,6 @@ function renderWithdrawPage(p) {
   html += `<div class="table-card"><table style="min-width:1300px"><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${trs}</tbody></table></div>`;
   html += `<div class="pager"><span>共 3 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select" style="height:28px;min-width:80px"><option>10条/页</option></select><span style="font-size:12px">前往</span><input class="fc-input" style="width:40px;height:28px;text-align:center" value="1"><span style="font-size:12px">页</span></div>`;
 
-  html += `<div class="foot-note"><b>说明：</b>TRX 余额卡片展示商户 TRX 代收成功后的可提现余额。商户只能在本页发起 TRX 提现，后台按既有商户下分流程审核、TG 确认和出款；不提供 TRX 代付入口。</div>`;
   return html;
 }
 
@@ -781,7 +843,6 @@ function renderMerchantMgmtPage(p) {
   html += `<div class="table-card"><table style="min-width:1020px"><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${row}</tbody></table></div>`;
   html += `<div class="pager"><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select" style="height:28px;min-width:80px"><option>10条/页</option></select><span style="font-size:12px">共 1 条</span></div>`;
 
-  html += `<div class="foot-note"><b>说明：</b>余额、预付及剩余预付均在同一栏位内按 CNY、USDT、TRX 分行展示，操作只作用于同行币种。TRX 仅展示代收成功后的可用余额，不提供调整、下发、结算或一键结算，商户转出只能从商户下分发起。</div>`;
   return html;
 }
 

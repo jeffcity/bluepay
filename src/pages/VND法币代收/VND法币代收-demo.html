@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VND 法币代收｜现状复刻</title>
+  <title>VND 法币代收｜汇率配置与订单管理</title>
   <style>
     :root{--blue:#5798ec;--blue-strong:#438def;--bg:#f3f6fb;--line:#edf0f5;--text:#303133;--muted:#909399;--green:#69a74d;--orange:#c8962d;--danger:#e06a6a}
     *{box-sizing:border-box}html,body{margin:0;min-width:1180px;background:var(--bg);color:var(--text);font:14px/1.45 Inter,"PingFang SC","Microsoft YaHei",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(67,141,239,.26);outline-offset:2px}
@@ -86,7 +86,7 @@
       <div class="tabs"><button class="tab active" id="tabConfig">虚拟币充值配置 ×</button><button class="tab" id="tabOrders">虚拟币充值订单 ×</button></div>
       <div class="title" id="pageTitle">虚拟币充值配置</div>
 
-      <!-- 页面一：虚拟币充值配置（现状复刻） -->
+      <!-- 页面一：虚拟币充值配置 -->
       <div class="page" id="page-config">
         <section class="config-card" aria-label="汇率设置">
           <div class="config-head">汇率设置<span class="head-hint">所有法币统一配置：基准汇率按各币种所选汇率来源自动获取（CNY 取交易所行情，其他法币按 USDT≈USD 1:1 取汇率网站牌价），有效汇率 = 基准汇率 + 统一浮动加点（利润）</span></div>
@@ -113,14 +113,14 @@
         </section>
       </div>
 
-      <!-- 页面二：虚拟币充值订单管理（现状复刻） -->
+      <!-- 页面二：虚拟币充值订单管理 -->
       <div class="page" id="page-orders" hidden>
         <section class="filter" aria-label="订单筛选">
           <div class="field"><label for="fOrderNo">系统订单号</label><input id="fOrderNo" class="control" placeholder="请输入系统订单号"></div>
           <div class="field"><label for="fChannelNo">通道订单号</label><input id="fChannelNo" class="control" placeholder="请输入通道订单号"></div>
           <div class="field"><label for="fMerchantNo">商家订单号</label><input id="fMerchantNo" class="control" placeholder="请输入商家订单号"></div>
           <div class="field"><label for="fMerchant">商户</label><select id="fMerchant" class="control"><option value="">全部商户</option><option>远航商户</option><option>北辰商户</option><option>星河商户</option></select></div>
-          <div class="field"><label for="fCurrency">币种</label><select id="fCurrency" class="control"><option value="">币种</option><option value="USDT">USDT</option><option value="CNY">CNY</option></select></div>
+          <div class="field"><label for="fCurrency">币种</label><select id="fCurrency" class="control"><option value="">币种</option><option value="USDT">USDT</option><option value="TRX">TRX</option><option value="CNY">CNY</option><option value="VND">VND</option></select></div>
           <div class="field"><label for="fPayStatus">支付状态</label><select id="fPayStatus" class="control"><option value="">支付状态</option><option value="1">待支付</option><option value="2">支付成功</option><option value="3">已驳回</option><option value="5">地址验证异常</option><option value="6">已过期</option><option value="7">IP封禁</option><option value="8">同ip下单超限</option></select></div>
           <div class="field"><label for="fNotify">通知状态</label><select id="fNotify" class="control"><option value="">通知状态</option><option value="0">未通知</option><option value="1">通知成功</option><option value="2">通知失败</option></select></div>
           <div class="field"><label for="fProtocol">协议类型</label><select id="fProtocol" class="control"><option value="">协议类型</option><option value="1">TRC20</option><option value="2">ERC20</option></select></div>
@@ -248,7 +248,7 @@
 
     const orders=[
       {no:'VR20260806001',channel:'CH202608060001',merchantOrder:'MO-88121',merchant:'远航商户',merchantId:'M00000001',type:'虚拟币充值',amount:500,currency:'USDT',fee:'5.00',rate:7.1523,floatRate:0.02,floatAmount:'10.00',protocol:'TRC20',ipWhite:true,pool:'普通池',received:495,wallet:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',pay:'TNq4mL6sPw3xJ7vB9kT2aE5hU8iO1rY2wK',hash:'f64a9032c8d1e5b7a2f04963d8c1b5e902174a6f3d2b8c9e1a0b7d4c5f6e31b9',payStatus:2,notify:1,payTime:'2026-08-06 09:12:45',notifyTime:'2026-08-06 09:12:48',remark:'',ip:'203.0.113.21',submit:'2026-08-06 09:10:02'},
-      {no:'VR20260806002',channel:'CH202608060002',merchantOrder:'MO-88122',merchant:'北辰商户',merchantId:'M00000002',type:'虚拟币充值',amount:1200,currency:'USDT',fee:'12.00',rate:7.1523,floatRate:0.02,floatAmount:'24.00',protocol:'TRC20',ipWhite:true,pool:'白名单池',received:1188,wallet:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',pay:'TLm8pQ2xNv5bV0cX3zJ6hG9kW4sR7tY1uA',hash:'aa29e10b7f4d3c8a2e9b1d6f0c5a8e3b7d2f9a4c1e6b8d3f0a5c2e7b9d4f1a62',payStatus:2,notify:1,payTime:'2026-08-06 10:37:12',notifyTime:'2026-08-06 10:37:15',remark:'',ip:'198.51.100.14',submit:'2026-08-06 10:34:40'},
+      {no:'VR20260806002',channel:'CH202608060002',merchantOrder:'MO-88122',merchant:'北辰商户',merchantId:'M00000002',type:'虚拟币充值',amount:100000,currency:'VND',fee:'0.00',rate:26150.02,floatRate:0.02,floatAmount:'0.00',protocol:'TRC20',ipWhite:true,pool:'白名单池',received:3.82408885,payableUsdt:3.82408885,wallet:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',pay:'TLm8pQ2xNv5bV0cX3zJ6hG9kW4sR7tY1uA',hash:'aa29e9032c8d1e5b7a2e04963d8c1b5e902174a6f3d2b8c9e1a0b7d4c5f6e31b9',payStatus:2,notify:1,payTime:'2026-08-06 10:37:12',notifyTime:'2026-08-06 10:37:15',remark:'已按锁定汇率 26,150.02 VND/USDT 确认到账',ip:'198.51.100.14',submit:'2026-08-06 10:34:40'},
       {no:'VR20260806003',channel:'CH202608060003',merchantOrder:'MO-88123',merchant:'星河商户',merchantId:'M00000003',type:'虚拟币充值',amount:800,currency:'USDT',fee:'8.00',rate:7.1489,floatRate:0.02,floatAmount:'16.00',protocol:'ERC20',ipWhite:false,pool:'普通池',received:0,wallet:'0x8f3Ae2b7C1d9F04a6E5b8D2c7A9f1B3e0D6c4A72',pay:'0x2b9Cf5d1A8e3F70c4B6a9D2e5F8b1C3a0E7d6B45',hash:'',payStatus:1,notify:0,payTime:'',notifyTime:'',remark:'',ip:'203.0.113.87',submit:'2026-08-06 11:02:31'},
       {no:'VR20260806004',channel:'CH202608060004',merchantOrder:'MO-88124',merchant:'远航商户',merchantId:'M00000001',type:'虚拟币充值',amount:300,currency:'USDT',fee:'3.00',rate:7.1523,floatRate:0.02,floatAmount:'6.00',protocol:'TRC20',ipWhite:true,pool:'普通池',received:0,wallet:'TNq4mL6sPw3xJ7vB9kT2aE5hU8iO1rY2wK',pay:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',hash:'',payStatus:6,notify:2,payTime:'',notifyTime:'',remark:'订单超时未支付',ip:'192.0.2.55',submit:'2026-08-06 08:15:20'},
       {no:'VR20260806005',channel:'CH202608060005',merchantOrder:'MO-88125',merchant:'北辰商户',merchantId:'M00000002',type:'虚拟币充值',amount:2600,currency:'USDT',fee:'26.00',rate:7.1523,floatRate:0.02,floatAmount:'52.00',protocol:'TRC20',ipWhite:false,pool:'普通池',received:0,wallet:'TQx7aJ3pVb2nK8mR4sW9yL1cD6eF0gZ8qH',pay:'TXb1nP9qWe4rT6yU2iO5pA8sD3fG7hJ0kL',hash:'',payStatus:3,notify:1,payTime:'',notifyTime:'',remark:'付款地址命中风险名单',ip:'198.51.100.32',submit:'2026-08-06 07:48:09'},
@@ -264,14 +264,15 @@
     }
 
     function renderStats(list){
+      const expectedUsdt=o=>o.payableUsdt??o.amount;
       const success=list.filter(o=>o.payStatus===2),rejected=list.filter(o=>o.payStatus===3),failed=list.filter(o=>[3,5,6,7,8].includes(o.payStatus)),processing=list.filter(o=>o.payStatus===1);
       $('stSuccessAmount').textContent=money(success.reduce((n,o)=>n+o.received,0))+' USDT';
-      $('stRejectedAmount').textContent=money(rejected.reduce((n,o)=>n+o.amount,0))+' USDT';
+      $('stRejectedAmount').textContent=money(rejected.reduce((n,o)=>n+expectedUsdt(o),0))+' USDT';
       $('stSuccessCount').textContent=success.length;
       $('stFailedCount').textContent=failed.length;
       const denom=success.length+failed.length;
       $('stSuccessRate').textContent=(denom?success.length/denom*100:0).toFixed(2)+'%';
-      $('stProcessingAmount').textContent=money(processing.reduce((n,o)=>n+o.amount,0))+' USDT';
+      $('stProcessingAmount').textContent=money(processing.reduce((n,o)=>n+expectedUsdt(o),0))+' USDT';
       $('stProcessingCount').textContent=processing.length;
     }
 
@@ -322,7 +323,7 @@
 
     function showDetail(no){
       const o=findOrder(no);if(!o)return;
-      const rows=[['系统订单号',o.no],['通道订单号',o.channel],['商家订单号',o.merchantOrder],['商户名称',o.merchant],['商户号',o.merchantId],['类型',o.type],['交易金额',money(o.amount)+' USDT'],['服务费',o.fee],['币种',o.currency],['汇率',rate4(o.rate)],['浮动汇率',rate4(o.floatRate)],['协议类型',o.protocol],['IP白名单',o.ipWhite?'是':'否'],['地址池类型',o.pool],['到账金额',o.received?money(o.received)+' USDT':'—'],['收款钱包地址',o.wallet],['付款地址',o.pay],['Hash',o.hash||'—'],['支付状态',payStatusText[o.payStatus]||'-'],['通知状态',notifyText[o.notify]||'-'],['创建时间',o.submit],['支付时间',o.payTime||'—'],['回调时间',o.notifyTime||'—'],['驳回描述',o.remark||'—']];
+      const rows=[['系统订单号',o.no],['通道订单号',o.channel],['商家订单号',o.merchantOrder],['商户名称',o.merchant],['商户号',o.merchantId],['类型',o.type],['交易金额',money(o.amount)+' '+o.currency],['服务费',o.fee],['币种',o.currency],['汇率',rate4(o.rate)],['浮动汇率',rate4(o.floatRate)],['协议类型',o.protocol],['IP白名单',o.ipWhite?'是':'否'],['地址池类型',o.pool],['到账金额',o.received?money(o.received)+' USDT':'—'],['收款钱包地址',o.wallet],['付款地址',o.pay],['Hash',o.hash||'—'],['支付状态',payStatusText[o.payStatus]||'-'],['通知状态',notifyText[o.notify]||'-'],['创建时间',o.submit],['支付时间',o.payTime||'—'],['回调时间',o.notifyTime||'—'],['驳回描述',o.remark||'—']];
       $('detailDesc').innerHTML=rows.map(r=>`<tr><th>${r[0]}</th><td class="mono">${r[1]}</td></tr>`).join('');
       openOverlay('detailOverlay');
     }
@@ -541,8 +542,8 @@
     });
     updatePreview();
     renderRows();
-    const hashKey=location.hash.slice(1)||new URLSearchParams(location.search).get('page')||'';
-    switchPage(pages[hashKey]?hashKey:'config');
+    const bootKey=(typeof window!=='undefined'&&window.__BP_BOOT__)||location.hash.slice(1)||new URLSearchParams(location.search).get('page')||'';
+    switchPage(pages[bootKey]?bootKey:'config');
   </script>
 </body>
 </html>
