@@ -21,6 +21,8 @@ test("项目清单含三端与产品导航", async () => {
   assert.ok(catalog.nav.ADDRESS.length);
   assert.ok(catalog.nav.ADDRESS.some((g) => g.items.some((i) => i.id === "address-wallet")));
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-collect")));
+  assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-merchant-transfer")));
+  assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-daifu-flow")));
   assert.ok(catalog.nav.MERCHANT.some((g) => g.items.some((i) => i.id === "merchant-order")));
   assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN") || page.moduleCodes.includes("MERCHANT") || page.moduleCodes.includes("ADDRESS")));
 });

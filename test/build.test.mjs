@@ -44,6 +44,15 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-edit/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /openCryptoRateModal/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-save/);
+  assert.ok(documents["商户增加资金划转-demo"]);
+  assert.match(documents["商户增加资金划转-demo"], /确认出款（资金划转）/);
+  assert.match(documents["商户增加资金划转-demo"], /订单摘要/);
+  assert.match(documents["商户增加资金划转-demo"], /data-confirm-payout/);
+  assert.match(documents["商户增加资金划转-demo"], /TG 确认记录/);
+  assert.ok(documents["商户代付流水记录-demo"]);
+  assert.match(documents["商户代付流水记录-demo"], /accountLedgerPage\("payout-record"\)/);
+  assert.ok(documents["商户代收流水记录-demo"]);
+  assert.match(documents["商户代收流水记录-demo"], /accountLedgerPage\("collect-record"\)/);
   assert.ok(documents["TRX代收通道-demo"]);
   assert.match(documents["TRX代收通道-demo"], /m-order|代收订单/);
   assert.match(documents["TRX代收通道-demo"], /全部通道/);
