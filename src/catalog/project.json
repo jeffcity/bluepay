@@ -81,7 +81,7 @@
         "label": "商户下发提现",
         "direct": true,
         "items": [
-          { "id": "merchant-withdraw", "title": "商户下发提现", "doc": "TRX代收通道-demo", "boot": "m-withdraw", "req": ["BP-REQ-005"] }
+          { "id": "merchant-withdraw", "title": "商户下发提现", "doc": "TRX代收通道-demo", "boot": "m-withdraw", "req": ["BP-REQ-005", "BP-REQ-008"] }
         ]
       },
       { "label": "子商户数据", "badge": "NEW", "items": [] },
@@ -158,6 +158,13 @@
       "summary": "复刻蓝盛后台 TG 系统消息配置的筛选、列表、新增编辑、启停、删除确认与特殊类型专属配置，作为后续新增消息类型的页面基线。",
       "moduleCodes": ["ADMIN"],
       "doc": "TG系统消息配置-demo"
+    },
+    {
+      "id": "BP-REQ-008",
+      "title": "商户端发起资金划转",
+      "summary": "在商户下发提现页新增资金划转入口，商户仅可向后台已绑定的目标商户发起既有划转流程。",
+      "moduleCodes": ["MERCHANT"],
+      "doc": "TRX代收通道-demo"
     }
   ],
   "documents": [

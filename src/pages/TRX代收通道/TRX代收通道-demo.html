@@ -292,6 +292,27 @@ tbody tr:hover { background: #fafcff; }
   </div>
 </div>
 
+<div class="modal-mask" id="transferRequestModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>发起资金划转</h3><button class="modal-x" onclick="closeTransferRequestModal()">&times;</button></div>
+    <div class="modal-body">
+      <p style="margin:0 0 16px;color:var(--text-secondary)">仅可转入后台已绑定的商户；提交后沿用既有资金划转审核与确认流程。</p>
+      <div class="filter-card" style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center">
+        <span>币种</span><strong class="mono">USDT</strong>
+        <span>划出商户</span><span>当前商户（M00000306）</span>
+        <label for="transferSourceWallet">划出钱包</label><select id="transferSourceWallet" class="fc-select" style="width:100%" onchange="setTransferSourceWallet(this.value)"><option value="">请选择划出钱包</option></select>
+        <span>可划转余额</span><strong id="transferAvailable" class="mono">—</strong>
+        <label for="transferTarget">转入商户</label><select id="transferTarget" class="fc-select" style="width:100%" onchange="setTransferTarget(this.value)"><option value="">请选择已绑定商户</option></select>
+        <label for="transferTargetWallet">转入钱包</label><select id="transferTargetWallet" class="fc-select" style="width:100%" disabled><option value="">请先选择转入商户</option></select>
+        <label for="transferAmount">划转金额</label><input id="transferAmount" class="fc-input" style="width:100%" oninput="updateTransferPreview()" placeholder="请输入划转金额（最多 6 位小数）">
+        <span>到账金额</span><strong id="transferNetPreview" class="mono">—</strong>
+        <label for="transferRemark">备注</label><input id="transferRemark" class="fc-input" style="width:100%" placeholder="请输入备注">
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeTransferRequestModal()">取消</button><button class="btn btn-primary" onclick="submitTransferRequest()">确认提交</button></div>
+  </div>
+</div>
+
 <script>
 // ===== Data =====
 const PAGES = {
@@ -420,6 +441,29 @@ const WITHDRAW_CONFIG = {
   USDT: { balance: 5000, address: 'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n', protocol: 'TRC20' },
   TRX: { balance: 1500, address: 'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n', protocol: 'TRON' }
 };
+const TRANSFER_CONFIG = {
+  currency: 'USDT',
+  sourceMerchant: '当前商户（M00000306）',
+  sourceWallets: [
+    {
+      id: 'merchant-usdt', name: '商户 USDT 余额', balance: 5000,
+      targets: [
+        { id: 'M00000902', name: '示例商户 B', wallets: ['代收 USDT 余额', '代付 USDT 代付剩余预付'] },
+        { id: 'M00000918', name: '示例商户 H', wallets: ['代收 USDT 余额'] }
+      ]
+    },
+    {
+      id: 'payout-prepaid-usdt', name: '代付 USDT 代付剩余预付', balance: 1600,
+      targets: [
+        { id: 'M00000902', name: '示例商户 B', wallets: ['代收 USDT 余额', '代付 USDT 代付剩余预付'] },
+        { id: 'M00000918', name: '示例商户 H', wallets: ['代收 USDT 余额'] }
+      ]
+    }
+  ]
+};
+const merchantTransferRecords = [
+  {idx:4,no:'TRF-DEMO-0001',type:'划转',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'800.000000',fee:'0.000000',img:'–',real:'800.000000',cur:'USDT',addr:'示例商户 B（M00000902）/ 代收 USDT 余额',proto:'内部划转',status:'确认中',statusCls:'tag-orange',remark:'等待后台审核与 TG 确认'}
+];
 let withdrawCurrency = 'TRX';
 function withdrawRules(currency) { return withdrawFeeRules[currency] || []; }
 function withdrawRuleText(currency) {
@@ -468,6 +512,91 @@ function submitWithdrawRequest() {
   toast(`${withdrawCurrency} 提现申请已提交，等待后台审核与 TG 确认`);
 }
 $('withdrawRequestModal').addEventListener('click', e => { if(e.target===$('withdrawRequestModal')) closeWithdrawRequestModal(); });
+
+function openTransferRequestModal() {
+  const sourceSelect = $('transferSourceWallet');
+  sourceSelect.innerHTML = '<option value="">请选择后台允许的划出钱包</option>' + TRANSFER_CONFIG.sourceWallets.map(wallet => `<option value="${wallet.id}">${wallet.name}</option>`).join('');
+  sourceSelect.value = '';
+  resetTransferTargetOptions();
+  $('transferAvailable').textContent = '—';
+  $('transferAmount').value = '';
+  $('transferRemark').value = '';
+  updateTransferPreview();
+  $('transferRequestModal').classList.add('show');
+}
+function closeTransferRequestModal() { $('transferRequestModal').classList.remove('show'); }
+function selectedTransferSourceWallet() { return TRANSFER_CONFIG.sourceWallets.find(wallet => wallet.id === $('transferSourceWallet').value); }
+function selectedTransferTarget() {
+  const sourceWallet = selectedTransferSourceWallet();
+  return sourceWallet?.targets.find(target => target.id === $('transferTarget').value);
+}
+function resetTransferTargetOptions() {
+  const targetSelect = $('transferTarget');
+  targetSelect.innerHTML = '<option value="">请先选择划出钱包</option>';
+  targetSelect.value = '';
+  targetSelect.disabled = true;
+  const targetWalletSelect = $('transferTargetWallet');
+  targetWalletSelect.innerHTML = '<option value="">请先选择转入商户</option>';
+  targetWalletSelect.value = '';
+  targetWalletSelect.disabled = true;
+}
+function setTransferSourceWallet(id) {
+  const sourceWallet = TRANSFER_CONFIG.sourceWallets.find(wallet => wallet.id === id);
+  const targetSelect = $('transferTarget');
+  $('transferAvailable').textContent = sourceWallet ? `${sourceWallet.balance.toFixed(6)} ${TRANSFER_CONFIG.currency}` : '—';
+  targetSelect.innerHTML = sourceWallet
+    ? '<option value="">请选择已绑定商户</option>' + sourceWallet.targets.map(target => `<option value="${target.id}">${target.name}（${target.id}）</option>`).join('')
+    : '<option value="">请先选择划出钱包</option>';
+  targetSelect.value = '';
+  targetSelect.disabled = !sourceWallet;
+  const targetWalletSelect = $('transferTargetWallet');
+  targetWalletSelect.innerHTML = '<option value="">请先选择转入商户</option>';
+  targetWalletSelect.value = '';
+  targetWalletSelect.disabled = true;
+  updateTransferPreview();
+}
+function setTransferTarget(id) {
+  const target = selectedTransferTarget();
+  const walletSelect = $('transferTargetWallet');
+  walletSelect.innerHTML = target
+    ? '<option value="">请选择转入钱包</option>' + target.wallets.map(wallet => `<option value="${wallet}">${wallet}</option>`).join('')
+    : '<option value="">请先选择转入商户</option>';
+  walletSelect.disabled = !target;
+}
+function updateTransferPreview() {
+  const rawAmount = $('transferAmount').value.trim();
+  const amount = Number(rawAmount);
+  $('transferNetPreview').textContent = /^\d+(?:\.\d{1,6})?$/.test(rawAmount) && Number.isFinite(amount) && amount > 0
+    ? `${amount.toFixed(6)} USDT`
+    : '—';
+}
+function submitTransferRequest() {
+  const sourceWallet = selectedTransferSourceWallet();
+  const target = selectedTransferTarget();
+  const targetWallet = $('transferTargetWallet').value;
+  const rawAmount = $('transferAmount').value.trim();
+  const amount = Number(rawAmount);
+  if (!sourceWallet) return toast('请选择后台允许的划出钱包');
+  if (!target) return toast('请选择后台已绑定的转入商户');
+  if (!targetWallet) return toast('请选择后台允许的转入钱包');
+  if (!/^\d+(?:\.\d{1,6})?$/.test(rawAmount) || !Number.isFinite(amount) || amount <= 0) return toast('划转金额最多支持 6 位小数');
+  if (amount > sourceWallet.balance) return toast('划转金额不得超过可划转余额');
+  const serial = String(merchantTransferRecords.length + 1).padStart(4, '0');
+  merchantTransferRecords.unshift({
+    idx: merchantTransferRecords.length + 4,
+    no: `TRF-DEMO-${serial}`,
+    type: '划转',
+    merchant: '<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',
+    amt: amount.toFixed(6), fee: '0.000000', img: '–', real: amount.toFixed(6), cur: 'USDT',
+    addr: `${target.name}（${target.id}）/ ${targetWallet}`,
+    proto: '内部划转', status: '待处理', statusCls: 'tag-orange',
+    remark: $('transferRemark').value.trim() || '等待后台审核与 TG 确认'
+  });
+  closeTransferRequestModal();
+  renderContent();
+  toast('资金划转申请已提交，等待后台审核与 TG 确认');
+}
+$('transferRequestModal').addEventListener('click', e => { if(e.target===$('transferRequestModal')) closeTransferRequestModal(); });
 
 function deltaClass(v) { if(v.startsWith('+')) return 'amt-pos'; if(v.startsWith('-')) return 'amt-neg'; return 'amt-zero'; }
 
@@ -764,14 +893,15 @@ function renderWithdrawPage(p) {
       <div class="wr-chain">TRON · 如需修改请联系客服</div>
       <div class="wr-bal">当前余额：<span class="no-bal">1,500.000000 TRX</span></div>
       <button class="btn-withdraw" onclick="openWithdrawRequestModal('TRX')">发起提现</button>
+      <button class="btn btn-primary" style="height:36px;padding:0 28px" onclick="openTransferRequestModal()">资金划转</button>
     </div>
   </div>`;
 
   // Filters
   html += `<div class="filter-card" style="margin-bottom:16px">
-    <select class="fc-select"><option>下分单类型</option><option>单</option><option>组合</option></select>
+    <select class="fc-select"><option>下分单类型</option><option>单</option><option>组合</option><option>划转</option></select>
     <select class="fc-select"><option>状态</option><option>已完成</option><option>已取消</option><option>审核中</option></select>
-    <select class="fc-select"><option>币种</option><option>USDT</option><option selected>TRX</option></select>
+    <select class="fc-select"><option selected>币种</option><option>USDT</option><option>TRX</option></select>
     <select class="fc-select"><option>协议类型</option><option>TRON</option><option>TRC20</option></select>
     <input class="fc-input" placeholder="请输入收款地址" style="width:200px">
     <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button>
@@ -779,8 +909,9 @@ function renderWithdrawPage(p) {
   </div>`;
 
   // Table
-  const cols = ['序号','单号','下分单类型','提现商户','提现金额','手续费','审核图片','到账金额','币种','收款钱包地址','协议类型','状态','备注'];
+  const cols = ['序号','单号','下分单类型','提现商户','提现金额','手续费','审核图片','到账金额','币种','收款对象','协议类型','状态','备注'];
   const rows = [
+    ...merchantTransferRecords,
     {idx:3,no:'LS-W20260727001',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'500.000000',fee:'2.500000',img:'–',real:'500.000000',cur:'TRX',addr:'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n',proto:'TRON',status:'待处理',statusCls:'tag-orange',remark:'等待后台审核与 TG 确认'},
     {idx:2,no:'CMB2026052010392365000l',type:'组合<br><span style="color:#fa8c16;font-size:11px">+2户</span>',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'600.000000',fee:'0.000000',img:'–',real:'600.000000',cur:'USDT',addr:'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n',proto:'TRC20',status:'已取消',statusCls:'tag-gray',remark:''},
     {idx:1,no:'ORD2026051414295098000l',type:'单',typeCls:'',merchant:'<span class="tag" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7">主账户</span> PMtest',amt:'5,000.000000',fee:'2.000000',img:'–',real:'5,000.000000',cur:'USDT',addr:'TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n',proto:'TRC20',status:'已完成',statusCls:'tag-green',remark:''},
@@ -794,7 +925,7 @@ function renderWithdrawPage(p) {
   </tr>`).join('');
 
   html += `<div class="table-card"><table style="min-width:1300px"><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>${trs}</tbody></table></div>`;
-  html += `<div class="pager"><span>共 3 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select" style="height:28px;min-width:80px"><option>10条/页</option></select><span style="font-size:12px">前往</span><input class="fc-input" style="width:40px;height:28px;text-align:center" value="1"><span style="font-size:12px">页</span></div>`;
+  html += `<div class="pager"><span>共 ${rows.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select" style="height:28px;min-width:80px"><option>10条/页</option></select><span style="font-size:12px">前往</span><input class="fc-input" style="width:40px;height:28px;text-align:center" value="1"><span style="font-size:12px">页</span></div>`;
 
   return html;
 }
