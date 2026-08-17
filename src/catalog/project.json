@@ -22,8 +22,8 @@
       {
         "label": "虚拟币订单管理",
         "items": [
-          { "id": "admin-crypto-config", "title": "虚拟币充值配置", "doc": "VND法币代收-demo", "boot": "config", "req": ["BP-REQ-004"] },
-          { "id": "admin-crypto-order", "title": "虚拟币充值订单管理", "doc": "VND法币代收-demo", "boot": "orders", "req": ["BP-REQ-004", "BP-REQ-005"] }
+          { "id": "admin-crypto-config", "title": "虚拟币充值配置", "doc": "机器人分层播报与多人确认-demo", "boot": "cryptoConfig", "req": ["BP-REQ-004"] },
+          { "id": "admin-crypto-order", "title": "虚拟币充值订单管理", "doc": "机器人分层播报与多人确认-demo", "boot": "cryptoOrder", "req": ["BP-REQ-004", "BP-REQ-005"] }
         ]
       },
       {
@@ -136,7 +136,7 @@
       "title": "VND 法币代收",
       "summary": "法币代收新增 VND 币种：商户下单传 VND，平台按汇率换算 USDT 收款，回调按 VND 金额；复用虚拟币充值配置与订单管理的既有字段和流程。",
       "moduleCodes": ["ADMIN"],
-      "doc": "VND法币代收-demo"
+      "doc": "机器人分层播报与多人确认-demo"
     },
     {
       "id": "BP-REQ-005",
@@ -175,10 +175,6 @@
     {
       "id": "机器人分层播报与多人确认-demo",
       "source": "pages/机器人分层播报与多人确认/机器人分层播报与多人确认-demo.html"
-    },
-    {
-      "id": "VND法币代收-demo",
-      "source": "pages/VND法币代收/VND法币代收-demo.html"
     },
     {
       "id": "TRX代收通道-demo",

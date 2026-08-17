@@ -416,6 +416,15 @@
       scrollbar-color: #c7ccd3 #f3f4f6;
       scrollbar-width: thin;
     }
+    .crypto-rate-table th:last-child,
+    .crypto-rate-table td:last-child {
+      position: sticky;
+      right: 0;
+      z-index: 2;
+      background: #fff;
+      box-shadow: -8px 0 10px -10px rgba(35, 62, 96, .45);
+    }
+    .crypto-rate-table th:last-child { z-index: 3; background: #fafafa; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -1000,6 +1009,7 @@
 
   <div id="merchantModalRoot"></div>
   <div id="transferModalRoot"></div>
+  <div id="cryptoRateModalRoot"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -1898,11 +1908,21 @@
       { cur: "VND", source: "XE 汇率网", base: "26,150.00", effective: "26,150.02", min: "1 USDT", enabled: "开启" }
     ];
     const cryptoCurrencyOptions = [
-      { cur: "THB", source: "Wise 汇率", base: "34.58", effective: "34.60" },
-      { cur: "MYR", source: "XE 汇率网", base: "4.47", effective: "4.49" },
-      { cur: "PHP", source: "汇率 API", base: "57.82", effective: "57.84" },
-      { cur: "IDR", source: "Wise 汇率", base: "16,255.00", effective: "16,255.02" }
+      { cur: "CNY", source: "欧易（OKX）", base: "7.1523", effective: "7.1723" },
+      { cur: "USDT", source: "USDT 固定汇率", base: "1.0000", effective: "1.0000" },
+      { cur: "VND", source: "XE 汇率网", base: "26,150.00", effective: "26,150.02" }
     ];
+    const cryptoRateQuotes = {
+      CNY: [
+        { source: "欧易（OKX）", base: 7.1523 },
+        { source: "币安（Binance）", base: 7.1498 }
+      ],
+      USDT: [{ source: "USDT 固定汇率", base: 1 }],
+      VND: [
+        { source: "XE 汇率网", base: 26150 },
+        { source: "Wise 汇率", base: 26148.5 }
+      ]
+    };
     const cryptoOrders = [
       {idx:1,plat:"LS20260727001",channel:"CH202607270001",merch:"M202607270001",name:"M00000306",cur:"TRX",amt:"1,500.000000",fee:"15.000000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"1,500.000000",addr:"TXk9rF…f3Qz",payAddr:"TNp2mK…k8Wd",hash:"a8f2…d71c",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/07/27 10:23:15",callbackTime:"2026/07/27 10:23:19",remark:"",ip:"203.0.113.21",time:"2026/07/27 10:20:03"},
       {idx:2,plat:"LS20260727002",channel:"CH202607270002",merch:"M202607270002",name:"M00000306",cur:"TRX",amt:"200.500000",fee:"2.005000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"—",addr:"TNp2mK…k8Wd",payAddr:"—",hash:"—",status:"待支付",cls:"warning",notify:"未通知",payTime:"—",callbackTime:"—",remark:"",ip:"203.0.113.87",time:"2026/07/27 11:05:42"},
@@ -1936,8 +1956,71 @@
       const color = String(v).startsWith("+") ? "var(--success)" : String(v).startsWith("-") ? "var(--danger)" : "inherit";
       return `<span style="color:${color};font-weight:600">${v}</span>`;
     }
+    function formatCryptoRate(cur, value) {
+      const digits = cur === "CNY" || cur === "USDT" ? 4 : 2;
+      return Number(value).toLocaleString("zh-CN", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    }
+    function updateCryptoRatePreview() {
+      const root = document.getElementById("cryptoRateModalRoot");
+      const currency = root.querySelector("[data-crypto-rate-currency]")?.value;
+      const source = root.querySelector("[data-crypto-rate-source]")?.value;
+      const quote = (cryptoRateQuotes[currency] || []).find((item) => item.source === source);
+      if (!quote) return;
+      const base = formatCryptoRate(currency, quote.base);
+      const effective = formatCryptoRate(currency, quote.base + (currency === "USDT" ? 0 : 0.02));
+      const baseNode = root.querySelector("[data-crypto-rate-base]");
+      const effectiveNode = root.querySelector("[data-crypto-rate-effective]");
+      if (baseNode) baseNode.textContent = `1 USDT ≈ ${base} ${currency}`;
+      if (effectiveNode) effectiveNode.textContent = `${effective} ${currency}（${base} + ${currency === "USDT" ? "0.0000" : "0.02"}）`;
+    }
+    function openCryptoRateModal(currency) {
+      const row = cryptoRateRows.find((item) => item.cur === currency);
+      if (!row) return;
+      const quotes = cryptoRateQuotes[currency] || [{ source: row.source, base: Number(String(row.base).replaceAll(",", "")) }];
+      const sourceOptions = quotes.map((item) => `<option value="${item.source}" ${item.source === row.source ? "selected" : ""}>${item.source}　${formatCryptoRate(currency, item.base)}</option>`).join("");
+      const minValue = Number.parseFloat(row.min) || 1;
+      const root = document.getElementById("cryptoRateModalRoot");
+      root.innerHTML = `<div class="modal-layer">
+        <section class="merchant-modal" style="width:min(600px,calc(100vw - 48px));height:auto;max-height:calc(100vh - 94px)" role="dialog" aria-modal="true" aria-labelledby="cryptoRateModalTitle" tabindex="-1">
+          <header class="modal-header"><div class="modal-header-copy"><h2 id="cryptoRateModalTitle">编辑币种汇率 — ${currency}</h2><div class="modal-subtitle">维护汇率来源与最低下单金额，基准汇率由来源自动获取</div></div><button type="button" class="modal-close" data-crypto-rate-close aria-label="关闭币种汇率编辑">×</button></header>
+          <div class="modal-body" style="overflow-y:auto;padding:22px">
+            <div class="modal-basic-grid" style="grid-template-columns:1fr">
+              <div class="modal-field"><label class="required">币种</label><input class="modal-control" data-crypto-rate-currency value="${currency}" disabled></div>
+              <div class="modal-field"><label class="required">汇率来源</label><select class="modal-control" data-crypto-rate-source>${sourceOptions}</select></div>
+              <div class="modal-field"><label>基准汇率</label><div><strong data-crypto-rate-base>${row.base}</strong><div class="modal-subtitle" style="margin-top:3px">自动获取，不支持手填</div></div></div>
+              <div class="modal-field"><label>有效汇率</label><div><strong style="color:var(--primary)" data-crypto-rate-effective>${row.effective}</strong><div class="modal-subtitle" style="margin-top:3px">有效汇率 = 基准汇率 + 统一汇率浮动加点</div></div></div>
+              <div class="modal-field"><label class="required">最低下单金额</label><div style="display:flex;align-items:center;gap:8px"><input class="modal-control" style="width:180px" data-crypto-rate-min type="number" min="1" step="1" value="${minValue}"><span style="color:var(--muted)">USDT，不得低于 1</span></div></div>
+            </div>
+          </div>
+          <footer class="modal-footer"><button type="button" class="btn" data-crypto-rate-close>取消</button><button type="button" class="btn primary" data-crypto-rate-save="${currency}">确定</button></footer>
+        </section>
+      </div>`;
+      document.body.style.overflow = "hidden";
+      root.querySelector(".merchant-modal")?.focus();
+      updateCryptoRatePreview();
+    }
+    function closeCryptoRateModal() {
+      document.getElementById("cryptoRateModalRoot").innerHTML = "";
+      document.body.style.overflow = "";
+    }
+    function saveCryptoRateModal(currency) {
+      const root = document.getElementById("cryptoRateModalRoot");
+      const row = cryptoRateRows.find((item) => item.cur === currency);
+      const source = root.querySelector("[data-crypto-rate-source]")?.value;
+      const min = Number(root.querySelector("[data-crypto-rate-min]")?.value);
+      const quote = (cryptoRateQuotes[currency] || []).find((item) => item.source === source);
+      if (!row || !quote) return showToast("请选择有效的汇率来源");
+      if (!Number.isFinite(min) || min < 1) return showToast("最低下单金额不得低于 1 USDT");
+      row.source = source;
+      row.base = formatCryptoRate(currency, quote.base);
+      row.effective = formatCryptoRate(currency, quote.base + (currency === "USDT" ? 0 : 0.02));
+      row.min = `${min} USDT`;
+      closeCryptoRateModal();
+      renderPage();
+      showToast(`${currency} 汇率配置已保存`);
+    }
     function cryptoConfigPage() {
-      const rows = cryptoRateRows.map((r) => `<tr><td><span class="tag">${r.cur}</span></td><td>${r.source}</td><td>${r.base}</td><td>${r.effective}</td><td>${r.min}</td><td><button type="button" class="switch ${r.enabled === "开启" ? "on" : ""}" data-crypto-rate-toggle="${r.cur}" aria-label="${r.cur} 汇率状态"></button><span style="margin-left:8px">${r.enabled}</span></td><td>${mockLink("编辑")}</td></tr>`).join("");
+      const rows = cryptoRateRows.map((r) => `<tr><td><span class="tag">${r.cur}</span></td><td>${r.source}</td><td>${r.base}</td><td>${r.effective}</td><td>${r.min}</td><td><button type="button" class="switch ${r.enabled === "开启" ? "on" : ""}" data-crypto-rate-toggle="${r.cur}" aria-label="${r.cur} 汇率状态"></button><span style="margin-left:8px">${r.enabled}</span></td><td><button type="button" class="link" data-crypto-rate-edit="${r.cur}">编辑</button></td></tr>`).join("");
       const available = cryptoCurrencyOptions.filter((item) => !cryptoRateRows.some((row) => row.cur === item.cur));
       const addControl = available.length
         ? `<select class="control" id="cryptoNewCurrency" style="width:180px">${available.map((item) => `<option value="${item.cur}">${item.cur}</option>`).join("")}</select>${button("新增币种")}`
@@ -1945,7 +2028,7 @@
       return `<div class="panel" style="margin:0"><div class="section-title">汇率设置</div>
         <div class="filters">${field("统一汇率浮动加点", input("0.02", 160))}${field("同 IP 每分钟下单次数限制", input("5", 160))}${button("提交保存", "primary")}</div>
         <div class="section-title" style="margin-top:18px">指定币种汇率配置（从平台支持清单新增）</div>
-        <div class="table-wrap"><table style="min-width:900px"><thead><tr><th>币种</th><th>汇率来源</th><th>基准汇率</th><th>有效汇率</th><th>最低下单金额</th><th>状态</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="table-wrap"><table class="crypto-rate-table" style="min-width:900px"><thead><tr><th>币种</th><th>汇率来源</th><th>基准汇率</th><th>有效汇率</th><th>最低下单金额</th><th>状态</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
         <div class="button-row action-line" style="margin-top:12px">${addControl}</div>
         <p style="margin:12px 0 0;color:var(--muted);font-size:12px">从平台支持清单选择法币，币种资料由系统带出；已取得报价、完成配置且开启的币种才开放代收。有效汇率 = 基准汇率 + 汇率浮动加点；VND 下单时锁定有效汇率，按既有 USDT 规则向上取整至 8 位。既有 CNY、USDT、TRX 配置与订单逻辑不变。</p></div>`;
     }
@@ -2222,6 +2305,18 @@
         showToast(accountCurrency + " 数据已刷新");
         return;
       }
+      if (target.dataset.cryptoRateEdit) {
+        openCryptoRateModal(target.dataset.cryptoRateEdit);
+        return;
+      }
+      if (target.dataset.cryptoRateClose !== undefined) {
+        closeCryptoRateModal();
+        return;
+      }
+      if (target.dataset.cryptoRateSave) {
+        saveCryptoRateModal(target.dataset.cryptoRateSave);
+        return;
+      }
       if (target.dataset.cryptoRateToggle) {
         const rate = cryptoRateRows.find((item) => item.cur === target.dataset.cryptoRateToggle);
         if (!rate) return;
@@ -2256,8 +2351,13 @@
     });
     document.addEventListener("change", (event) => {
       if (event.target.matches("[data-transfer-source], [data-transfer-target], [data-transfer-source-wallet], [data-transfer-target-wallet]")) refreshTransferModal(document.getElementById("transferModalRoot"));
+      if (event.target.matches("[data-crypto-rate-source]")) updateCryptoRatePreview();
     });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && document.getElementById("cryptoRateModalRoot").innerHTML) {
+        closeCryptoRateModal();
+        return;
+      }
       if (event.key === "Escape" && document.getElementById("transferModalRoot").innerHTML) {
         closeTransferModal();
         return;
