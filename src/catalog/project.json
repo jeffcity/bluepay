@@ -50,7 +50,7 @@
         "items": [
           { "title": "通道代收流水记录", "static": true },
           { "id": "admin-mc-flow", "title": "商户代收流水记录", "doc": "商户代收流水记录-demo", "boot": "collect-record", "req": ["BP-REQ-005", "BP-REQ-003"] },
-          { "id": "admin-merchant-payout-flow", "title": "商户代付流水记录", "doc": "商户代付流水记录-demo", "boot": "payout-record", "req": ["BP-REQ-003"] },
+          { "id": "admin-daifu-flow", "title": "商户代付流水记录", "doc": "商户代付流水记录-demo", "boot": "payout-record", "req": ["BP-REQ-003"] },
           { "id": "admin-mc-prepay", "title": "商户代收预付记录", "doc": "机器人分层播报与多人确认-demo", "boot": "mcPrepay", "req": ["BP-REQ-005"] }
         ]
       },
@@ -117,14 +117,14 @@
       "title": "机器人分层播报与多人确认",
       "summary": "在修改商户中按金额阶梯配置 TG 播报群、确认人员和需确认人数。",
       "moduleCodes": ["ADMIN"],
-      "doc": "机器人分层播报与多人确认-demo"
+      "doc": "商户增加资金划转-demo"
     },
     {
       "id": "BP-REQ-003",
       "title": "商户增加资金划转",
       "summary": "在蓝盛后台配置双向商户互转关系；代收 USDT余额与代付 USDT代付剩余预付均可任选为来源或目标。",
       "moduleCodes": ["ADMIN"],
-      "doc": "商户增加资金划转-demo"
+      "doc": "机器人分层播报与多人确认-demo"
     },
     {
       "id": "BP-REQ-001",

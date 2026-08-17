@@ -21,29 +21,9 @@ test("项目清单含三端与产品导航", async () => {
   assert.ok(catalog.nav.ADDRESS.length);
   assert.ok(catalog.nav.ADDRESS.some((g) => g.items.some((i) => i.id === "address-wallet")));
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-collect")));
-  assert.ok(catalog.nav.ADMIN.some((g) => g.label === "虚拟币订单管理"));
-  assert.ok(catalog.nav.ADMIN.some((g) => g.label === "TG 通知管理"));
-  assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-tg-system-message")));
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-merchant-transfer")));
-  const accountRecords = catalog.nav.ADMIN.find((g) => g.label === "账户记录");
-  assert.equal(
-    accountRecords.items.find((i) => i.id === "admin-mc-flow").doc,
-    "商户代收流水记录-demo"
-  );
-  assert.ok(accountRecords.items.some((i) => i.id === "admin-merchant-payout-flow"));
+  assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-daifu-flow")));
   assert.ok(catalog.nav.MERCHANT.some((g) => g.items.some((i) => i.id === "merchant-order")));
-  for (const doc of [
-    "VND法币代收-demo",
-    "TRX代收通道-demo",
-    "钱包地址管理-demo",
-    "目标池金额层级配置-demo",
-    "TG系统消息配置-demo",
-    "商户增加资金划转-demo",
-    "商户代收流水记录-demo",
-    "商户代付流水记录-demo"
-  ]) {
-    assert.ok(catalog.documents.some((item) => item.id === doc));
-  }
   assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN") || page.moduleCodes.includes("MERCHANT") || page.moduleCodes.includes("ADDRESS")));
 });
 

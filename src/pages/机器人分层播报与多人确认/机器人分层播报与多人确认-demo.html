@@ -1,5 +1,5 @@
 <!-- PROJECT: bluepay-bot-layered-broadcast-multi-confirm -->
-<!-- PAGES: 商户管理 / 商户下分 / 商户充值订单 / 代付商户管理 / 代收商户管理 -->
+<!-- PAGES: 商户管理 / 商户下分 / 商户充值订单 / 代付商户管理 / 代收商户管理 / 虚拟币充值订单 / 账户流水 / 日终统计（含 TRX） -->
 <!-- FIDELITY: high / desktop-admin / synthetic-data -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -38,7 +38,7 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body {
-      min-width: 1180px;
+      min-width: 0;
       color: var(--regular);
       background: var(--page);
       font: 14px/1.5 var(--font-ui);
@@ -223,6 +223,31 @@
       gap: 14px 28px;
     }
     .filters.two-line { max-width: 1480px; }
+    .withdraw-summary {
+      margin: 16px 0;
+      overflow-x: auto;
+      background: #fff;
+      border-top: 1px solid #edf1f6;
+      border-bottom: 1px solid #edf1f6;
+    }
+    .withdraw-summary-strip {
+      min-width: 1320px;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+    }
+    .withdraw-summary-item { min-width: 164px; padding: 0 16px; border-right: 1px solid #edf1f6; }
+    .withdraw-summary-item:first-child { min-width: 210px; }
+    .withdraw-summary-item:last-child { border-right: 0; }
+    .withdraw-summary-label { display: block; color: var(--regular); white-space: nowrap; }
+    .withdraw-summary-values { display: flex; gap: 10px; margin-top: 5px; white-space: nowrap; }
+    .withdraw-summary-value { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .withdraw-summary-value em { margin-right: 3px; color: var(--muted); font-size: 11px; font-style: normal; font-weight: 400; }
+    .withdraw-summary-value.done { color: var(--success); }
+    .withdraw-summary-value.pending { color: var(--warning); }
+    .withdraw-summary-value.cancelled { color: var(--danger); }
+    .withdraw-summary-value.amount { color: #2d78d1; }
+    .withdraw-summary-note { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; white-space: nowrap; }
     .field {
       display: inline-flex;
       align-items: center;
@@ -502,25 +527,36 @@
       background: rgba(0, 0, 0, .48);
     }
     .merchant-modal {
-      width: min(800px, calc(100vw - 48px));
+      width: min(1040px, calc(100vw - 48px));
+      height: min(760px, calc(100vh - 94px));
       max-height: calc(100vh - 94px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       background: #fff;
-      border-radius: 4px;
+      border-radius: 8px;
       box-shadow: 0 18px 50px rgba(0, 0, 0, .24);
     }
     .modal-header {
       flex: 0 0 auto;
-      min-height: 56px;
+      min-height: 66px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 18px;
+      padding: 0 22px;
+      background: #fff;
       border-bottom: 1px solid var(--line);
     }
+    .modal-header-copy { min-width: 0; }
     .modal-header h2 { margin: 0; color: var(--text); font-size: 18px; font-weight: 500; }
+    .modal-subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .modal-close {
       width: 34px;
       height: 34px;
@@ -531,7 +567,156 @@
       line-height: 1;
     }
     .modal-close:hover { color: var(--primary); }
-    .modal-body { min-height: 0; padding: 20px 18px 10px; overflow-y: auto; }
+    .modal-body {
+      min-height: 0;
+      flex: 1;
+      padding: 0;
+      overflow: hidden;
+      background: #fff;
+    }
+    .merchant-config-shell {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 198px minmax(0, 1fr);
+    }
+    .merchant-config-nav {
+      min-height: 0;
+      padding: 18px 12px;
+      overflow-y: auto;
+      background: #f7f9fc;
+      border-right: 1px solid #e7ebf2;
+    }
+    .config-nav-label {
+      padding: 0 10px 9px;
+      color: #a0a7b4;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+    }
+    .config-nav-label.grouped {
+      margin: 12px 10px 7px;
+      padding: 12px 0 0;
+      border-top: 1px solid #e7ebf2;
+    }
+    .config-nav-button {
+      position: relative;
+      width: 100%;
+      min-height: 54px;
+      display: grid;
+      gap: 3px;
+      align-content: center;
+      padding: 9px 12px 9px 15px;
+      margin-bottom: 4px;
+      color: #5f6875;
+      background: transparent;
+      border: 0;
+      border-radius: 6px;
+      text-align: left;
+      cursor: pointer;
+      transition: color .2s ease, background-color .2s ease;
+    }
+    .config-nav-button::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      background: transparent;
+      border-radius: 0 3px 3px 0;
+    }
+    .config-nav-button:hover { color: var(--primary); background: #f0f6ff; }
+    .config-nav-button:focus-visible {
+      outline: 2px solid rgba(64, 158, 255, .4);
+      outline-offset: 1px;
+    }
+    .config-nav-button.active {
+      color: #2f7fd4;
+      background: #eaf4ff;
+    }
+    .config-nav-button.active::before { background: var(--primary); }
+    .config-nav-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: inherit;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .config-nav-subtitle {
+      color: #9aa2ae;
+      font-size: 11px;
+      font-weight: 400;
+    }
+    .config-nav-button.active .config-nav-subtitle { color: #6f9dca; }
+    .config-nav-badge {
+      min-width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      color: #2f7fd4;
+      background: #fff;
+      border: 1px solid #cfe7ff;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .merchant-config-content {
+      min-width: 0;
+      min-height: 0;
+      padding: 22px 24px 28px;
+      overflow-y: auto;
+      background: #fff;
+      scroll-behavior: smooth;
+    }
+    .config-panel[hidden] { display: none; }
+    .config-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 16px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #edf0f5;
+    }
+    .config-panel-header h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .config-panel-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .config-panel-status {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 10px;
+      color: #337ecc;
+      background: #ecf5ff;
+      border: 1px solid #d9ecff;
+      border-radius: 13px;
+      font-size: 12px;
+    }
+    .config-card {
+      margin: 0;
+      padding: 18px;
+      background: #fbfcfe;
+      border: 1px solid #e8edf3;
+      border-radius: 8px;
+    }
+    .config-card .modal-basic-grid { margin-bottom: 0; }
+    .config-card .config-row:first-child { margin-top: 0; }
     .modal-basic-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -565,6 +750,17 @@
       background: #f7f8fa;
       border: 1px solid #eef0f3;
       border-radius: 6px;
+    }
+    .config-panel > .modal-section {
+      margin-top: 0;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+    }
+    .config-panel > .modal-section > .modal-section-head {
+      padding: 0 0 12px;
+      margin-bottom: 12px;
     }
     .modal-section-head {
       display: flex;
@@ -600,6 +796,35 @@
     .switch-copy { color: var(--regular); font-size: 13px; }
     .white-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
     .white-empty { color: var(--muted); font-size: 12px; }
+    .balance-action { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+    .asset-stack { display: grid; gap: 8px; min-width: 210px; }
+    .asset-line { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: start; gap: 8px; min-height: 22px; }
+    .asset-line .tag { min-width: 39px; justify-content: center; font-size: 11px; }
+    .asset-line.cny .tag { color: #3f8ed9; background: #ecf5ff; }
+    .asset-line.trx .tag { color: #0f8d91; background: #e6fffb; }
+    .asset-value { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; min-width: 0; line-height: 22px; }
+    .asset-empty { color: var(--muted); }
+    .collect-table-wrap { overflow-x: hidden; }
+    .collect-table { width: 100%; min-width: 0 !important; table-layout: fixed; }
+    .collect-table th, .collect-table td { padding: 8px; white-space: normal; }
+    .collect-table .asset-stack { min-width: 0; }
+    .collect-table .asset-line { gap: 6px; }
+    .collect-table .asset-line .tag { min-width: 38px; padding: 0 6px; }
+    .collect-table .asset-value { gap: 2px 7px; }
+    .collect-table .switch-line { justify-content: center; }
+    .collect-table .op-links { display: grid; gap: 5px; line-height: normal; }
+    .collect-table .op-links .btn { width: 100%; min-width: 0; padding: 0 5px; }
+    .transfer-link { color: var(--primary); background: transparent; border: 0; padding: 0; font: inherit; cursor: pointer; }
+    .transfer-link:hover { color: var(--primary-hover); text-decoration: underline; }
+    .transfer-note { margin: 0 0 14px; padding: 10px 12px; color: #336f9f; background: #eef8ff; border: 1px solid #cce7fb; border-radius: 4px; font-size: 13px; line-height: 1.6; }
+    .transfer-accounts { display: grid; grid-template-columns: 1fr 30px 1fr; align-items: center; gap: 10px; margin: 8px 0 14px; }
+    .transfer-account { min-height: 78px; padding: 12px; color: var(--regular); background: #f7f8fa; border: 1px solid #e4e7ed; border-radius: 4px; }
+    .transfer-account strong { display: block; margin-bottom: 5px; color: var(--text); font-weight: 600; }
+    .transfer-arrow { color: var(--primary); font-size: 22px; text-align: center; }
+    .config-tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 9px; }
+    .config-tag { display: inline-flex; align-items: center; gap: 5px; min-height: 25px; padding: 0 8px; color: #337ecc; background: #ecf5ff; border: 1px solid #d9ecff; border-radius: 3px; font-size: 12px; }
+    .config-tag button { color: inherit; background: transparent; border: 0; padding: 0; cursor: pointer; font-size: 15px; line-height: 1; }
+    .transfer-status { display: flex; align-items: center; gap: 8px; min-height: 42px; margin-top: 12px; padding: 9px 11px; color: #8a6d1d; background: #fdf6ec; border: 1px solid #faecd8; border-radius: 4px; font-size: 13px; }
     .check-row { display: flex; flex-wrap: wrap; gap: 18px; min-height: 32px; align-items: center; }
     .check-row label { display: inline-flex; align-items: center; gap: 6px; }
     .tier-toolbar {
@@ -615,7 +840,7 @@
       border: 1px solid var(--line);
       border-radius: 4px;
     }
-    .tier-rule-table { width: 100%; min-width: 720px; border-collapse: collapse; table-layout: fixed; }
+    .tier-rule-table { width: 100%; min-width: 680px; border-collapse: collapse; table-layout: fixed; }
     .tier-rule-table th,
     .tier-rule-table td {
       min-height: 48px;
@@ -633,7 +858,15 @@
     .tier-rule-table th:nth-child(4),
     .tier-rule-table th:nth-child(5) { white-space: nowrap; }
     .tier-rule-table tbody tr:hover { background: #f7fbff; }
-    .tier-range { color: var(--text); font-variant-numeric: tabular-nums; }
+    .tier-range {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.45;
+    }
+    .tier-range-end { color: #909399; font-size: 12px; }
     .tier-group { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
     .tier-people { display: flex; flex-wrap: wrap; gap: 5px; }
     .tier-person {
@@ -700,7 +933,7 @@
       align-items: center;
       justify-content: flex-end;
       gap: 10px;
-      padding: 0 18px;
+      padding: 0 22px;
       background: #fff;
       border-top: 1px solid var(--line);
     }
@@ -726,13 +959,16 @@
 
     @media (max-width: 1000px) {
       :root { --sidebar-width: 68px; }
-      body { min-width: 980px; }
+      body { min-width: 0; }
       .brand { padding-left: 12px; font-size: 0; letter-spacing: 0; }
       .brand::after { content: "蓝盛"; font-size: 18px; }
       .menu-row { justify-content: center; padding: 0; }
       .menu-row .label, .menu-row .arrow, .submenu { display: none !important; }
       .page { padding: 20px; }
       .recharge-states { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .merchant-config-shell { grid-template-columns: 178px minmax(0, 1fr); }
+      .merchant-config-content { padding: 18px; }
+      .config-nav-button { padding-left: 13px; }
       .modal-basic-grid { grid-template-columns: 1fr; }
       .modal-field.full { grid-column: auto; }
     }
@@ -763,6 +999,7 @@
   </div>
 
   <div id="merchantModalRoot"></div>
+  <div id="transferModalRoot"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -772,10 +1009,19 @@
       recharge: { title: "商户充值订单", href: "/merchant/merchant-recharge-order" },
       payout: { title: "代付商户管理", href: "/daifu/daifu-merchant" },
       collect: { title: "代收商户管理", href: "/daishou/daishou/collect-merchant" },
-      merchant: { title: "商户管理", href: "/merchant/merchant" }
+      merchant: { title: "商户管理", href: "/merchant/merchant" },
+      feeConfig: { title: "商户手续费配置", href: "/merchant/merchant/withdraw-fee-config" },
+      cryptoConfig: { title: "虚拟币充值配置", href: "/virtual/config" },
+      cryptoOrder: { title: "虚拟币充值订单管理", href: "/virtual/orderManagement" },
+      mcFlow: { title: "商户代收流水记录", href: "/account/mc-flow" },
+      chFlow: { title: "通道代收流水记录", href: "/account/ch-flow" },
+      mcPrepay: { title: "商户代收预付记录", href: "/account/mc-prepay" },
+      mpFlow: { title: "商户代付流水记录", href: "/account/mp-flow" },
+      mpPrepay: { title: "商户代付预付记录", href: "/account/mp-prepay" },
+      daily: { title: "商户代收日终统计", href: "/daily/collect" }
     };
 
-    const tabOrder = ["address", "withdraw", "recharge", "payout", "collect", "merchant"];
+    const tabOrder = ["address", "withdraw", "recharge", "payout", "collect", "merchant", "feeConfig", "cryptoConfig", "cryptoOrder", "mcFlow", "daily"];
     let currentPage = "merchant";
     let toastTimer;
 
@@ -783,9 +1029,11 @@
       { label: "首页", icon: "home" },
       { label: "商户管理", icon: "merchant", key: "merchant-group", children: [
         ["merchant", "商户管理"], ["withdraw", "商户下分"],
-        [null, "商户手续费配置"], ["recharge", "商户充值订单"]
+        ["feeConfig", "商户手续费配置"], ["recharge", "商户充值订单"]
       ]},
-      { label: "虚拟币订单管理", icon: "wallet" },
+      { label: "虚拟币订单管理", icon: "wallet", key: "wallet-group", children: [
+        ["cryptoConfig", "虚拟币充值配置"], ["cryptoOrder", "虚拟币充值订单管理"], [null, "虚拟币代付订单管理"], [null, "USDT异常工单"]
+      ]},
       { label: "美人桥业务", icon: "pin" },
       { label: "地址查询", icon: "address", key: "address" },
       { label: "代付管理", icon: "payout", key: "payout-group", children: [
@@ -797,8 +1045,15 @@
         [null, "代收产品管理"], [null, "代收通道管理"]
       ]},
       { label: "代理管理", icon: "agent" },
-      { label: "日终数据统计", icon: "stats" },
-      { label: "账户记录", icon: "record" },
+      { label: "日终数据统计", icon: "stats", key: "stats-group", children: [
+        ["daily", "商户代收日终统计"]
+      ]},
+      { label: "账户记录", icon: "record", key: "record-group", children: [
+        ["chFlow", "通道代收流水记录"], [null, "通道代付流水记录"],
+        ["mcFlow", "商户代收流水记录"], ["mpFlow", "商户代付流水记录"],
+        ["mpPrepay", "商户代付预付记录"], ["mcPrepay", "商户代收预付记录"],
+        [null, "代理流水记录"]
+      ]},
       { label: "TG 通知管理", icon: "bell" },
       { label: "系统管理", icon: "settings" },
       { label: "基础设施", icon: "infra" },
@@ -806,38 +1061,99 @@
     ];
 
     const merchants = [
-      ["示例商户 A", "M00000901", "500.00", "1,000.00"],
-      ["示例商户 B", "M00000902", "120.00", "360.00"],
-      ["示例商户 C", "M00000903", "0.00", "0.00"],
-      ["示例商户 D", "M00000904", "75.50", "680.00"],
-      ["示例商户 E", "M00000905", "18.00", "280.00"],
-      ["示例商户 F", "M00000906", "0.00", "150.00"]
+      ["远航商户", "M00000901", "500.00", "1,000.00"],
+      ["北辰商户", "M00000902", "120.00", "360.00"],
+      ["星河商户", "M00000903", "0.00", "0.00"],
+      ["晨曦商户", "M00000904", "75.50", "680.00"],
+      ["启明商户", "M00000905", "18.00", "280.00"],
+      ["云帆商户", "M00000906", "0.00", "150.00"]
     ];
-
     let tierRules = [
       { start: 0, groupId: "-10088000001", people: ["@finance_a", "@risk_a", "@ops_a"], required: 2 },
       { start: 10000, groupId: "-10088000002", people: ["@finance_a", "@risk_b", "@ops_b", "@manager_a"], required: 3 },
       { start: 50000, groupId: "-10088000003", people: ["@finance_a", "@risk_lead", "@ops_lead", "@manager_a", "@director_a"], required: 4 }
     ];
+    const demoState = (window.parent !== window && window.parent.__BP_DEMO_STATE__) || (window.__BP_DEMO_STATE__ ||= {});
+    const withdrawFeeRules = demoState.withdrawFeeRules ||= {
+      USDT: [{ start: 0, fee: 0 }, { start: 50, fee: 1 }, { start: 200, fee: 2 }],
+      TRX: [{ start: 0, fee: 0 }, { start: 50, fee: 2 }, { start: 200, fee: 4 }]
+    };
+    let activeWithdrawFeeCurrency = "USDT";
+    let editingWithdrawFeeIndex = null;
+
+    // 商户互转关系按一对商户双向维护；划转审核群与确认人独立，审核机器人共用商户下分确认配置。
+    const transferRelations = {
+      M00000901: ["M00000902", "M00000904"],
+      M00000902: ["M00000901", "M00000905"],
+      M00000904: ["M00000901"],
+      M00000905: ["M00000902"]
+    };
+    const withdrawConfirmConfigs = {
+      M00000901: { bot: "商户下分确认机器人 A" },
+      M00000902: { bot: "商户下分确认机器人 B" },
+      M00000904: { bot: "商户下分确认机器人 A" },
+      M00000905: { bot: "商户下分确认机器人 B" }
+    };
+    const transferReviewConfigs = {
+      M00000901: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2 },
+      M00000902: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], required: 2 },
+      M00000904: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2 },
+      M00000905: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], required: 2 }
+    };
+    const transferOrders = [
+      { no: "TRF202608050001", sourceNo: "M00000901", targetNo: "M00000902", sourceWallet: "collect", targetWallet: "payout", amount: "120.000000", bot: "商户下分确认机器人 A", group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2, created: "2026-08-05 11:40:00" }
+    ];
+    let transferSequence = 2;
+
+    function merchantByNo(merchantNo) { return merchants.find((merchant) => merchant[1] === merchantNo); }
+    function merchantLabel(merchantNo) {
+      const merchant = merchantByNo(merchantNo);
+      return merchant ? `${merchant[0]} / ${merchant[1]}` : merchantNo;
+    }
+    const walletOptions = [
+      { value: "collect", label: "代收 USDT余额" },
+      { value: "payout", label: "代付 USDT代付剩余预付" }
+    ];
+    function walletLabel(wallet) { return walletOptions.find((item) => item.value === wallet)?.label || "未选择钱包"; }
+    function walletBalance(merchantNo, wallet) {
+      const merchant = merchantByNo(merchantNo);
+      return merchant ? Number(wallet === "collect" ? merchant[2] : merchant[3]) : 0;
+    }
+    function transferLink(wallet, index) {
+      return `<button type="button" class="transfer-link" data-transfer-open="${wallet}" data-transfer-index="${index}">划转</button>`;
+    }
+    function relationTags(sourceNo) {
+      const targets = transferRelations[sourceNo] || [];
+      return targets.length
+        ? targets.map((targetNo) => `<span class="config-tag">${merchantLabel(targetNo)}<button type="button" data-transfer-remove-relation="${targetNo}" aria-label="移除${merchantLabel(targetNo)}">×</button></span>`).join("")
+        : '<span class="white-empty">暂未配置可划转商户</span>';
+    }
+    function transferReviewInfo(sourceNo) {
+      const config = transferReviewConfigs[sourceNo];
+      const bot = withdrawConfirmConfigs[sourceNo]?.bot;
+      if (!config || !bot) return "未配置商户下分确认机器人或资金划转审核群与确认人，不能提交。";
+      return `共用商户下分确认机器人：${bot}；资金划转审核群：${config.group}；有效确认人：${config.reviewers.join("、")}；需 ${config.required} 人确认。`;
+    }
 
     const withdrawRows = [
-      ["1", "ORD-DEMO-0001", "单", "示例商户 A/M00000901", "200.00", "4.00", "196.00", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
-      ["2", "ORD-DEMO-0002", "单", "示例商户 B/M00000902", "120.00", "2.00", "118.00", "待处理", "待确认", "1/2", "审核员甲、审核员乙", "取消"],
-      ["3", "ORD-DEMO-0003", "单", "示例商户 C/M00000903", "80.00", "1.00", "79.00", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
-      ["4", "ORD-DEMO-0004", "单", "示例商户 D/M00000904", "50.00", "1.00", "49.00", "已取消", "待确认", "0/0", "—", "-"],
-      ["5", "ORD-DEMO-0005", "单", "示例商户 E/M00000905", "350.00", "5.00", "345.00", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
-      ["6", "ORD-DEMO-0006", "单", "示例商户 F/M00000906", "900.00", "9.00", "891.00", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
+      ["1", "LS-W202608120001", "单", "远航商户/M00000901", "200.000000", "4.000000", "200.000000", "TRX", "TRON", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
+      ["2", "LS-W202608120002", "单", "北辰商户/M00000902", "120.000000", "2.000000", "120.000000", "USDT", "TRC20", "待处理", "待确认", "1/2", "审核员甲、审核员乙", "取消"],
+      ["3", "LS-W202608120003", "单", "星河商户/M00000903", "80.000000", "1.000000", "80.000000", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
+      ["4", "LS-W202608120004", "单", "晨曦商户/M00000904", "50.000000", "1.000000", "50.000000", "USDT", "TRC20", "已取消", "待确认", "0/0", "—", "-"],
+      ["5", "LS-W202608120005", "单", "启明商户/M00000905", "350.000000", "5.000000", "350.000000", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
+      ["6", "LS-W202608120006", "单", "云帆商户/M00000906", "900.000000", "9.000000", "900.000000", "USDT", "TRC20", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
     ];
+    let withdrawQuery = { order: "", type: "", status: "" };
 
     const rechargeOrders = [
-      { no: "MRC-DEMO-0001", merchant: "M00000001 / 远航商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "f64a9032…31b9", confirm: "18 / 16", status: "done", created: "2026-08-03 11:23:19" },
-      { no: "MRC-DEMO-0002", merchant: "M00000002 / 北辰商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "aa29e10b…8c62", confirm: "18 / 16", status: "done", created: "2026-08-03 10:37:37" },
-      { no: "MRC-DEMO-0003", merchant: "M00000003 / 星河商户", amount: 4000, fee: 0, net: 4000, address: "TNq4mL6s…P2wK", txid: "3d9b4f71…c2a1", confirm: "16 / 16", status: "done", created: "2026-08-01 11:24:42" },
-      { no: "MRC-DEMO-0004", merchant: "M00000004 / 晨曦商户", amount: 3000, fee: 0, net: 3000, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "expired", created: "2026-08-01 10:53:28" },
-      { no: "MRC-DEMO-0005", merchant: "M00000005 / 启明商户", amount: 3000, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "closed", created: "2026-08-01 10:09:40" },
-      { no: "MRC-DEMO-0006", merchant: "M00000006 / 云帆商户", amount: 1300, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "db3f2e71…1a09", confirm: "12 / 16", status: "processing", created: "2026-08-03 09:44:12" },
-      { no: "MRC-DEMO-0007", merchant: "M00000007 / 长风商户", amount: 600, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "review", created: "2026-08-02 15:11:08" },
-      { no: "MRC-DEMO-0008", merchant: "M00000008 / 海潮商户", amount: 1200, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "—", confirm: "0 / 16", status: "rejected", created: "2026-08-02 08:26:55" }
+      { no: "MRC202608030001", merchant: "M00000001 / 远航商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "f64a9032…31b9", confirm: "18 / 16", status: "done", created: "2026-08-03 11:23:19" },
+      { no: "MRC202608030002", merchant: "M00000002 / 北辰商户", amount: 5000, fee: 0, net: 5000, address: "TQx7aJ3p…Z8qH", txid: "aa29e10b…8c62", confirm: "18 / 16", status: "done", created: "2026-08-03 10:37:37" },
+      { no: "MRC202608010003", merchant: "M00000003 / 星河商户", amount: 4000, fee: 0, net: 4000, address: "TNq4mL6s…P2wK", txid: "3d9b4f71…c2a1", confirm: "16 / 16", status: "done", created: "2026-08-01 11:24:42" },
+      { no: "MRC202608010004", merchant: "M00000004 / 晨曦商户", amount: 3000, fee: 0, net: 3000, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "expired", created: "2026-08-01 10:53:28" },
+      { no: "MRC202608010005", merchant: "M00000005 / 启明商户", amount: 3000, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "closed", created: "2026-08-01 10:09:40" },
+      { no: "MRC202608030006", merchant: "M00000006 / 云帆商户", amount: 1300, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "db3f2e71…1a09", confirm: "12 / 16", status: "processing", created: "2026-08-03 09:44:12" },
+      { no: "MRC202608020007", merchant: "M00000007 / 长风商户", amount: 600, fee: 0, net: 0, address: "TQx7aJ3p…Z8qH", txid: "—", confirm: "0 / 16", status: "review", created: "2026-08-02 15:11:08" },
+      { no: "MRC202608020008", merchant: "M00000008 / 海潮商户", amount: 1200, fee: 0, net: 0, address: "TNq4mL6s…P2wK", txid: "—", confirm: "0 / 16", status: "rejected", created: "2026-08-02 08:26:55" }
     ];
 
     function iconSvg(kind) {
@@ -861,9 +1177,12 @@
     }
 
     function renderSidebar() {
-      const activeParent = currentPage === "merchant" || currentPage === "withdraw" || currentPage === "recharge"
+      const activeParent = currentPage === "merchant" || currentPage === "feeConfig" || currentPage === "withdraw" || currentPage === "recharge"
         ? "merchant-group" : currentPage === "payout" ? "payout-group"
-        : currentPage === "collect" ? "collect-group" : "";
+        : currentPage === "collect" ? "collect-group"
+        : currentPage === "cryptoOrder" ? "wallet-group"
+        : currentPage === "daily" ? "stats-group"
+        : ["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay"].includes(currentPage) ? "record-group" : "";
       document.getElementById("sidebar").innerHTML = menus.map((menu) => {
         const isOpen = menu.key === activeParent;
         const directActive = menu.key === currentPage;
@@ -987,6 +1306,24 @@
       renderRechargeOrders();
     }
 
+    function feeConfigPage() {
+      const currencies = Object.keys(withdrawFeeRules);
+      const rules = withdrawFeeRules[activeWithdrawFeeCurrency] || [];
+      const rows = rules.map((rule, index) => {
+        const next = rules[index + 1];
+        const interval = next ? `[${rule.start}, ${next.start})` : `[${rule.start}, ∞)`;
+        return `<tr><td>${rule.start}${index === 0 ? ' <span class="tag">起始档</span>' : ''}</td><td>${rule.fee === 0 ? '免费' : `${rule.fee} ${activeWithdrawFeeCurrency}`}</td><td>下发 ${interval} ${rule.fee === 0 ? '免手续费' : `手续费 ${rule.fee} ${activeWithdrawFeeCurrency}`}</td><td class="op-links"><button type="button" class="link" data-fee-edit="${index}">修改</button>${index ? `<button type="button" class="link" data-fee-delete="${index}">删除</button>` : ''}</td></tr>`;
+      }).join('') || `<tr><td colspan="4" style="text-align:center;padding:28px;color:var(--muted)">暂未配置 ${activeWithdrawFeeCurrency} 下分手续费</td></tr>`;
+      const tabs = currencies.map((currency) => `<button type="button" class="btn ${currency === activeWithdrawFeeCurrency ? 'primary' : ''}" data-fee-currency="${currency}">币种：${currency}</button>`).join('');
+      const editing = editingWithdrawFeeIndex === null ? null : rules[editingWithdrawFeeIndex];
+      return `<div class="panel" style="margin:0"><div class="section-title">商户手续费配置</div>
+        <div class="modal-alert">按币种维护下发手续费阶梯：金额区间左闭右开，最高档一直到无穷；手续费填 0 表示该档免费。保存后立即生效，不影响已创建订单。</div>
+        <div class="button-row action-line" style="margin-top:16px">${tabs}</div>
+        <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>金额起始（>=）</th><th>下发手续费</th><th>生效区间（规则说明）</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="config-card" style="margin-top:16px"><div class="modal-section-head"><strong>${editing ? '修改规则' : '新增规则'} · ${activeWithdrawFeeCurrency}</strong></div><div class="config-inline"><input id="feeRuleStart" class="modal-control" type="number" min="0" step="0.000001" value="${editing ? editing.start : ''}" placeholder="金额起始（>=）"><input id="feeRuleAmount" class="modal-control" type="number" min="0" step="0.000001" value="${editing ? editing.fee : ''}" placeholder="下发手续费（${activeWithdrawFeeCurrency}）"><button type="button" class="btn primary" data-fee-save>${editing ? '保存修改' : '保存规则'}</button>${editing ? '<button type="button" class="btn" data-fee-cancel>取消</button>' : ''}</div><p class="modal-alert" style="margin:12px 0 0">手续费在下发金额之外额外扣除。商户余额扣减 = 下发金额 + 手续费；收款方到账金额 = 下发金额。币种之间不换算、不共用阶梯。</p></div>
+      </div>`;
+    }
+
     function merchantPage() {
       const rows = merchants.map((m, i) => `<tr>
         <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td>
@@ -994,8 +1331,8 @@
         <td>${m[2]}</td><td>${i % 3 === 0 ? "120.00" : "0.00"}</td><td>${i === 1 ? "固定：1.0000" : "未配置"}</td>
         <td>${switchControl(true, "正常")}</td><td>${switchControl(true, "开启")}</td><td>${switchControl(true, "开启")}</td>
         <td>${m[3]}　${mockLink("调整")}</td><td>0.00</td><td>未绑定</td>
-        <td class="op-links">${["详情","修改","服务费配置","编辑密码","查看密钥","设置汇率","通道测试","区块链确认数配置","重置谷歌秘钥","绑定到主账户","删除"].map((label) =>
-          label === "修改" ? `<button type="button" class="link" data-edit-index="${i}">修改</button>` : mockLink(label)
+        <td class="op-links">${["详情","修改","资金划转配置","服务费配置","编辑密码","查看密钥","设置汇率","通道测试","区块链确认数配置","重置谷歌秘钥","绑定到主账户","删除"].map((label) =>
+          label === "修改" ? `<button type="button" class="link" data-edit-index="${i}">修改</button>` : label === "资金划转配置" ? `<button type="button" class="link" data-transfer-config-index="${i}">资金划转配置</button>` : mockLink(label)
         ).join("")}</td>
       </tr>`).join("");
       return `<div class="filters two-line">
@@ -1035,13 +1372,13 @@
       return tierRules.map((rule, index) => {
         const nextRule = tierRules[index + 1];
         const range = nextRule
-          ? `${formatTierAmount(rule.start)} ≤ 金额 < ${formatTierAmount(nextRule.start)} USDT`
-          : `金额 ≥ ${formatTierAmount(rule.start)} USDT`;
+          ? `<span>${formatTierAmount(rule.start)} USDT 起</span><span class="tier-range-end">${formatTierAmount(nextRule.start)} USDT 前</span>`
+          : `<span>${formatTierAmount(rule.start)} USDT 起</span><span class="tier-range-end">无上限</span>`;
         const people = rule.people.map((username) =>
           `<span class="tier-person">${escapeTierText(username)}</span>`
         ).join("");
         return `<tr data-tier-row="${index}">
-          <td><span class="tier-range">${range}</span></td>
+          <td><div class="tier-range">${range}</div></td>
           <td><span class="tier-group">${escapeTierText(rule.groupId)}</span></td>
           <td><div class="tier-people">${people}</div></td>
           <td><span class="tier-required">${rule.required} 人</span></td>
@@ -1054,7 +1391,7 @@
       return `<section class="modal-section" data-tier-section>
         <div class="modal-section-head">
           <div class="tier-toolbar">
-            <div><strong>USDT 代付确认配置</strong><span class="tier-count" id="tierRuleCount">共 ${tierRules.length} 条</span></div>
+            <div><strong>金额阶梯</strong><span class="tier-count" id="tierRuleCount">共 ${tierRules.length} 条</span></div>
             <button type="button" class="btn primary small" data-tier-action="add">新增配置</button>
           </div>
         </div>
@@ -1082,8 +1419,10 @@
     function renderTierRuleRows() {
       const rows = document.getElementById("tierRuleRows");
       const count = document.getElementById("tierRuleCount");
+      const navBadge = document.querySelector('[data-modal-section-target="payout-confirm"] .config-nav-badge');
       if (rows) rows.innerHTML = tierRuleRows();
       if (count) count.textContent = `共 ${tierRules.length} 条`;
+      if (navBadge) navBadge.textContent = String(tierRules.length);
     }
 
     function openTierRuleEditor(index = -1) {
@@ -1139,60 +1478,148 @@
       tierRules.sort((a, b) => a.start - b.start);
       renderTierRuleRows();
       closeTierRuleEditor();
-      showToast(index >= 0 ? "金额区间配置已更新（演示）" : "金额区间配置已新增（演示）");
+      showToast(index >= 0 ? "金额区间配置已更新" : "金额区间配置已新增");
     }
 
-    function openMerchantModal(index) {
+    function openMerchantModal(index, focusTransfer = false) {
       const merchant = merchants[index] || merchants[0];
+      const withdrawConfirmConfig = withdrawConfirmConfigs[merchant[1]] || { bot: "" };
+      const transferConfig = transferReviewConfigs[merchant[1]] || { group: "", reviewers: [], required: 2 };
       const root = document.getElementById("merchantModalRoot");
       root.innerHTML = `<div class="modal-layer">
         <section class="merchant-modal" role="dialog" aria-modal="true" aria-labelledby="merchantModalTitle" tabindex="-1">
           <header class="modal-header">
-            <h2 id="merchantModalTitle">修改商户</h2>
+            <div class="modal-header-copy">
+              <h2 id="merchantModalTitle">修改商户</h2>
+              <div class="modal-subtitle">${merchant[0]} · ${merchant[1]} · demo_${String(index + 1).padStart(2, "0")}</div>
+            </div>
             <button type="button" class="modal-close" data-modal-close aria-label="关闭此对话框">×</button>
           </header>
           <div class="modal-body">
-            <div class="modal-basic-grid">
-              <div class="modal-field"><label class="required">商户名称</label><input class="modal-control" value="${merchant[0]}"></div>
-              <div class="modal-field"><label>登录账号</label><input class="modal-control" value="demo_${String(index + 1).padStart(2, "0")}" disabled></div>
-              <div class="modal-field"><label>所属代理</label><select class="modal-control"><option>示例代理</option><option>无代理</option></select></div>
-              <div class="modal-field"><label>保证金</label><input class="modal-control" type="number" value="0.000001" step="0.000001"></div>
-            </div>
+            <div class="merchant-config-shell">
+              <nav class="merchant-config-nav" role="tablist" aria-label="商户配置分组">
+                <div class="config-nav-label">商户设置</div>
+                <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelBasic" data-modal-section-target="basic">
+                  <span class="config-nav-title">基础资料</span><span class="config-nav-subtitle">名称、账号与代理</span>
+                </button>
+                <div class="config-nav-label grouped">资金确认配置</div>
+                <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelWithdraw" data-modal-section-target="withdraw-confirm">
+                  <span class="config-nav-title">商户下分（提现）</span><span class="config-nav-subtitle">机器人、审核群与确认人</span>
+                </button>
+                <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelTransfer" data-modal-section-target="transfer-confirm">
+                  <span class="config-nav-title">资金划转</span><span class="config-nav-subtitle">互转商户、审核群与确认人</span>
+                </button>
+                <div class="config-nav-label grouped">通知与其他</div>
+                <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelTelegram" data-modal-section-target="telegram">
+                  <span class="config-nav-title">Telegram 通知</span><span class="config-nav-subtitle">通知群与机器人</span>
+                </button>
+                <button type="button" class="config-nav-button active" role="tab" aria-selected="true" aria-controls="merchantPanelPayout" data-modal-section-target="payout-confirm">
+                  <span class="config-nav-title">USDT 代付确认<span class="config-nav-badge">${tierRules.length}</span></span><span class="config-nav-subtitle">金额阶梯与多人确认</span>
+                </button>
+                <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelBalance" data-modal-section-target="balance-alert">
+                  <span class="config-nav-title">余额提醒</span><span class="config-nav-subtitle">预警值与提醒类型</span>
+                </button>
+                <button type="button" class="config-nav-button" role="tab" aria-selected="false" aria-controls="merchantPanelAdvanced" data-modal-section-target="advanced">
+                  <span class="config-nav-title">更多设置</span><span class="config-nav-subtitle">访问、联系与收款</span>
+                </button>
+              </nav>
 
-            <section class="modal-section">
-              <div class="modal-section-head"><strong>商户下分TG确认配置</strong></div>
-              <div class="config-row"><div class="config-label">审核风控群ID</div><div class="config-main"><input class="modal-control" placeholder="-1001234567890"></div></div>
-              <div class="config-row"><div class="config-label">TG username 白名单</div><div class="config-main"><div class="config-inline"><input class="modal-control" placeholder="输入 TG username（如 @admin_a）"><button type="button" class="btn" data-action="添加审核白名单">+ 添加</button></div></div></div>
-            </section>
+              <div class="merchant-config-content" id="merchantConfigContent">
+                <section class="config-panel" id="merchantPanelBasic" role="tabpanel" data-modal-section-panel="basic" hidden>
+                  <header class="config-panel-header">
+                    <div><h3>基础资料</h3><p>维护商户名称、登录账号、所属代理和保证金。</p></div>
+                    <span class="config-panel-status">${merchant[1]}</span>
+                  </header>
+                  <div class="config-card">
+                    <div class="modal-basic-grid">
+                      <div class="modal-field"><label class="required">商户名称</label><input class="modal-control" value="${merchant[0]}"></div>
+                      <div class="modal-field"><label>登录账号</label><input class="modal-control" value="demo_${String(index + 1).padStart(2, "0")}" disabled></div>
+                      <div class="modal-field"><label>所属代理</label><select class="modal-control"><option>示例代理</option><option>无代理</option></select></div>
+                      <div class="modal-field"><label>保证金</label><input class="modal-control" type="number" value="0.000001" step="0.000001"></div>
+                    </div>
+                  </div>
+                </section>
 
-            <section class="modal-section">
-              <div class="modal-section-head"><strong>Telegram 通知配置</strong></div>
-              <div class="config-row"><div class="config-label">商户通知群 ID</div><div class="config-main"><input class="modal-control" placeholder="请输入群组 ID"></div></div>
-              <div class="config-row"><div class="config-label">通知机器人</div><div class="config-main"><select class="modal-control"><option>请选择通知机器人</option><option>蓝盛通知机器人（已启用）</option><option disabled>备用机器人（已停用）</option></select></div></div>
-            </section>
+                <section class="config-panel" id="merchantPanelWithdraw" role="tabpanel" data-modal-section-panel="withdraw-confirm" hidden>
+                  <header class="config-panel-header">
+                    <div><h3>商户下分（提现）TG 确认配置</h3><p>维护商户下分（提现）使用的审核机器人、审核群和确认人员。</p></div>
+                    <span class="config-panel-status">下分（提现）</span>
+                  </header>
+                  <div class="config-card">
+                    <div class="config-row"><div class="config-label">审核机器人</div><div class="config-main"><select class="modal-control" data-withdraw-confirm-bot><option value="">请选择审核机器人</option><option ${withdrawConfirmConfig.bot === "商户下分确认机器人 A" ? "selected" : ""}>商户下分确认机器人 A</option><option ${withdrawConfirmConfig.bot === "商户下分确认机器人 B" ? "selected" : ""}>商户下分确认机器人 B</option></select></div></div>
+                    <div class="config-row"><div class="config-label">审核风控群ID</div><div class="config-main"><input class="modal-control" placeholder="-1001234567890"></div></div>
+                    <div class="config-row"><div class="config-label">TG username 白名单</div><div class="config-main"><div class="config-inline"><input class="modal-control" placeholder="输入 TG username（如 @admin_a）"><button type="button" class="btn" data-action="添加审核白名单">+ 添加</button></div></div></div>
+                  </div>
+                </section>
 
-            ${tierRulesPanel()}
+                <section class="config-panel" id="merchantPanelTransfer" role="tabpanel" data-modal-section-panel="transfer-confirm" hidden data-transfer-config="${merchant[1]}">
+                  <header class="config-panel-header">
+                    <div><h3>资金划转 TG 确认配置</h3><p>维护本商户作为被划出商户时的互转关系、审核群、有效确认人与确认人数。</p></div>
+                    <span class="config-panel-status">资金划转</span>
+                  </header>
+                  <div class="config-card">
+                    <p class="transfer-note">配置一对商户后，双方可互相发起划转。审核机器人共用「商户下分（提现）」配置。</p>
+                    <div class="config-row"><div class="config-label">可互转商户</div><div class="config-main"><div class="config-tags" data-transfer-relation-tags>${relationTags(merchant[1])}</div><div class="config-inline"><select class="modal-control" data-transfer-relation-select><option value="">选择商户</option>${merchants.filter((item) => item[1] !== merchant[1]).map((item) => `<option value="${item[1]}">${item[0]} / ${item[1]}</option>`).join("")}</select><button type="button" class="btn" data-transfer-add-relation>+ 添加</button></div></div></div>
+                    <div class="config-row"><div class="config-label">审核群 ID</div><div class="config-main"><input class="modal-control" data-transfer-group value="${transferConfig.group}" placeholder="请输入资金划转审核群 ID"></div></div>
+                    <div class="config-row"><div class="config-label">有效确认人</div><div class="config-main"><div class="config-tags" data-transfer-reviewer-tags>${transferConfig.reviewers.length ? transferConfig.reviewers.map((name) => `<span class="config-tag">${name}<button type="button" data-transfer-remove-reviewer="${name}" aria-label="移除${name}">×</button></span>`).join("") : '<span class="white-empty">暂未配置有效确认人</span>'}</div><div class="config-inline"><input class="modal-control" data-transfer-reviewer-input placeholder="输入 TG username"><button type="button" class="btn" data-transfer-add-reviewer>+ 添加</button></div></div></div>
+                    <div class="config-row"><div class="config-label">需确认人数</div><div class="config-main"><input class="modal-control" data-transfer-required type="number" min="1" value="${transferConfig.required}"></div></div>
+                  </div>
+                </section>
 
-            <section class="modal-section">
-              <div class="modal-section-head"><strong>USDT 余额提醒配置</strong></div>
-              <div class="config-row"><div class="config-label">是否开启余额提醒</div><div class="config-main"><div class="config-inline"><button type="button" class="switch" data-config-toggle="balance-alert" role="switch" aria-checked="false"></button><span class="switch-copy" data-config-status="balance-alert">已关闭</span></div></div></div>
-              <div class="config-row"><div class="config-label">代付余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入代付余额预警值" disabled><span class="unit">USDT</span></div></div></div>
-              <div class="config-row"><div class="config-label">手续费余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入手续费余额预警值" disabled><span class="unit">USDT</span></div></div></div>
-              <div class="config-row"><div class="config-label">提醒间隔</div><div class="config-main"><select class="modal-control" data-config-field="balance-alert" disabled><option>30 分钟</option><option>1 小时</option><option>2 小时</option></select></div></div>
-              <div class="config-row"><div class="config-label">提醒类型</div><div class="config-main"><div class="check-row"><label><input type="checkbox" data-config-field="balance-alert" disabled>代付余额不足</label><label><input type="checkbox" data-config-field="balance-alert" disabled>手续费余额不足</label><label><input type="checkbox" data-config-field="balance-alert" disabled>余额恢复</label></div></div></div>
-              <div class="modal-alert">当该商户 USDT 代付费率为 0 时，不监测手续费余额，也不发送手续费余额不足或恢复提醒。</div>
-            </section>
+                <section class="config-panel" id="merchantPanelTelegram" role="tabpanel" data-modal-section-panel="telegram" hidden>
+                  <header class="config-panel-header">
+                    <div><h3>Telegram 通知配置</h3><p>维护该商户的通知群和通知机器人。</p></div>
+                    <span class="config-panel-status">通知通道</span>
+                  </header>
+                  <div class="config-card">
+                    <div class="config-row"><div class="config-label">商户通知群 ID</div><div class="config-main"><input class="modal-control" placeholder="请输入群组 ID"></div></div>
+                    <div class="config-row"><div class="config-label">通知机器人</div><div class="config-main"><select class="modal-control"><option>请选择通知机器人</option><option>蓝盛通知机器人（已启用）</option><option disabled>备用机器人（已停用）</option></select></div></div>
+                  </div>
+                </section>
 
-            <div class="modal-basic-grid" style="margin-top:18px">
-              <div class="modal-field full"><label>独立操作预付群</label><input class="modal-control" placeholder="设置独立群，只能在该群加预付"></div>
-              <div class="modal-field full"><label>登录IP白名单</label><textarea class="modal-control" placeholder="多IP换行分割，不填写表示不限制"></textarea></div>
-              <div class="modal-field"><label>联系人</label><input class="modal-control" placeholder="请输入联系人"></div>
-              <div class="modal-field"><label>联系电话</label><input class="modal-control" placeholder="请输入联系电话"></div>
-              <div class="modal-field"><label>联系邮箱</label><input class="modal-control" placeholder="请输入联系邮箱"></div>
-              <div class="modal-field"><label>协议选项</label><select class="modal-control"><option>请选择协议</option><option>TRC20</option><option>ERC20</option></select></div>
-              <div class="modal-field full"><label>收款地址</label><input class="modal-control" placeholder="未选协议可不填；选协议后必填"></div>
-              <div class="modal-field"><label>群通知</label><div class="check-row"><label><input type="radio" name="groupNotice${index}" checked>通知</label><label><input type="radio" name="groupNotice${index}">屏蔽</label></div></div>
-              <div class="modal-field"><label>商户排序</label><input class="modal-control" type="number" value="0"></div>
+                <section class="config-panel" id="merchantPanelPayout" role="tabpanel" data-modal-section-panel="payout-confirm">
+                  <header class="config-panel-header">
+                    <div><h3>USDT 代付确认配置</h3><p>按订单金额维护播报群、确认人员和需确认人数。</p></div>
+                    <span class="config-panel-status">按金额分层</span>
+                  </header>
+                  ${tierRulesPanel()}
+                </section>
+
+                <section class="config-panel" id="merchantPanelBalance" role="tabpanel" data-modal-section-panel="balance-alert" hidden>
+                  <header class="config-panel-header">
+                    <div><h3>USDT 余额提醒配置</h3><p>设置代付余额、手续费余额与提醒频率。</p></div>
+                    <span class="config-panel-status">已关闭</span>
+                  </header>
+                  <div class="config-card">
+                    <div class="config-row"><div class="config-label">是否开启余额提醒</div><div class="config-main"><div class="config-inline"><button type="button" class="switch" data-config-toggle="balance-alert" role="switch" aria-checked="false"></button><span class="switch-copy" data-config-status="balance-alert">已关闭</span></div></div></div>
+                    <div class="config-row"><div class="config-label">代付余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入代付余额预警值" disabled><span class="unit">USDT</span></div></div></div>
+                    <div class="config-row"><div class="config-label">手续费余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入手续费余额预警值" disabled><span class="unit">USDT</span></div></div></div>
+                    <div class="config-row"><div class="config-label">提醒间隔</div><div class="config-main"><select class="modal-control" data-config-field="balance-alert" disabled><option>30 分钟</option><option>1 小时</option><option>2 小时</option></select></div></div>
+                    <div class="config-row"><div class="config-label">提醒类型</div><div class="config-main"><div class="check-row"><label><input type="checkbox" data-config-field="balance-alert" disabled>代付余额不足</label><label><input type="checkbox" data-config-field="balance-alert" disabled>手续费余额不足</label><label><input type="checkbox" data-config-field="balance-alert" disabled>余额恢复</label></div></div></div>
+                    <div class="modal-alert">当该商户 USDT 代付费率为 0 时，不监测手续费余额，也不发送手续费余额不足或恢复提醒。</div>
+                  </div>
+                </section>
+
+                <section class="config-panel" id="merchantPanelAdvanced" role="tabpanel" data-modal-section-panel="advanced" hidden>
+                  <header class="config-panel-header">
+                    <div><h3>更多设置</h3><p>维护访问限制、联系人、收款信息和展示顺序。</p></div>
+                    <span class="config-panel-status">其他资料</span>
+                  </header>
+                  <div class="config-card">
+                    <div class="modal-basic-grid">
+                      <div class="modal-field full"><label>独立操作预付群</label><input class="modal-control" placeholder="设置独立群，只能在该群加预付"></div>
+                      <div class="modal-field full"><label>登录IP白名单</label><textarea class="modal-control" placeholder="多IP换行分割，不填写表示不限制"></textarea></div>
+                      <div class="modal-field"><label>联系人</label><input class="modal-control" placeholder="请输入联系人"></div>
+                      <div class="modal-field"><label>联系电话</label><input class="modal-control" placeholder="请输入联系电话"></div>
+                      <div class="modal-field"><label>联系邮箱</label><input class="modal-control" placeholder="请输入联系邮箱"></div>
+                      <div class="modal-field"><label>协议选项</label><select class="modal-control"><option>请选择协议</option><option>TRC20</option><option>ERC20</option></select></div>
+                      <div class="modal-field full"><label>收款地址</label><input class="modal-control" placeholder="未选协议可不填；选协议后必填"></div>
+                      <div class="modal-field"><label>群通知</label><div class="check-row"><label><input type="radio" name="groupNotice${index}" checked>通知</label><label><input type="radio" name="groupNotice${index}">屏蔽</label></div></div>
+                      <div class="modal-field"><label>商户排序</label><input class="modal-control" type="number" value="0"></div>
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
           </div>
           <footer class="modal-footer"><button type="button" class="btn" data-modal-close>取消</button><button type="button" class="btn primary" data-modal-submit>立即提交</button></footer>
@@ -1200,11 +1627,136 @@
       </div>`;
       document.body.style.overflow = "hidden";
       root.querySelector(".merchant-modal").focus();
+      if (focusTransfer) setMerchantConfigPanel("transfer-confirm");
+    }
+
+    function setMerchantConfigPanel(key) {
+      const root = document.getElementById("merchantModalRoot");
+      const content = root.querySelector("#merchantConfigContent");
+      root.querySelectorAll("[data-modal-section-target]").forEach((button) => {
+        const selected = button.dataset.modalSectionTarget === key;
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-selected", String(selected));
+      });
+      root.querySelectorAll("[data-modal-section-panel]").forEach((panel) => {
+        panel.hidden = panel.dataset.modalSectionPanel !== key;
+      });
+      if (key !== "payout-confirm") closeTierRuleEditor();
+      if (content) content.scrollTop = 0;
     }
 
     function closeMerchantModal() {
       document.getElementById("merchantModalRoot").innerHTML = "";
       document.body.style.overflow = "";
+    }
+
+    function merchantOptions(selectedNo) {
+      return merchants.map((merchant) => `<option value="${merchant[1]}" ${merchant[1] === selectedNo ? "selected" : ""}>${merchantLabel(merchant[1])}</option>`).join("");
+    }
+
+    function walletOptionsHtml(selectedWallet) {
+      return walletOptions.map((wallet) => `<option value="${wallet.value}" ${wallet.value === selectedWallet ? "selected" : ""}>${wallet.label}</option>`).join("");
+    }
+
+    function targetMerchantOptions(sourceNo, selectedNo) {
+      const targets = transferRelations[sourceNo] || [];
+      if (!targets.length) return '<option value="">暂未配置可互转商户</option>';
+      return targets.map((merchantNo) => `<option value="${merchantNo}" ${merchantNo === selectedNo ? "selected" : ""}>${merchantLabel(merchantNo)}</option>`).join("");
+    }
+
+    function renderTransferModal(defaultWallet, index) {
+      const anchorMerchant = merchants[index] || merchants[0];
+      const sourceNo = anchorMerchant[1];
+      const targetNo = (transferRelations[sourceNo] || [])[0] || "";
+      const targetWallet = defaultWallet === "collect" ? "payout" : "collect";
+      const root = document.getElementById("transferModalRoot");
+      root.innerHTML = `<div class="modal-layer">
+        <section class="merchant-modal" role="dialog" aria-modal="true" aria-labelledby="transferModalTitle" tabindex="-1">
+          <header class="modal-header"><div class="modal-header-copy"><h2 id="transferModalTitle">资金划转</h2><div class="modal-subtitle">后台操作员发起 · 等待 TG 群多人确认</div></div><button type="button" class="modal-close" data-transfer-close aria-label="关闭此对话框">×</button></header>
+          <div class="modal-body" style="overflow-y:auto;padding:20px 22px;">
+            <p class="transfer-note">当前点击账户仅作为初始带入。来源与目标钱包均可调整；目标商户只能从已配置可互转关系中选择。提交后使用本次被划出商户的资金划转 TG 确认配置。</p>
+            <div class="modal-basic-grid">
+              <div class="modal-field"><label class="required">被划出商户</label><select class="modal-control" data-transfer-source>${merchantOptions(sourceNo)}</select></div>
+              <div class="modal-field"><label class="required">划出钱包</label><select class="modal-control" data-transfer-source-wallet>${walletOptionsHtml(defaultWallet)}</select></div>
+              <div class="modal-field"><label class="required">转入商户</label><select class="modal-control" data-transfer-target>${targetMerchantOptions(sourceNo, targetNo)}</select></div>
+              <div class="modal-field"><label class="required">转入钱包</label><select class="modal-control" data-transfer-target-wallet>${walletOptionsHtml(targetWallet)}</select></div>
+              <div class="modal-field full"><label class="required">划转金额</label><div class="config-inline"><input class="modal-control" data-transfer-amount type="number" min="0.000001" step="0.000001" placeholder="请输入 USDT 划转金额"><span class="unit">USDT</span></div></div>
+            </div>
+            <div class="transfer-accounts"><div class="transfer-account"><strong data-transfer-source-name></strong><span data-transfer-source-wallet-name></span></div><div class="transfer-arrow">→</div><div class="transfer-account"><strong data-transfer-target-name></strong><span data-transfer-target-wallet-name></span></div></div>
+            <div class="transfer-status" data-transfer-review-info></div><div class="transfer-status" data-transfer-error hidden></div>
+          </div>
+          <footer class="modal-footer"><button type="button" class="btn" data-transfer-close>取消</button><button type="button" class="btn primary" data-transfer-submit>提交审核</button></footer>
+        </section>
+      </div>`;
+      document.body.style.overflow = "hidden";
+      refreshTransferModal(root);
+      root.querySelector(".merchant-modal").focus();
+    }
+
+    function refreshTransferModal(root) {
+      const sourceNo = root.querySelector("[data-transfer-source]").value;
+      const targetSelect = root.querySelector("[data-transfer-target]");
+      const previousTarget = targetSelect.value;
+      targetSelect.innerHTML = targetMerchantOptions(sourceNo, previousTarget);
+      const targetNo = targetSelect.value;
+      const sourceWallet = root.querySelector("[data-transfer-source-wallet]").value;
+      const targetWallet = root.querySelector("[data-transfer-target-wallet]").value;
+      root.querySelector("[data-transfer-source-name]").textContent = merchantLabel(sourceNo);
+      root.querySelector("[data-transfer-target-name]").textContent = merchantLabel(targetNo);
+      root.querySelector("[data-transfer-source-wallet-name]").textContent = walletLabel(sourceWallet);
+      root.querySelector("[data-transfer-target-wallet-name]").textContent = walletLabel(targetWallet);
+      root.querySelector("[data-transfer-review-info]").textContent = transferReviewInfo(sourceNo);
+    }
+
+    function closeTransferModal() {
+      document.getElementById("transferModalRoot").innerHTML = "";
+      document.body.style.overflow = "";
+    }
+
+    function submitTransferOrder() {
+      const root = document.getElementById("transferModalRoot");
+      const sourceNo = root.querySelector("[data-transfer-source]").value;
+      const targetNo = root.querySelector("[data-transfer-target]").value;
+      const sourceWallet = root.querySelector("[data-transfer-source-wallet]").value;
+      const targetWallet = root.querySelector("[data-transfer-target-wallet]").value;
+      const amount = Number(root.querySelector("[data-transfer-amount]").value);
+      const error = root.querySelector("[data-transfer-error]");
+      const allowedTargets = transferRelations[sourceNo] || [];
+      const config = transferReviewConfigs[sourceNo];
+      const sharedBot = withdrawConfirmConfigs[sourceNo]?.bot;
+      const fail = (message) => { error.hidden = false; error.textContent = message; };
+      if (!allowedTargets.includes(targetNo)) return fail("目标商户不在被划出商户的可互转配置中。");
+      if (!sharedBot || !config || !config.group || !config.reviewers.length || !config.required) return fail("请先完整配置被划出商户的下分确认机器人，以及资金划转审核群、确认人和确认人数。");
+      if (!Number.isFinite(amount) || amount <= 0) return fail("请输入大于 0 的划转金额。");
+      if (amount > walletBalance(sourceNo, sourceWallet)) return fail(`划转金额不能超过该商户的模拟${walletLabel(sourceWallet)}。`);
+      transferOrders.unshift({ no: `TRF20260805${String(transferSequence++).padStart(4, "0")}`, sourceNo, targetNo, sourceWallet, targetWallet, amount: amount.toFixed(6), bot: sharedBot, group: config.group, reviewers: config.reviewers, required: config.required, created: "2026-08-05 12:00:00" });
+      closeTransferModal();
+      navigateTo("withdraw");
+      showToast("资金划转订单已提交，等待审核群多人确认。");
+    }
+
+    function saveTransferConfig(root) {
+      const section = root.querySelector("[data-transfer-config]");
+      if (!section) return;
+      const merchantNo = section.dataset.transferConfig;
+      const current = transferReviewConfigs[merchantNo] || { reviewers: [], required: 2 };
+      transferReviewConfigs[merchantNo] = { ...current, group: section.querySelector("[data-transfer-group]").value.trim(), required: Number(section.querySelector("[data-transfer-required]").value) || current.required };
+    }
+
+    function saveWithdrawConfirmConfig(root) {
+      const merchantNo = root.querySelector("[data-transfer-config]")?.dataset.transferConfig;
+      const bot = root.querySelector("[data-withdraw-confirm-bot]")?.value;
+      if (merchantNo && bot) withdrawConfirmConfigs[merchantNo] = { bot };
+    }
+
+    function refreshRelationTags(section) {
+      section.querySelector("[data-transfer-relation-tags]").innerHTML = relationTags(section.dataset.transferConfig);
+    }
+
+    function refreshReviewerTags(section) {
+      const sourceNo = section.dataset.transferConfig;
+      const reviewers = (transferReviewConfigs[sourceNo] || { reviewers: [] }).reviewers;
+      section.querySelector("[data-transfer-reviewer-tags]").innerHTML = reviewers.length ? reviewers.map((name) => `<span class="config-tag">${name}<button type="button" data-transfer-remove-reviewer="${name}" aria-label="移除${name}">×</button></span>`).join("") : '<span class="white-empty">暂未配置有效确认人</span>';
     }
 
     function setConfigSectionState(key, enabled) {
@@ -1215,28 +1767,80 @@
     }
 
     function withdrawPage() {
-      const rows = withdrawRows.map((r, i) => `<tr>
+      const records = withdrawRecords();
+      const rows = records.map((record) => {
+        if (record.kind === "transfer") return `<tr>
+          <td></td><td class="cell-center">—</td><td>${record.no}</td><td><span class="tag">划转</span></td>
+          <td class="wrap">${record.merchant}</td><td>${record.amount}</td><td>0.000000</td><td>${record.net}</td><td>${record.currency}</td>
+          <td class="wrap">${record.target}</td><td>内部划转</td><td class="wrap">${record.source}</td>
+          <td><span class="tag warning">待审核</span></td><td><span class="tag warning">待确认</span></td><td>${record.confirmed}</td><td class="wrap">${record.reviewers}</td>
+          <td class="wrap">${record.remark}</td><td>${record.created}</td><td>—</td><td>运营员</td><td>${record.operationRemark}</td><td>—</td><td class="op-links">${mockLink("查看")}</td>
+        </tr>`;
+        const r = record.raw;
+        return `<tr>
         <td></td><td class="cell-center">${r[0]}</td><td>${r[1]}</td><td><span class="tag">${r[2]}</span></td>
-        <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>USDT</td>
-        <td><div class="ellipsis" title="TDEMO${i}XXXXXXXXXXXXXXXXXXXXXXXX">TDEMO${i}…WALLET</div></td><td>TRC20</td>
-        <td><div class="ellipsis">${i < 2 ? "TDEMO-SOURCE…ADDR" : "—"}</div></td>
-        <td><span class="tag ${r[7] === "待处理" ? "warning" : r[7] === "已取消" ? "danger" : "success"}">${r[7]}</span></td>
-        <td><span class="tag ${r[8] === "已确认" ? "success" : "warning"}">${r[8]}</span></td><td>${r[9]}</td><td class="wrap">${r[10]}</td>
-        <td>${i === 0 ? "优先处理" : ""}</td><td>2026-08-04 10:2${i}:00</td><td>${i < 3 ? "2026-08-04 10:30:00" : "—"}</td>
-        <td>${i < 3 ? "运营员" : "—"}</td><td>${i === 1 ? "等待第二人确认" : ""}</td><td>${i < 3 ? "查看" : "—"}</td>
-        <td class="op-links">${r[11].split("　").map(mockLink).join("")}</td>
-      </tr>`).join("");
+        <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td>
+        <td><div class="ellipsis" title="TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n">TYvJU4…H1r3n</div></td><td>${r[8]}</td>
+        <td><div class="ellipsis">${record.index < 2 ? "TNq4mL…Y2wK" : "—"}</div></td>
+        <td><span class="tag ${r[9] === "待处理" ? "warning" : r[9] === "已取消" ? "danger" : "success"}">${r[9]}</span></td>
+        <td><span class="tag ${r[10] === "已确认" ? "success" : "warning"}">${r[10]}</span></td><td>${r[11]}</td><td class="wrap">${r[12]}</td>
+        <td>${record.index === 0 ? "优先处理" : ""}</td><td>2026-08-04 10:2${record.index}:00</td><td>${record.index < 3 ? "2026-08-04 10:30:00" : "—"}</td>
+        <td>${record.index < 3 ? "运营员" : "—"}</td><td>${record.index === 1 ? "等待第二人确认" : ""}</td><td>${record.index < 3 ? "查看" : "—"}</td>
+        <td class="op-links">${r[13].split("　").map(mockLink).join("")}</td>
+      </tr>`;
+      }).join("") || '<tr><td colspan="23" style="padding:42px;text-align:center;color:var(--muted)">当前筛选条件下暂无下分记录</td></tr>';
       return `<div class="subtabs"><button class="subtab active" type="button">商户下分记录</button><button class="subtab" type="button" data-action="平台收款钱包余额">平台收款钱包余额</button></div>
       <div class="filters" style="margin-top:14px">
-        ${field("单号", input("输入单号搜索", 200))}${field("下分单类型", select("全部", 140))}
-        ${field("状态", select("全部", 140))}
+        ${field("单号", `<input id="withdrawOrder" class="control" style="width:200px" placeholder="输入单号搜索" value="${withdrawQuery.order}">`)}
+        ${field("下分单类型", `<select id="withdrawType" class="control" style="width:140px"><option value="">全部</option><option value="单" ${withdrawQuery.type === "单" ? "selected" : ""}>单</option><option value="划转" ${withdrawQuery.type === "划转" ? "selected" : ""}>划转</option></select>`)}
+        ${field("状态", `<select id="withdrawStatus" class="control" style="width:140px"><option value="">全部</option><option value="待处理" ${withdrawQuery.status === "待处理" ? "selected" : ""}>待处理</option><option value="已处理" ${withdrawQuery.status === "已处理" ? "selected" : ""}>已处理</option><option value="已取消" ${withdrawQuery.status === "已取消" ? "selected" : ""}>已取消</option></select>`)}
         ${field("提交时间", '<div class="control range" style="width:280px"><span>◷　开始时间</span><strong>-</strong><span>结束时间</span></div>')}
-        ${button("搜索","primary")}
+        <button type="button" class="btn primary" data-withdraw-search>搜索</button>
+        <button type="button" class="btn" data-withdraw-export>导出</button>
       </div>
+      ${withdrawSummary(records)}
       <div class="table-wrap"><table style="min-width:2600px">
         <colgroup><col style="width:45px"><col style="width:60px"><col style="width:150px"><col style="width:100px"><col style="width:170px"><col style="width:90px"><col style="width:85px"><col style="width:90px"><col style="width:75px"><col style="width:210px"><col style="width:90px"><col style="width:210px"><col style="width:100px"><col style="width:105px"><col style="width:85px"><col style="width:190px"><col style="width:120px"><col style="width:145px"><col style="width:145px"><col style="width:100px"><col style="width:150px"><col style="width:100px"><col style="width:150px"></colgroup>
         <thead><tr><th></th><th>序号</th><th>单号</th><th>下分单类型</th><th>商户名称/商户号</th><th>提现金额</th><th>手续费</th><th>到账金额</th><th>币种</th><th>收款钱包地址</th><th>协议类型</th><th>付款地址</th><th>状态</th><th>TG确认状态</th><th>确认人数</th><th>确认人</th><th>备注</th><th>提交时间</th><th>操作时间</th><th>操作人</th><th>操作备注</th><th>审核图片</th><th>操作</th></tr></thead>
-        <tbody>${rows}</tbody></table></div>${pagination(229)}`;
+        <tbody>${rows}</tbody></table></div>${pagination(records.length)}`;
+    }
+
+    function withdrawRecords() {
+      const transfers = transferOrders.map((order) => ({
+        kind: "transfer", no: order.no, type: "划转", status: "待处理", merchant: merchantLabel(order.sourceNo),
+        amount: Number(order.amount), fee: 0, net: Number(order.amount), currency: "USDT",
+        target: `${order.targetNo} / ${walletLabel(order.targetWallet)}`, source: `${order.sourceNo} / ${walletLabel(order.sourceWallet)}`,
+        confirmed: `0/${order.required}`, reviewers: order.reviewers.join("、"), remark: `审核机器人：${order.bot}；审核群：${order.group}`,
+        created: order.created, operationRemark: `等待${order.required}人确认`
+      }));
+      const withdrawals = withdrawRows.map((raw, index) => ({
+        kind: "withdraw", raw, index, no: raw[1], type: raw[2], status: raw[9], merchant: raw[3],
+        amount: Number(raw[4]), fee: Number(raw[5]), net: Number(raw[6]), currency: raw[7]
+      }));
+      return [...transfers, ...withdrawals].filter((record) =>
+        (!withdrawQuery.order || record.no.toLowerCase().includes(withdrawQuery.order.toLowerCase())) &&
+        (!withdrawQuery.type || record.type === withdrawQuery.type) &&
+        (!withdrawQuery.status || record.status === withdrawQuery.status)
+      );
+    }
+
+    function withdrawSummary(records) {
+      const statisticRecords = records.filter((record) => record.type !== "划转");
+      const currencies = [...new Set(["USDT", "TRX", ...statisticRecords.map((record) => record.currency)])];
+      const recordsFor = (currency) => statisticRecords.filter((record) => record.currency === currency);
+      const count = (currency, status) => recordsFor(currency).filter((record) => record.status === status).length;
+      const total = (currency, key, onlyProcessed = false) => recordsFor(currency).reduce((sum, record) => sum + ((!onlyProcessed || record.status === "已处理") ? record[key] : 0), 0);
+      const rows = [
+        ["总下分笔数", (currency) => recordsFor(currency).length, ""],
+        ["待处理笔数", (currency) => count(currency, "待处理"), "pending"],
+        ["已处理笔数", (currency) => count(currency, "已处理"), "done"],
+        ["已取消笔数", (currency) => count(currency, "已取消"), "cancelled"],
+        ["下分申请金额", (currency) => total(currency, "amount").toFixed(2), "amount"],
+        ["实际到账金额", (currency) => total(currency, "net", true).toFixed(2), "done"],
+        ["已收手续费", (currency) => total(currency, "fee", true).toFixed(2), "amount"]
+      ];
+      const items = rows.map(([label, calculate, tone], index) => `<div class="withdraw-summary-item"><span class="withdraw-summary-label">${label}</span><div class="withdraw-summary-values">${currencies.map((currency) => `<span class="withdraw-summary-value ${tone}"><em>${currency}</em>${calculate(currency)}</span>`).join("")}</div>${index === 0 ? '<span class="withdraw-summary-note">按当前筛选汇总，不含划转类型</span>' : ""}</div>`).join("");
+      return `<section class="withdraw-summary" aria-label="商户下分统计" aria-live="polite"><div class="withdraw-summary-strip">${items}</div></section>`;
     }
 
     function payoutPage() {
@@ -1244,7 +1848,7 @@
         <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td><td>${m[0]}</td><td>${m[1]}</td><td>${i ? "—" : "示例代理"}</td><td>0</td>
         <td>${switchControl(true, "正常")}</td><td>${switchControl(true, "开启")}</td><td>${switchControl(false, "禁用")}</td>
         <td>${i === 4 ? "1" : "0"}　${mockLink("编辑")}</td><td>0</td><td>${m[2]}　${mockLink("调额")}</td><td>${m[3]}</td><td>${m[3]}　${mockLink("调额")}</td>
-        <td>${i === 3 ? "20" : "0"}</td><td>${m[2]}　${mockLink("调额")}</td><td>${m[3]}</td><td>${m[3]}　${mockLink("调额")}</td>
+        <td>${i === 3 ? "20" : "0"}</td><td>${m[2]}　${mockLink("调额")}</td><td><span class="balance-action">${m[3]} ${transferLink("payout", i)}</span></td><td>${m[3]}　${mockLink("调额")}</td>
         <td>0</td><td>0</td><td>${i === 3 ? "122.00" : "0.00"}　${mockLink("资金调整")}</td><td>${i === 3 ? "28.00" : "0.00"}</td>
         <td class="op-links">${["IP白名单","绑定代付通道","设置代付费率","对接信息","单独清算","USDT下单测试"].map(mockLink).join("")}</td>
       </tr>`).join("");
@@ -1262,15 +1866,19 @@
     }
 
     function collectPage() {
-      const rows = merchants.map((m, i) => `<tr>
-        <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td><td>${m[0]}</td><td>0</td><td>${i === 3 ? "30.01" : "0"}</td>
-        <td>${i === 4 ? "11205.00" : i === 2 ? "19.00" : "0.00"}　${mockLink("调整")} ${mockLink("下发")}</td>
-        <td>${i === 4 ? "30000.00" : i === 2 ? "30.00" : "0.00"}　${mockLink("调整")}</td>
-        <td>${i === 4 ? "18795.00" : i === 2 ? "11.00" : "0.00"}　${mockLink("结算")}</td>
-        <td>${m[2]}　${mockLink("调整")} ${mockLink("下发")}</td><td>${m[3]}　${mockLink("调整")}</td>
-        <td>${i === 3 ? "-70.00" : "0.00"}　${mockLink("结算")}</td><td>${switchControl(true)}</td>
+      const rows = merchants.map((m, i) => {
+        const trxBal = i === 0 ? "1500.000000" : "0.000000";
+        const trxVolume = i === 0 ? "1500.000000" : "0.000000";
+        return `<tr>
+        <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td><td>${m[0]}</td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>0</span></span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${i === 3 ? "30.01" : "0"}</span></span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span>${trxVolume}</span></span></div></div></td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "11205.00" : i === 2 ? "19.00" : "0.00"}</span>${mockLink("调整")}${mockLink("下发")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${m[2]}</span>${mockLink("调整")}${mockLink("下发")}${transferLink("collect", i)}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span>${trxBal}</span></span></div></div></td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "30000.00" : i === 2 ? "30.00" : "0.00"}</span>${mockLink("调整")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${m[3]}</span>${mockLink("调整")}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span class="asset-empty">—</span></span></div></div></td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "18795.00" : i === 2 ? "11.00" : "0.00"}</span>${mockLink("结算")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${i === 3 ? "-70.00" : "0.00"}</span>${mockLink("结算")}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span class="asset-empty">—</span></span></div></div></td>
+        <td>${switchControl(true)}</td>
         <td class="op-links">${button("代收产品","primary small")}${button("测试下单","success small")}${button("对接","warning small")}</td>
-      </tr>`).join("");
+      </tr>`;
+      }).join("");
       return `<div class="filters">
         ${field("商户号", input("请输入商户号"))}${field("商户名称", input("请输入商户名称"))}
         ${field("账户状态", select("请选择", 150))}${field("所属代理", select("直接输入或选择代理", 200))}
@@ -1279,10 +1887,128 @@
       <div class="summary"><span>商户数量：<strong class="red">10</strong></span><span>总余额：<strong class="red">11234.00元</strong></span>
         <span>剩余预付：<strong class="red">27845.00元</strong></span><span>总代收交易笔数：<strong class="red">0</strong></span></div>
       <div class="button-row action-line">${button("全部开启","warning")}${button("全部关闭","danger")}${button("一键结算人民币余额","warning")}${button("一键结算USDT余额","warning")}</div>
-      <div class="table-wrap"><table style="min-width:1680px">
-        <colgroup><col style="width:48px"><col style="width:130px"><col style="width:120px"><col style="width:140px"><col style="width:170px"><col style="width:135px"><col style="width:145px"><col style="width:170px"><col style="width:150px"><col style="width:155px"><col style="width:110px"><col style="width:240px"></colgroup>
-        <thead><tr><th></th><th>商户名称</th><th>今日成交</th><th>USDT累计跑量</th><th>代收账户余额</th><th>预付</th><th>剩余预付</th><th>USDT余额</th><th>USDT预付</th><th>USDT剩余预付</th><th>代收状态</th><th>操作</th></tr></thead>
+      <div class="table-wrap collect-table-wrap"><table class="collect-table">
+        <colgroup><col style="width:42px"><col style="width:9%"><col style="width:11%"><col style="width:21%"><col style="width:15%"><col style="width:15%"><col style="width:64px"><col style="width:74px"></colgroup>
+        <thead><tr><th></th><th>商户名称</th><th>今日成交</th><th>余额</th><th>预付</th><th>剩余预付</th><th>代收状态</th><th>操作</th></tr></thead>
         <tbody>${rows}</tbody></table></div>${pagination(96)}`;
+    }
+
+    let cryptoRateRows = [
+      { cur: "CNY", source: "欧易（OKX）", base: "7.1523", effective: "7.1723", min: "1 USDT", enabled: "开启" },
+      { cur: "VND", source: "XE 汇率网", base: "26,150.00", effective: "26,150.02", min: "1 USDT", enabled: "开启" }
+    ];
+    const cryptoCurrencyOptions = [
+      { cur: "THB", source: "Wise 汇率", base: "34.58", effective: "34.60" },
+      { cur: "MYR", source: "XE 汇率网", base: "4.47", effective: "4.49" },
+      { cur: "PHP", source: "汇率 API", base: "57.82", effective: "57.84" },
+      { cur: "IDR", source: "Wise 汇率", base: "16,255.00", effective: "16,255.02" }
+    ];
+    const cryptoOrders = [
+      {idx:1,plat:"LS20260727001",channel:"CH202607270001",merch:"M202607270001",name:"M00000306",cur:"TRX",amt:"1,500.000000",fee:"15.000000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"1,500.000000",addr:"TXk9rF…f3Qz",payAddr:"TNp2mK…k8Wd",hash:"a8f2…d71c",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/07/27 10:23:15",callbackTime:"2026/07/27 10:23:19",remark:"",ip:"203.0.113.21",time:"2026/07/27 10:20:03"},
+      {idx:2,plat:"LS20260727002",channel:"CH202607270002",merch:"M202607270002",name:"M00000306",cur:"TRX",amt:"200.500000",fee:"2.005000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"—",addr:"TNp2mK…k8Wd",payAddr:"—",hash:"—",status:"待支付",cls:"warning",notify:"未通知",payTime:"—",callbackTime:"—",remark:"",ip:"203.0.113.87",time:"2026/07/27 11:05:42"},
+      {idx:3,plat:"LS20260727003",channel:"CH202607270003",merch:"M202607270003",name:"M00000284",cur:"TRX",amt:"50.000000",fee:"0.500000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"否",pool:"普通池",real:"—",addr:"TQw7nL…m2Xa",payAddr:"—",hash:"—",status:"支付失败",cls:"danger",notify:"通知成功",payTime:"—",callbackTime:"2026/07/27 09:16:01",remark:"付款地址命中风险名单",ip:"198.51.100.32",time:"2026/07/27 09:15:33"},
+      {idx:4,plat:"LS20260811001",channel:"CH202608110001",merch:"M202608110001",name:"M00000306",cur:"VND",amt:"100,000",fee:"0.00",rate:"26,150.00 → 26,150.02",floatRate:"0.0200 VND/USDT",floatAmount:"—",protocol:"TRC20",ipWhite:"是",pool:"白名单池",real:"3.82408886 USDT",addr:"TQx7aJ…Z8qH",payAddr:"TLm8pQ…Y1uA",hash:"aa29…31b9",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/08/11 10:37:12",callbackTime:"2026/08/11 10:37:15",remark:"锁定汇率，USDT 向上取整至 8 位",ip:"198.51.100.14",time:"2026/08/11 10:34:40"},
+      {idx:5,plat:"LS20260726015",channel:"CH202607260015",merch:"M202607260015",name:"M00000140",cur:"USDT",amt:"500.000000",fee:"5.000000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRC20",ipWhite:"否",pool:"普通池",real:"500.000000",addr:"TYu3qH…n5Rb",payAddr:"TNq4mL…Y2wK",hash:"e723…16af",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/07/26 16:42:08",callbackTime:"2026/07/26 16:42:11",remark:"",ip:"192.0.2.55",time:"2026/07/26 16:40:12"}
+    ];
+    const flowByCur = {
+      CNY: [{idx:197,entity:"M00000306",plat:"—",merch:"—",type:"后台调整",cur:"CNY",orig:"40000.00",delta:"-30000.00",after:"10000.00",time:"2026/07/22 16:31:03",remark:""}],
+      USDT: [{idx:85,entity:"M00000306",plat:"860123456789012345",merch:"ORD2026072010123456…",type:"代收",cur:"USDT",orig:"1200.000000",delta:"+500.000000",after:"1700.000000",time:"2026/07/20 10:15:22",remark:"商户代收成功增…"}],
+      TRX: [{idx:1,entity:"M00000306",plat:"LS20260727001",merch:"M202607270001",type:"代收",cur:"TRX",orig:"0.000000",delta:"+1500.000000",after:"1500.000000",time:"2026/07/27 10:25:03",remark:"商户代收成功增…"}]
+    };
+    const chFlowByCur = {
+      CNY: [{idx:320,entity:"CNY 通道A",plat:"—",merch:"—",type:"后台调整",cur:"CNY",orig:"500000.00",delta:"+50000.00",after:"550000.00",time:"2026/07/22 16:31:03",remark:""}],
+      USDT: [{idx:120,entity:"地址池 USDT",plat:"860123456789012345",merch:"ORD…",type:"代收",cur:"USDT",orig:"8500.000000",delta:"+500.000000",after:"9000.000000",time:"2026/07/20 10:15:22",remark:"通道代收成功增…"}],
+      TRX: [{idx:1,entity:"地址池 TRX",plat:"LS20260727001",merch:"M202607270001",type:"代收",cur:"TRX",orig:"0.000000",delta:"+1500.000000",after:"1500.000000",time:"2026/07/27 10:25:03",remark:"通道代收成功增…"}]
+    };
+    const dailyByCur = {
+      CNY: [{entity:"M00000306",amt:"32411.00",cnt:15,ok:14,rate:"93.33%",fee:"324.11",b0:"10000.00",b1:"42087.89",p0:"100000.00",p1:"99675.89"}],
+      USDT: [{entity:"M00000306",amt:"500.000000",cnt:1,ok:1,rate:"100%",fee:"5.000000",b0:"1200.000000",b1:"1700.000000",p0:"5000.000000",p1:"5000.000000"}],
+      TRX: [{entity:"M00000306",amt:"1500.000000",cnt:1,ok:1,rate:"100%",fee:"15.000000",b0:"0.000000",b1:"1500.000000",p0:"10000.000000",p1:"10000.000000"}]
+    };
+    let accountCurrency = "TRX";
+
+    function currencyTabs(active) {
+      return `<div style="display:flex;gap:0;border-bottom:1px solid var(--line);background:#fff;padding:0 8px;margin:0 0 0">
+        ${["CNY","USDT","TRX"].map((c) => `<button type="button" data-currency="${c}" class="btn ${c===active?"primary":""}" style="border-radius:0;border:0;border-bottom:2px solid ${c===active?"var(--primary)":"transparent"};background:transparent;color:${c===active?"var(--primary)":"var(--regular)"}">${c}</button>`).join("")}
+      </div>`;
+    }
+    function deltaHtml(v) {
+      const color = String(v).startsWith("+") ? "var(--success)" : String(v).startsWith("-") ? "var(--danger)" : "inherit";
+      return `<span style="color:${color};font-weight:600">${v}</span>`;
+    }
+    function cryptoConfigPage() {
+      const rows = cryptoRateRows.map((r) => `<tr><td><span class="tag">${r.cur}</span></td><td>${r.source}</td><td>${r.base}</td><td>${r.effective}</td><td>${r.min}</td><td><button type="button" class="switch ${r.enabled === "开启" ? "on" : ""}" data-crypto-rate-toggle="${r.cur}" aria-label="${r.cur} 汇率状态"></button><span style="margin-left:8px">${r.enabled}</span></td><td>${mockLink("编辑")}</td></tr>`).join("");
+      const available = cryptoCurrencyOptions.filter((item) => !cryptoRateRows.some((row) => row.cur === item.cur));
+      const addControl = available.length
+        ? `<select class="control" id="cryptoNewCurrency" style="width:180px">${available.map((item) => `<option value="${item.cur}">${item.cur}</option>`).join("")}</select>${button("新增币种")}`
+        : `<span style="color:var(--muted)">暂无可新增币种</span>`;
+      return `<div class="panel" style="margin:0"><div class="section-title">汇率设置</div>
+        <div class="filters">${field("统一汇率浮动加点", input("0.02", 160))}${field("同 IP 每分钟下单次数限制", input("5", 160))}${button("提交保存", "primary")}</div>
+        <div class="section-title" style="margin-top:18px">指定币种汇率配置（从平台支持清单新增）</div>
+        <div class="table-wrap"><table style="min-width:900px"><thead><tr><th>币种</th><th>汇率来源</th><th>基准汇率</th><th>有效汇率</th><th>最低下单金额</th><th>状态</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="button-row action-line" style="margin-top:12px">${addControl}</div>
+        <p style="margin:12px 0 0;color:var(--muted);font-size:12px">从平台支持清单选择法币，币种资料由系统带出；已取得报价、完成配置且开启的币种才开放代收。有效汇率 = 基准汇率 + 汇率浮动加点；VND 下单时锁定有效汇率，按既有 USDT 规则向上取整至 8 位。既有 CNY、USDT、TRX 配置与订单逻辑不变。</p></div>`;
+    }
+    function cryptoOrderPage() {
+      const rows = cryptoOrders.map((o) => `<tr>
+        <td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.channel}<br>${o.merch}</td><td>${o.name}</td><td>虚拟币充值</td><td class="mono">${o.amt}</td><td><span class="tag">${o.cur}</span></td><td>${o.fee}</td><td>${o.rate}</td><td>${o.floatRate}</td><td>${o.floatAmount}</td><td>${o.protocol}</td><td>${o.ipWhite}</td><td>${o.pool}</td><td class="mono">${o.real}</td><td class="mono">${o.addr}</td><td class="mono">${o.payAddr}</td><td class="mono">${o.hash}</td><td><span class="status ${o.cls==="success"?"done":o.cls==="warning"?"processing":o.cls==="danger"?"rejected":"expired"}">${o.status}</span></td><td>${o.notify}</td><td>${o.payTime}</td><td>${o.callbackTime}</td><td>${o.remark || "—"}</td><td>${o.ip}</td><td>${o.time}</td><td>${mockLink("详情")}</td>
+      </tr>`).join("");
+      return `<div class="filters">
+        ${field("系统订单号", input("请输入系统订单号"))}${field("通道订单号", input("请输入通道订单号"))}${field("商家订单号", input("请输入商家订单号"))}${field("商户", select("全部商户", 120))}${field("币种", '<select class="control" style="width:110px"><option>全部币种</option><option>USDT</option><option>TRX</option><option>VND</option></select>')}${field("支付状态", select("支付状态", 120))}${field("通知状态", select("通知状态", 120))}${field("协议类型", select("协议类型", 120))}
+        ${button("搜索","primary")}${button("导出数据")}${button("导出任务列表")}
+      </div>
+      <div class="table-wrap"><table style="min-width:2800px">
+        <thead><tr><th>序号</th><th>系统订单号</th><th>通道订单号/商家订单号</th><th>商户名/商户号</th><th>类型</th><th>交易金额</th><th>币种</th><th>服务费</th><th>汇率</th><th>浮动费率</th><th>浮动金额</th><th>协议类型</th><th>IP白名单</th><th>地址池类型</th><th>到账金额</th><th>收款钱包地址</th><th>付款地址</th><th>Hash</th><th>支付状态</th><th>通知状态</th><th>支付时间</th><th>回调时间</th><th>驳回描述</th><th>IP</th><th>提交时间</th><th>操作</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>${pagination(cryptoOrders.length)}
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">本页是统一的虚拟币充值订单管理页。VND 订单：交易金额为原始 VND；汇率展示锁定的基准 → 有效值；浮动费率为 VND/USDT 加点，浮动金额无既有数据时显示 —；到账金额为按既有规则向上取整的实际 USDT。USDT 与 TRX 订单继续按原有规则展示。</p>`;
+    }
+    function accountFlowPage(kind) {
+      const entityLabel = kind === "chFlow" ? "通道名称" : "商户名称";
+      const hasEntity = kind !== "mcFlow" && kind !== "mpFlow" || true;
+      const titleEntity = kind.startsWith("ch") ? "通道名称" : "商户名称";
+      const source = kind === "chFlow" ? chFlowByCur : flowByCur;
+      // 代付流水用同结构演示数据
+      const data = (source[accountCurrency] || []).map((r) => {
+        if (kind === "chFlow") return r;
+        if (kind === "mpFlow" || kind === "mpPrepay") return { ...r, type: kind === "mpPrepay" ? "充值" : (r.type === "代收" ? "代付" : r.type) };
+        if (kind === "mcPrepay") return { ...r, type: r.type === "代收" ? "充值" : r.type };
+        return r;
+      });
+      const cols = kind.startsWith("ch") || kind.includes("mc") || kind.includes("mp")
+        ? ["序号", titleEntity, "平台订单号", "商户订单号", "类型", "币种", "原金额", "变动金额", "变动后金额", "变动时间", "备注"]
+        : ["序号", "平台订单号", "商户订单号", "类型", "币种", "原金额", "变动金额", "变动后金额", "变动时间", "备注"];
+      const rows = data.length ? data.map((r) => `<tr>
+        <td>${r.idx}</td><td>${r.entity}</td>
+        <td class="mono">${r.plat}</td><td class="mono">${r.merch}</td><td>${r.type}</td><td>${r.cur}</td>
+        <td class="mono">${r.orig}</td><td>${deltaHtml(r.delta)}</td><td class="mono">${r.after}</td><td>${r.time}</td><td>${r.remark||"—"}</td>
+      </tr>`).join("") : `<tr><td colspan="11" style="text-align:center;padding:36px;color:var(--muted)">暂无 ${accountCurrency} 数据</td></tr>`;
+      return `<div class="filters">
+        ${field("平台订单号", input("平台订单号"))}${field("商户订单号", input("商户订单号"))}
+        ${field("类型", select("全部类型", 120))}
+        ${button("搜索","primary")}${button("重置")}${button("导出")}
+      </div>
+      ${currencyTabs(accountCurrency)}
+      <div class="table-wrap"><table style="min-width:1100px">
+        <thead><tr>${cols.map((c)=>`<th>${c}</th>`).join("")}</tr></thead>
+        <tbody>${rows}</tbody></table></div>${pagination(data.length)}
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">TRX tab 与 CNY / USDT 并列；搜索/重置/导出只作用于当前币种；金额 6 位小数。</p>`;
+    }
+    function dailyPage() {
+      const data = dailyByCur[accountCurrency] || [];
+      const rows = data.length ? data.map((r) => `<tr>
+        <td>${r.entity}</td><td class="mono">${r.amt}</td><td>${r.cnt}</td><td>${r.ok}</td><td>${r.rate}</td>
+        <td class="mono">${r.fee}</td><td class="mono">${r.b0}</td><td class="mono">${r.b1}</td>
+        <td class="mono">${r.p0}</td><td class="mono">${r.p1}</td><td>${mockLink("详情")}</td>
+      </tr>`).join("") : `<tr><td colspan="11" style="text-align:center;padding:36px;color:var(--muted)">暂无 ${accountCurrency} 数据</td></tr>`;
+      return `<div class="filters">
+        ${field("商户", select("全部商户", 160))}
+        ${button("搜索","primary")}${button("重置")}${button("导出")}
+      </div>
+      ${currencyTabs(accountCurrency)}
+      <div class="table-wrap"><table style="min-width:1200px">
+        <thead><tr><th>商户名称</th><th>订单金额</th><th>订单单量</th><th>成功订单量</th><th>成功率</th><th>商户服务费</th><th>期初余额</th><th>末期余额</th><th>期初预付</th><th>末期预付</th><th>操作</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>${pagination(data.length)}
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">TRX tab 宽表金额以 TRX 为单位；合计/导出仅当前 tab 币种。</p>`;
     }
 
     function renderPage() {
@@ -1290,20 +2016,31 @@
       document.title = `蓝盛支付 - ${meta.title}`;
       document.getElementById("pageTitle").textContent = meta.heading || meta.title;
       document.getElementById("titleActions").innerHTML = currentPage === "payout" ? button("关闭进单", "danger") : "";
-      const renderers = { merchant: merchantPage, withdraw: withdrawPage, recharge: rechargePage, payout: payoutPage, collect: collectPage };
+      const renderers = {
+        merchant: merchantPage, feeConfig: feeConfigPage, withdraw: withdrawPage, recharge: rechargePage, payout: payoutPage, collect: collectPage,
+        cryptoConfig: cryptoConfigPage,
+        cryptoOrder: cryptoOrderPage,
+        mcFlow: () => accountFlowPage("mcFlow"),
+        chFlow: () => accountFlowPage("chFlow"),
+        mcPrepay: () => accountFlowPage("mcPrepay"),
+        mpFlow: () => accountFlowPage("mpFlow"),
+        mpPrepay: () => accountFlowPage("mpPrepay"),
+        daily: dailyPage
+      };
       document.getElementById("pagePanel").innerHTML = renderers[currentPage]();
       renderSidebar();
       renderTabs();
       if (currentPage === "recharge") setupRechargePage();
-      location.hash = currentPage;
+      if (!(typeof window !== "undefined" && window.__BP_EMBED__)) location.hash = currentPage;
     }
 
     function navigateTo(page) {
       if (!page || !pageMeta[page] || page === "address") {
-        showToast(page === "address" ? "地址查询仅保留页签，本页面聚焦四个目标页面" : "此菜单仅用于还原现状导航");
+        showToast(page === "address" ? "地址查询仅保留页签展示" : "此菜单仅用于还原现状导航");
         return;
       }
       currentPage = page;
+      if (["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"].includes(page)) accountCurrency = "TRX";
       renderPage();
       document.querySelector(".page").scrollTop = 0;
     }
@@ -1319,8 +2056,121 @@
     document.addEventListener("click", (event) => {
       const target = event.target.closest("button");
       if (!target) return;
+      if (target.dataset.transferOpen !== undefined) {
+        renderTransferModal(target.dataset.transferOpen, Number(target.dataset.transferIndex));
+        return;
+      }
+      if (target.dataset.withdrawSearch !== undefined) {
+        withdrawQuery = {
+          order: document.getElementById("withdrawOrder")?.value.trim() || "",
+          type: document.getElementById("withdrawType")?.value || "",
+          status: document.getElementById("withdrawStatus")?.value || ""
+        };
+        renderPage();
+        showToast("已按当前筛选条件刷新下分统计与记录。");
+        return;
+      }
+      if (target.dataset.withdrawExport !== undefined) {
+        const records = withdrawRecords();
+        showToast(records.length ? `已按当前筛选条件生成 ${records.length} 条模拟导出（完整结果）。` : "当前筛选条件下暂无可导出数据。");
+        return;
+      }
+      if (target.dataset.transferClose !== undefined) {
+        closeTransferModal();
+        return;
+      }
+      if (target.dataset.transferSubmit !== undefined) {
+        submitTransferOrder();
+        return;
+      }
       if (target.dataset.editIndex !== undefined) {
         openMerchantModal(Number(target.dataset.editIndex));
+        return;
+      }
+      if (target.dataset.transferConfigIndex !== undefined) {
+        openMerchantModal(Number(target.dataset.transferConfigIndex), true);
+        return;
+      }
+      if (target.dataset.feeCurrency !== undefined) {
+        activeWithdrawFeeCurrency = target.dataset.feeCurrency;
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        return;
+      }
+      if (target.dataset.feeEdit !== undefined) {
+        editingWithdrawFeeIndex = Number(target.dataset.feeEdit);
+        renderPage();
+        return;
+      }
+      if (target.dataset.feeCancel !== undefined) {
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        return;
+      }
+      if (target.dataset.feeSave !== undefined) {
+        const start = Number(document.getElementById("feeRuleStart")?.value);
+        const fee = Number(document.getElementById("feeRuleAmount")?.value);
+        const rules = withdrawFeeRules[activeWithdrawFeeCurrency];
+        if (!Number.isFinite(start) || start < 0 || !Number.isFinite(fee) || fee < 0) return showToast("请输入合法的起始金额和手续费。");
+        if (rules.some((rule, index) => index !== editingWithdrawFeeIndex && rule.start === start)) return showToast("金额起始不能与已有阶梯相同。");
+        if (editingWithdrawFeeIndex === 0 && start !== 0) return showToast("起始档金额必须为 0。");
+        if (editingWithdrawFeeIndex === null) rules.push({ start, fee });
+        else rules[editingWithdrawFeeIndex] = { start, fee };
+        rules.sort((a, b) => a.start - b.start);
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        showToast(`${activeWithdrawFeeCurrency} 阶梯手续费已保存。`);
+        return;
+      }
+      if (target.dataset.feeDelete !== undefined) {
+        withdrawFeeRules[activeWithdrawFeeCurrency].splice(Number(target.dataset.feeDelete), 1);
+        editingWithdrawFeeIndex = null;
+        renderPage();
+        showToast("阶梯手续费已删除。");
+        return;
+      }
+      if (target.dataset.transferAddRelation !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        const targetNo = section.querySelector("[data-transfer-relation-select]").value;
+        if (!targetNo) return showToast("请先选择可互转商户。");
+        transferRelations[sourceNo] = transferRelations[sourceNo] || [];
+        transferRelations[targetNo] = transferRelations[targetNo] || [];
+        if (!transferRelations[sourceNo].includes(targetNo)) transferRelations[sourceNo].push(targetNo);
+        if (!transferRelations[targetNo].includes(sourceNo)) transferRelations[targetNo].push(sourceNo);
+        refreshRelationTags(section);
+        showToast("已更新可互转商户关系。");
+        return;
+      }
+      if (target.dataset.transferRemoveRelation !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        const targetNo = target.dataset.transferRemoveRelation;
+        transferRelations[sourceNo] = (transferRelations[sourceNo] || []).filter((item) => item !== targetNo);
+        transferRelations[targetNo] = (transferRelations[targetNo] || []).filter((item) => item !== sourceNo);
+        refreshRelationTags(section);
+        showToast("已移除可互转商户关系。");
+        return;
+      }
+      if (target.dataset.transferAddReviewer !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        const input = section.querySelector("[data-transfer-reviewer-input]");
+        const reviewer = input.value.trim();
+        if (!reviewer) return showToast("请输入有效确认人。");
+        transferReviewConfigs[sourceNo] = transferReviewConfigs[sourceNo] || { group: "", reviewers: [], required: 2 };
+        if (!transferReviewConfigs[sourceNo].reviewers.includes(reviewer)) transferReviewConfigs[sourceNo].reviewers.push(reviewer);
+        input.value = "";
+        refreshReviewerTags(section);
+        showToast("已添加有效确认人。");
+        return;
+      }
+      if (target.dataset.transferRemoveReviewer !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const sourceNo = section.dataset.transferConfig;
+        transferReviewConfigs[sourceNo].reviewers = transferReviewConfigs[sourceNo].reviewers.filter((item) => item !== target.dataset.transferRemoveReviewer);
+        refreshReviewerTags(section);
+        showToast("已移除有效确认人。");
         return;
       }
       if (target.dataset.modalClose !== undefined) {
@@ -1328,8 +2178,15 @@
         return;
       }
       if (target.dataset.modalSubmit !== undefined) {
+        saveWithdrawConfirmConfig(document.getElementById("merchantModalRoot"));
+        saveTransferConfig(document.getElementById("merchantModalRoot"));
         closeMerchantModal();
-        showToast("修改商户已保存（演示）");
+        showToast("商户与资金划转配置已保存");
+        return;
+      }
+      const modalSectionTarget = target.dataset.modalSectionTarget;
+      if (modalSectionTarget) {
+        setMerchantConfigPanel(modalSectionTarget);
         return;
       }
       const tierAction = target.dataset.tierAction;
@@ -1346,7 +2203,7 @@
             tierRules.splice(index, 1);
             renderTierRuleRows();
             closeTierRuleEditor();
-            showToast("金额阶梯配置已删除（演示）");
+            showToast("金额阶梯配置已删除");
           }
         }
         return;
@@ -1357,6 +2214,29 @@
         target.classList.toggle("on", enabled);
         target.setAttribute("aria-checked", String(enabled));
         setConfigSectionState(configToggle, enabled);
+        return;
+      }
+      if (target.dataset.currency) {
+        accountCurrency = target.dataset.currency;
+        renderPage();
+        showToast(accountCurrency + " 数据已刷新");
+        return;
+      }
+      if (target.dataset.cryptoRateToggle) {
+        const rate = cryptoRateRows.find((item) => item.cur === target.dataset.cryptoRateToggle);
+        if (!rate) return;
+        rate.enabled = rate.enabled === "开启" ? "关闭" : "开启";
+        renderPage();
+        showToast(rate.cur + " 汇率配置已" + rate.enabled);
+        return;
+      }
+      if (target.dataset.action === "新增币种") {
+        const select = document.getElementById("cryptoNewCurrency");
+        const option = cryptoCurrencyOptions.find((item) => item.cur === select?.value);
+        if (!option || cryptoRateRows.some((item) => item.cur === option.cur)) return showToast("该币种已配置");
+        cryptoRateRows.push({ ...option, min: "1 USDT", enabled: "开启" });
+        renderPage();
+        showToast(option.cur + " 已加入指定币种汇率配置");
         return;
       }
       const page = target.dataset.page;
@@ -1374,15 +2254,24 @@
       const action = target.dataset.action;
       if (action) showToast(`现状页面：${action} 不执行真实业务操作`);
     });
+    document.addEventListener("change", (event) => {
+      if (event.target.matches("[data-transfer-source], [data-transfer-target], [data-transfer-source-wallet], [data-transfer-target-wallet]")) refreshTransferModal(document.getElementById("transferModalRoot"));
+    });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && document.getElementById("transferModalRoot").innerHTML) {
+        closeTransferModal();
+        return;
+      }
       if (event.key !== "Escape" || !document.getElementById("merchantModalRoot").innerHTML) return;
       const editor = document.getElementById("tierRuleEditor");
       if (editor && !editor.hidden) closeTierRuleEditor();
       else closeMerchantModal();
     });
 
-    const hashPage = location.hash.replace("#", "");
-    if (["merchant", "withdraw", "recharge", "payout", "collect"].includes(hashPage)) currentPage = hashPage;
+    const openPages = ["merchant","feeConfig","withdraw","recharge","payout","collect","cryptoConfig","cryptoOrder","mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"];
+    const bootPage = (typeof window !== "undefined" && window.__BP_BOOT__) || location.hash.replace("#", "") || new URLSearchParams(location.search).get("page") || "";
+    if (openPages.includes(bootPage)) currentPage = bootPage;
+    if (["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"].includes(currentPage)) accountCurrency = "TRX";
     renderPage();
   </script>
 </body>
