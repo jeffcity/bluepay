@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,6 +10,7 @@ const catalog = JSON.parse(
 const moduleCodes = new Set(catalog.modules.map(([code]) => code));
 const pageIds = catalog.pages.map((page) => page.id);
 const documentIds = new Set(catalog.documents.map((document) => document.id));
+const documentSources = catalog.documents.map((document) => document.source);
 
 assert.equal(catalog.project.code, "BLUEPAY-DEMO");
 assert.equal(new Set(pageIds).size, pageIds.length, "页面 ID 不得重复");
@@ -18,7 +19,33 @@ assert.equal(
   catalog.documents.length,
   "文档 ID 不得重复"
 );
+assert.equal(
+  new Set(documentSources).size,
+  documentSources.length,
+  "同一页面源不得重复登记"
+);
 assert.ok(catalog.nav, "必须登记产品导航 nav");
+
+async function collectHtmlSources(directory, prefix = "pages") {
+  const sources = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, entry.name);
+    const relative = `${prefix}/${entry.name}`;
+    if (entry.isDirectory()) {
+      sources.push(...(await collectHtmlSources(absolute, relative)));
+    } else if (entry.isFile() && entry.name.endsWith(".html")) {
+      sources.push(relative);
+    }
+  }
+  return sources;
+}
+
+const actualSources = await collectHtmlSources(path.join(root, "src/pages"));
+assert.deepEqual(
+  actualSources.sort(),
+  [...documentSources].sort(),
+  "src/pages 下的正式 HTML 页面源必须全部且仅登记一次，不得保留未登记副本"
+);
 
 for (const document of catalog.documents) {
   assert.match(document.source, /^pages\//, `${document.id} 页面源目录不正确`);
@@ -47,6 +74,7 @@ for (const page of catalog.pages) {
 }
 
 const navIds = [];
+const referencedDocuments = new Set(catalog.pages.map((page) => page.doc));
 for (const [code, groups] of Object.entries(catalog.nav)) {
   assert.ok(moduleCodes.has(code), `nav 端 ${code} 不存在`);
   assert.ok(Array.isArray(groups), `nav.${code} 必须是分组数组`);
@@ -61,12 +89,16 @@ for (const [code, groups] of Object.entries(catalog.nav)) {
       assert.ok(item.title, `${item.id} 缺少 title`);
       assert.ok(documentIds.has(item.doc), `${item.id} doc 不存在`);
       assert.ok(Array.isArray(item.req) && item.req.length, `${item.id} 需关联 req`);
+      referencedDocuments.add(item.doc);
       for (const req of item.req) {
         assert.ok(pageIds.includes(req), `${item.id} 关联需求 ${req} 不存在`);
       }
       navIds.push(item.id);
     }
   }
+}
+for (const document of catalog.documents) {
+  assert.ok(referencedDocuments.has(document.id), `${document.id} 未被业务页面或需求使用`);
 }
 assert.equal(new Set(navIds).size, navIds.length, "导航页面 ID 不得重复");
 assert.ok((catalog.nav.ADMIN || []).some((g) => (g.items || []).length), "后台导航不能为空");
@@ -99,5 +131,5 @@ assert.match(index, /admin-collect/);
 assert.match(index, /merchant-order/);
 
 console.log(
-  `检查通过：${catalog.pages.length} 个需求、${navIds.length} 个导航页、${catalog.documents.length} 个 Demo 文档。`
+  `检查通过：${catalog.pages.length} 个需求、${navIds.length} 个导航页、${catalog.documents.length} 个正式页面源。`
 );
