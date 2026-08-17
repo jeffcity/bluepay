@@ -8,19 +8,207 @@
     ["MERCHANT", "商户"],
     ["ADDRESS", "地址池"]
   ],
+  "nav": {
+    "ADMIN": [
+      {
+        "label": "商户管理",
+        "items": [
+          { "id": "admin-merchant", "title": "商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "merchant", "req": ["BP-REQ-002", "BP-REQ-003"] },
+          { "id": "admin-withdraw", "title": "商户下分", "doc": "机器人分层播报与多人确认-demo", "boot": "withdraw", "req": ["BP-REQ-002", "BP-REQ-005", "BP-REQ-007"] },
+          { "id": "admin-withdraw-fee", "title": "商户手续费配置", "doc": "机器人分层播报与多人确认-demo", "boot": "feeConfig", "req": ["BP-REQ-005"] },
+          { "id": "admin-recharge", "title": "商户充值订单", "doc": "商户充值订单统计栏位-demo", "boot": "", "req": ["BP-REQ-001"] },
+          { "id": "admin-merchant-transfer", "title": "资金划转", "doc": "商户增加资金划转-demo", "boot": "transfer-orders", "req": ["BP-REQ-003"] }
+        ]
+      },
+      {
+        "label": "虚拟币订单管理",
+        "items": [
+          { "id": "admin-crypto-config", "title": "虚拟币充值配置", "doc": "VND法币代收-demo", "boot": "config", "req": ["BP-REQ-004"] },
+          { "id": "admin-crypto-order", "title": "虚拟币充值订单管理", "doc": "VND法币代收-demo", "boot": "orders", "req": ["BP-REQ-004", "BP-REQ-005"] }
+        ]
+      },
+      {
+        "label": "代付管理",
+        "items": [
+          { "id": "admin-payout", "title": "代付商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "payout", "req": ["BP-REQ-003"] }
+        ]
+      },
+      {
+        "label": "代收管理",
+        "items": [
+          { "id": "admin-collect", "title": "代收商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "collect", "req": ["BP-REQ-005"] }
+        ]
+      },
+      {
+        "label": "日终数据统计",
+        "items": [
+          { "id": "admin-daily", "title": "商户代收日终统计", "doc": "机器人分层播报与多人确认-demo", "boot": "daily", "req": ["BP-REQ-005"] }
+        ]
+      },
+      {
+        "label": "账户记录",
+        "items": [
+          { "title": "通道代收流水记录", "static": true },
+          { "id": "admin-mc-flow", "title": "商户代收流水记录", "doc": "商户代收流水记录-demo", "boot": "collect-record", "req": ["BP-REQ-005", "BP-REQ-003"] },
+          { "id": "admin-merchant-payout-flow", "title": "商户代付流水记录", "doc": "商户代付流水记录-demo", "boot": "payout-record", "req": ["BP-REQ-003"] },
+          { "id": "admin-mc-prepay", "title": "商户代收预付记录", "doc": "机器人分层播报与多人确认-demo", "boot": "mcPrepay", "req": ["BP-REQ-005"] }
+        ]
+      },
+      {
+        "label": "TG 通知管理",
+        "items": [
+          { "title": "转发消息模板配置", "static": true },
+          { "title": "关键词配置", "static": true },
+          { "id": "admin-tg-system-message", "title": "TG系统消息配置", "doc": "TG系统消息配置-demo", "boot": "", "req": ["BP-REQ-006"] }
+        ]
+      }
+    ],
+    "MERCHANT": [
+      {
+        "label": "订单管理",
+        "expanded": true,
+        "items": [
+          { "id": "merchant-order", "title": "代收订单", "doc": "TRX代收通道-demo", "boot": "m-order", "req": ["BP-REQ-005"] },
+          { "title": "代付订单", "static": true },
+          { "title": "虚拟币充值订单管理", "static": true },
+          { "title": "虚拟币代付订单管理", "static": true },
+          { "title": "手动下单", "badge": "NEW", "static": true }
+        ]
+      },
+      { "label": "虚拟货币工单中心", "collapsed": true, "items": [] },
+      { "label": "账户记录", "collapsed": true, "items": [] },
+      { "label": "预付记录", "collapsed": true, "items": [] },
+      { "label": "日终统计", "collapsed": true, "items": [] },
+      {
+        "label": "商户下发提现",
+        "direct": true,
+        "items": [
+          { "id": "merchant-withdraw", "title": "商户下发提现", "doc": "TRX代收通道-demo", "boot": "m-withdraw", "req": ["BP-REQ-005", "BP-REQ-008"] }
+        ]
+      },
+      { "label": "子商户数据", "badge": "NEW", "items": [] },
+      { "label": "对接信息", "items": [] }
+    ],
+    "ADDRESS": [
+      {
+        "label": "支付订单管理",
+        "items": [
+          {
+            "id": "address-wallet",
+            "title": "钱包地址管理",
+            "doc": "钱包地址管理-demo",
+            "boot": "",
+            "req": ["BP-REQ-005"]
+          },
+          {
+            "id": "address-amount-level",
+            "title": "目标池/金额层级配置",
+            "doc": "目标池金额层级配置-demo",
+            "boot": "",
+            "req": ["BP-REQ-005"]
+          }
+        ]
+      }
+    ]
+  },
   "pages": [
+    {
+      "id": "BP-REQ-002",
+      "title": "机器人分层播报与多人确认",
+      "summary": "在修改商户中按金额阶梯配置 TG 播报群、确认人员和需确认人数。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "机器人分层播报与多人确认-demo"
+    },
+    {
+      "id": "BP-REQ-003",
+      "title": "商户增加资金划转",
+      "summary": "在蓝盛后台配置双向商户互转关系；代收 USDT余额与代付 USDT代付剩余预付均可任选为来源或目标。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "商户增加资金划转-demo"
+    },
     {
       "id": "BP-REQ-001",
       "title": "商户充值订单统计栏位",
       "summary": "在商户充值订单状态卡片与列表之间新增查询结果汇总统计。",
       "moduleCodes": ["ADMIN"],
       "doc": "商户充值订单统计栏位-demo"
+    },
+    {
+      "id": "BP-REQ-004",
+      "title": "VND 法币代收",
+      "summary": "法币代收新增 VND 币种：商户下单传 VND，平台按汇率换算 USDT 收款，回调按 VND 金额；复用虚拟币充值配置与订单管理的既有字段和流程。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "VND法币代收-demo"
+    },
+    {
+      "id": "BP-REQ-005",
+      "title": "TRX 代收通道",
+      "summary": "代收新增 TRX（同 USDT 虚拟币链路）：地址池归属沿用蓝盛，按币种锁定地址用途；商户仅能从既有商户下分发起 TRX 提现，不做 TRX 代付。",
+      "moduleCodes": ["ADMIN", "MERCHANT", "ADDRESS"],
+      "doc": "TRX代收通道-demo"
+    },
+    {
+      "id": "BP-REQ-007",
+      "title": "商户下分统计与导出",
+      "summary": "在商户下分记录的筛选区下方按币种展示状态、申请金额、实际到账和手续费统计，并按当前筛选条件导出完整明细。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "机器人分层播报与多人确认-demo"
+    },
+    {
+      "id": "BP-REQ-006",
+      "title": "TG 系统消息配置现状复刻",
+      "summary": "复刻蓝盛后台 TG 系统消息配置的筛选、列表、新增编辑、启停、删除确认与特殊类型专属配置，作为后续新增消息类型的页面基线。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "TG系统消息配置-demo"
+    },
+    {
+      "id": "BP-REQ-008",
+      "title": "商户端发起资金划转",
+      "summary": "在商户下发提现页新增资金划转入口，商户仅可向后台已绑定的目标商户发起既有划转流程。",
+      "moduleCodes": ["MERCHANT"],
+      "doc": "TRX代收通道-demo"
     }
   ],
   "documents": [
     {
       "id": "商户充值订单统计栏位-demo",
       "source": "pages/商户充值订单统计栏位/商户充值订单统计栏位-demo.html"
+    },
+    {
+      "id": "机器人分层播报与多人确认-demo",
+      "source": "pages/机器人分层播报与多人确认/机器人分层播报与多人确认-demo.html"
+    },
+    {
+      "id": "VND法币代收-demo",
+      "source": "pages/VND法币代收/VND法币代收-demo.html"
+    },
+    {
+      "id": "TRX代收通道-demo",
+      "source": "pages/TRX代收通道/TRX代收通道-demo.html"
+    },
+    {
+      "id": "钱包地址管理-demo",
+      "source": "pages/钱包地址管理/钱包地址管理-demo.html"
+    },
+    {
+      "id": "目标池金额层级配置-demo",
+      "source": "pages/目标池金额层级配置/目标池金额层级配置-demo.html"
+    },
+    {
+      "id": "TG系统消息配置-demo",
+      "source": "pages/TG系统消息配置/TG系统消息配置-demo.html"
+    },
+    {
+      "id": "商户增加资金划转-demo",
+      "source": "pages/商户增加资金划转/商户增加资金划转-demo.html"
+    },
+    {
+      "id": "商户代付流水记录-demo",
+      "source": "pages/商户代付流水记录/商户代付流水记录-demo.html"
+    },
+    {
+      "id": "商户代收流水记录-demo",
+      "source": "pages/商户代收流水记录/商户代收流水记录-demo.html"
     }
   ]
 }
