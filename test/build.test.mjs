@@ -41,6 +41,9 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /VND/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /cryptoConfig|虚拟币充值配置/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /新增币种|不同法币/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-edit/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /openCryptoRateModal/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-save/);
   assert.ok(documents["商户增加资金划转-demo"]);
   assert.match(documents["商户增加资金划转-demo"], /确认出款（资金划转）/);
   assert.match(documents["商户增加资金划转-demo"], /订单摘要/);
