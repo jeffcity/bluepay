@@ -44,6 +44,10 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-edit/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /openCryptoRateModal/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-save/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /汇率状态/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /已获取/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /获取失败/);
+  assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /最低下单金额|data-crypto-rate-min|data-crypto-rate-toggle/);
   assert.ok(documents["商户增加资金划转-demo"]);
   assert.match(documents["商户增加资金划转-demo"], /确认出款（资金划转）/);
   assert.match(documents["商户增加资金划转-demo"], /订单摘要/);

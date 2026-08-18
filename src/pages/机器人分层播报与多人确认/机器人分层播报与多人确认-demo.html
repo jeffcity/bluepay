@@ -1904,8 +1904,8 @@
     }
 
     let cryptoRateRows = [
-      { cur: "CNY", source: "欧易（OKX）", base: "7.1523", effective: "7.1723", min: "1 USDT", enabled: "开启" },
-      { cur: "VND", source: "XE 汇率网", base: "26,150.00", effective: "26,150.02", min: "1 USDT", enabled: "开启" }
+      { cur: "CNY", source: "欧易（OKX）", base: "7.1523", effective: "7.1723", quoteStatus: "已获取" },
+      { cur: "VND", source: "XE 汇率网", base: "26,150.00", effective: "26,150.02", quoteStatus: "已获取" }
     ];
     const cryptoCurrencyOptions = [
       { cur: "CNY", source: "欧易（OKX）", base: "7.1523", effective: "7.1723" },
@@ -1978,18 +1978,16 @@
       if (!row) return;
       const quotes = cryptoRateQuotes[currency] || [{ source: row.source, base: Number(String(row.base).replaceAll(",", "")) }];
       const sourceOptions = quotes.map((item) => `<option value="${item.source}" ${item.source === row.source ? "selected" : ""}>${item.source}　${formatCryptoRate(currency, item.base)}</option>`).join("");
-      const minValue = Number.parseFloat(row.min) || 1;
       const root = document.getElementById("cryptoRateModalRoot");
       root.innerHTML = `<div class="modal-layer">
         <section class="merchant-modal" style="width:min(600px,calc(100vw - 48px));height:auto;max-height:calc(100vh - 94px)" role="dialog" aria-modal="true" aria-labelledby="cryptoRateModalTitle" tabindex="-1">
-          <header class="modal-header"><div class="modal-header-copy"><h2 id="cryptoRateModalTitle">编辑币种汇率 — ${currency}</h2><div class="modal-subtitle">维护汇率来源与最低下单金额，基准汇率由来源自动获取</div></div><button type="button" class="modal-close" data-crypto-rate-close aria-label="关闭币种汇率编辑">×</button></header>
+          <header class="modal-header"><div class="modal-header-copy"><h2 id="cryptoRateModalTitle">编辑币种汇率 — ${currency}</h2><div class="modal-subtitle">维护汇率来源，基准汇率由来源自动获取</div></div><button type="button" class="modal-close" data-crypto-rate-close aria-label="关闭币种汇率编辑">×</button></header>
           <div class="modal-body" style="overflow-y:auto;padding:22px">
             <div class="modal-basic-grid" style="grid-template-columns:1fr">
               <div class="modal-field"><label class="required">币种</label><input class="modal-control" data-crypto-rate-currency value="${currency}" disabled></div>
               <div class="modal-field"><label class="required">汇率来源</label><select class="modal-control" data-crypto-rate-source>${sourceOptions}</select></div>
               <div class="modal-field"><label>基准汇率</label><div><strong data-crypto-rate-base>${row.base}</strong><div class="modal-subtitle" style="margin-top:3px">自动获取，不支持手填</div></div></div>
               <div class="modal-field"><label>有效汇率</label><div><strong style="color:var(--primary)" data-crypto-rate-effective>${row.effective}</strong><div class="modal-subtitle" style="margin-top:3px">有效汇率 = 基准汇率 + 统一汇率浮动加点</div></div></div>
-              <div class="modal-field"><label class="required">最低下单金额</label><div style="display:flex;align-items:center;gap:8px"><input class="modal-control" style="width:180px" data-crypto-rate-min type="number" min="1" step="1" value="${minValue}"><span style="color:var(--muted)">USDT，不得低于 1</span></div></div>
             </div>
           </div>
           <footer class="modal-footer"><button type="button" class="btn" data-crypto-rate-close>取消</button><button type="button" class="btn primary" data-crypto-rate-save="${currency}">确定</button></footer>
@@ -2007,20 +2005,21 @@
       const root = document.getElementById("cryptoRateModalRoot");
       const row = cryptoRateRows.find((item) => item.cur === currency);
       const source = root.querySelector("[data-crypto-rate-source]")?.value;
-      const min = Number(root.querySelector("[data-crypto-rate-min]")?.value);
       const quote = (cryptoRateQuotes[currency] || []).find((item) => item.source === source);
       if (!row || !quote) return showToast("请选择有效的汇率来源");
-      if (!Number.isFinite(min) || min < 1) return showToast("最低下单金额不得低于 1 USDT");
       row.source = source;
       row.base = formatCryptoRate(currency, quote.base);
       row.effective = formatCryptoRate(currency, quote.base + (currency === "USDT" ? 0 : 0.02));
-      row.min = `${min} USDT`;
+      row.quoteStatus = "已获取";
       closeCryptoRateModal();
       renderPage();
       showToast(`${currency} 汇率配置已保存`);
     }
     function cryptoConfigPage() {
-      const rows = cryptoRateRows.map((r) => `<tr><td><span class="tag">${r.cur}</span></td><td>${r.source}</td><td>${r.base}</td><td>${r.effective}</td><td>${r.min}</td><td><button type="button" class="switch ${r.enabled === "开启" ? "on" : ""}" data-crypto-rate-toggle="${r.cur}" aria-label="${r.cur} 汇率状态"></button><span style="margin-left:8px">${r.enabled}</span></td><td><button type="button" class="link" data-crypto-rate-edit="${r.cur}">编辑</button></td></tr>`).join("");
+      const rows = cryptoRateRows.map((r) => {
+        const fetched = r.quoteStatus === "已获取";
+        return `<tr><td><span class="tag">${r.cur}</span></td><td>${r.source}</td><td>${fetched ? r.base : "—"}</td><td>${fetched ? r.effective : "—"}</td><td><span class="tag ${fetched ? "success" : "danger"}">${r.quoteStatus}</span></td><td><button type="button" class="link" data-crypto-rate-edit="${r.cur}">编辑</button></td></tr>`;
+      }).join("");
       const available = cryptoCurrencyOptions.filter((item) => !cryptoRateRows.some((row) => row.cur === item.cur));
       const addControl = available.length
         ? `<select class="control" id="cryptoNewCurrency" style="width:180px">${available.map((item) => `<option value="${item.cur}">${item.cur}</option>`).join("")}</select>${button("新增币种")}`
@@ -2028,9 +2027,9 @@
       return `<div class="panel" style="margin:0"><div class="section-title">汇率设置</div>
         <div class="filters">${field("统一汇率浮动加点", input("0.02", 160))}${field("同 IP 每分钟下单次数限制", input("5", 160))}${button("提交保存", "primary")}</div>
         <div class="section-title" style="margin-top:18px">指定币种汇率配置（从平台支持清单新增）</div>
-        <div class="table-wrap"><table class="crypto-rate-table" style="min-width:900px"><thead><tr><th>币种</th><th>汇率来源</th><th>基准汇率</th><th>有效汇率</th><th>最低下单金额</th><th>状态</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="table-wrap"><table class="crypto-rate-table" style="min-width:820px"><thead><tr><th>币种</th><th>汇率来源</th><th>基准汇率</th><th>有效汇率</th><th>汇率状态</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>
         <div class="button-row action-line" style="margin-top:12px">${addControl}</div>
-        <p style="margin:12px 0 0;color:var(--muted);font-size:12px">从平台支持清单选择法币，币种资料由系统带出；已取得报价、完成配置且开启的币种才开放代收。有效汇率 = 基准汇率 + 汇率浮动加点；VND 下单时锁定有效汇率，按既有 USDT 规则向上取整至 8 位。既有 CNY、USDT、TRX 配置与订单逻辑不变。</p></div>`;
+        <p style="margin:12px 0 0;color:var(--muted);font-size:12px">从平台支持清单选择法币，币种资料由系统带出；汇率由所选来源抓取。成功时显示“已获取”并自动开放新下单；失败时显示“获取失败”、基准汇率与有效汇率为“—”，并禁止新下单。汇率状态只读，不提供人工启停。有效汇率 = 基准汇率 + 汇率浮动加点；VND 下单时锁定有效汇率，按既有 USDT 规则向上取整至 8 位。既有 CNY、USDT、TRX 订单逻辑不变。</p></div>`;
     }
     function cryptoOrderPage() {
       const rows = cryptoOrders.map((o) => `<tr>
@@ -2317,19 +2316,11 @@
         saveCryptoRateModal(target.dataset.cryptoRateSave);
         return;
       }
-      if (target.dataset.cryptoRateToggle) {
-        const rate = cryptoRateRows.find((item) => item.cur === target.dataset.cryptoRateToggle);
-        if (!rate) return;
-        rate.enabled = rate.enabled === "开启" ? "关闭" : "开启";
-        renderPage();
-        showToast(rate.cur + " 汇率配置已" + rate.enabled);
-        return;
-      }
       if (target.dataset.action === "新增币种") {
         const select = document.getElementById("cryptoNewCurrency");
         const option = cryptoCurrencyOptions.find((item) => item.cur === select?.value);
         if (!option || cryptoRateRows.some((item) => item.cur === option.cur)) return showToast("该币种已配置");
-        cryptoRateRows.push({ ...option, min: "1 USDT", enabled: "开启" });
+        cryptoRateRows.push({ ...option, quoteStatus: "已获取" });
         renderPage();
         showToast(option.cur + " 已加入指定币种汇率配置");
         return;
