@@ -23,6 +23,9 @@ test("构建生成一致的本地入口", async () => {
   assert.match(root, /const NAV=/);
   assert.match(root, /admin-collect/);
   assert.match(root, /merchant-order/);
+  assert.match(root, /merchant-payout-prepay/);
+  assert.match(root, /merchant-collect-account/);
+  assert.match(root, /merchant-payout-account/);
 
   const documentStart =
     root.indexOf("const DOCUMENTS=") + "const DOCUMENTS=".length;
@@ -55,14 +58,48 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["商户增加资金划转-demo"], /TG 确认记录/);
   assert.ok(documents["商户代付流水记录-demo"]);
   assert.match(documents["商户代付流水记录-demo"], /accountLedgerPage\("payout-record"\)/);
+  assert.match(documents["商户代付流水记录-demo"], /walletBelongsToLedger/);
+  assert.match(documents["商户代付流水记录-demo"], /TRF202608180005/);
+  assert.match(documents["商户代付流水记录-demo"], /USDT代付预付/);
   assert.ok(documents["商户代收流水记录-demo"]);
   assert.match(documents["商户代收流水记录-demo"], /accountLedgerPage\("collect-record"\)/);
+  for (const documentName of [
+    "商户增加资金划转-demo",
+    "商户代付流水记录-demo",
+    "商户代收流水记录-demo"
+  ]) {
+    assert.match(documents[documentName], /<th>备注<\/th>/);
+    assert.doesNotMatch(documents[documentName], /处理备注/);
+    assert.match(documents[documentName], /资金划转给：/);
+    assert.match(documents[documentName], /入账来源：/);
+  }
   assert.ok(documents["TRX代收通道-demo"]);
   assert.match(documents["TRX代收通道-demo"], /m-order|代收订单/);
+  assert.match(documents["TRX代收通道-demo"], /商户代付预付/);
+  assert.match(documents["TRX代收通道-demo"], /资金划转入账/);
+  assert.match(documents["TRX代收通道-demo"], /入账来源：/);
+  assert.match(documents["TRX代收通道-demo"], /代收账户记录/);
+  assert.match(documents["TRX代收通道-demo"], /代付账户记录/);
+  assert.match(documents["TRX代收通道-demo"], /资金划转转出/);
+  assert.match(documents["TRX代收通道-demo"], /TRF202608180005/);
+  assert.match(documents["TRX代收通道-demo"], /付款方到实际出账钱包查看转出去向/);
+  assert.doesNotMatch(documents["TRX代收通道-demo"], /付款商户在相同入口查看对应转出记录/);
   assert.match(documents["TRX代收通道-demo"], /全部通道/);
   assert.match(documents["TRX代收通道-demo"], /完成起始时间/);
   assert.match(documents["TRX代收通道-demo"], /商户代理费/);
   assert.match(documents["TRX代收通道-demo"], /交易金额/);
+});
+
+test("资金划转只关联资金划转订单和实际钱包流水", async () => {
+  const catalog = JSON.parse(await readFile("src/catalog/project.json", "utf8"));
+  const adminItems = catalog.nav.ADMIN.flatMap((group) => group.items || []);
+  const recharge = adminItems.find((item) => item.id === "admin-recharge");
+  const transfer = adminItems.find((item) => item.id === "admin-merchant-transfer");
+
+  assert.deepEqual(recharge.req, ["BP-REQ-001"]);
+  assert.deepEqual(transfer.req, ["BP-REQ-003"]);
+  assert.doesNotMatch(catalog.pages.find((page) => page.id === "BP-REQ-008").summary, /均可在商户代付预付/);
+  assert.match(catalog.pages.find((page) => page.id === "BP-REQ-008").summary, /实际出账钱包/);
 });
 
 test("后台默认进产品导航页且商户不串后台", async () => {
