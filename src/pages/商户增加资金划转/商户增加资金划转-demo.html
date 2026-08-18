@@ -766,10 +766,11 @@
     const transferOrders = [
       { no: "TRF202608170001", currency: "USDT", source: ["远航商户", "M00000001", "USDT代付账户", 16000, 10000, 6000, "DF-USDT-0112"], target: ["北辰商户", "M00000002", "USDT代收账户", 8500, 10000, 18500, "DS-USDT-0208"], amount: 10000, received: 10000, status: "已完成", tgStatus: "已确认", progress: "2/2", confirmers: "审核员甲、审核员乙", submitted: "2026-08-17 10:21:08", changed: "2026-08-17 10:23:41", operator: "资金运营员", operationRemark: "双方账变已完成", audit: "已上传" },
       { no: "TRF202608170002", currency: "CNY", source: ["星河商户", "M00000003", "CNY代付账户", 25200, 5000, 20200, "DF-CNY-0331"], target: ["晨曦商户", "M00000004", "CNY代收账户", 13800, 5000, 18800, "DS-CNY-0417"], amount: 5000, received: 5000, status: "已完成", tgStatus: "已确认", progress: "2/2", confirmers: "审核员甲、审核员乙", submitted: "2026-08-17 11:05:27", changed: "2026-08-17 11:07:15", operator: "资金运营员", operationRemark: "双方账变已完成", audit: "已上传" },
+      { no: "TRF202608180005", currency: "USDT", source: ["TT商户", "M00000139", "USDT代付账户", 1000, 100, 900, "DF-USDT-0139"], target: ["阿才商户", "M00000129", "USDT代付预付", 500, 100, 600, "DF-USDT-0129-IN"], amount: 100, received: 100, status: "已完成", tgStatus: "已确认", progress: "2/2", confirmers: "审核员甲、审核员乙", submitted: "2026-08-18 18:22:59", changed: "2026-08-18 18:23:37", operator: "资金运营员", operationRemark: "已划入阿才商户的USDT代付预付", audit: "已上传" },
       { no: "TRF202608170003", currency: "USDT", source: ["云帆商户", "M00000006", "USDT代付账户", 3200, 800, 2400, "—"], target: ["海潮商户", "M00000007", "USDT代收账户", 4100, 800, 4900, "—"], amount: 800, received: 800, status: "确认中", tgStatus: "确认中", progress: "1/2", confirmers: "审核员甲", submitted: "2026-08-17 14:40:19", changed: "—", operator: "资金运营员", operationRemark: "等待第二位确认人", audit: "—" },
       { no: "TRF202608170004", currency: "CNY", source: ["长风商户", "M00000008", "CNY代付账户", 600, 120, 480, "—"], target: ["海潮商户", "M00000007", "CNY代收账户", 960, 120, 1080, "—"], amount: 120, received: 120, status: "待出款", tgStatus: "已确认", progress: "2/2", confirmers: "审核员甲、审核员乙", submitted: "2026-08-17 15:18:33", changed: "—", operator: "资金运营员", operationRemark: "等待出款执行", audit: "已上传" }
     ];
-    const ledgerCurrency = { "payout-record": "CNY", "collect-record": "CNY" };
+    const ledgerCurrency = { "payout-record": "USDT", "collect-record": "USDT" };
 
     const withdrawRows = [
       ["1", "ORD-DEMO-0001", "单", "示例商户 A/M00000901", "200.00", "4.00", "196.00", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"],
@@ -1147,7 +1148,7 @@
         order.status = "已完成";
         order.changed = "2026-08-17 16:08:24";
         order.operator = "资金运营员";
-        order.operationRemark = remark ? `出款完成：${remark}` : "出款完成，双方账变已完成";
+        order.operationRemark = `已划入${order.target[0]}（${order.target[1]}）的${order.target[2]}；${remark || "双方账变已完成"}`;
         order.source[6] = order.currency === "CNY" ? "DF-CNY-0459" : "DF-USDT-0459";
         order.target[6] = order.currency === "CNY" ? "DS-CNY-0504" : "DS-USDT-0504";
         renderPage();
@@ -1159,12 +1160,12 @@
         order.operator = "资金运营员";
         order.operationRemark = "订单已取消，未生成账户流水";
         renderPage();
-        showToast(`已取消 ${order.no}，未写入代付或代收流水`);
+        showToast(`已取消 ${order.no}，未写入任何钱包流水`);
       }
     }
 
     function openPayoutConfirmation(order) {
-      document.getElementById("merchantModalRoot").innerHTML = `<div class="modal-layer"><section class="merchant-modal" role="dialog" aria-modal="true" aria-labelledby="payoutConfirmTitle" tabindex="-1"><header class="modal-header"><h2 id="payoutConfirmTitle">确认出款（资金划转）</h2><button type="button" class="modal-close" data-modal-close aria-label="关闭此对话框">×</button></header><div class="modal-body"><div class="modal-section"><div class="modal-section-head"><strong>订单摘要</strong></div><div class="modal-basic-grid"><div class="modal-field"><label>划转单号</label><div class="mono">${order.no}</div></div><div class="modal-field"><label>币种 / 划转金额</label><div>${order.currency} / ${transferMoney(order.amount, order.currency)}</div></div><div class="modal-field full"><label>转出账户</label><div>${order.source[0]} / ${order.source[1]} / ${order.source[2]}</div></div><div class="modal-field full"><label>转入账户</label><div>${order.target[0]} / ${order.target[1]} / ${order.target[2]}</div></div></div></div><div class="modal-section"><div class="modal-section-head"><strong>可选填写备注</strong></div><input id="payoutRemark" class="modal-control" placeholder="备注（选填）"></div></div><footer class="modal-footer"><button type="button" class="btn" data-modal-close>取消</button><button type="button" class="btn primary" data-confirm-payout="${order.no}">确认出款</button></footer></section></div>`;
+      document.getElementById("merchantModalRoot").innerHTML = `<div class="modal-layer"><section class="merchant-modal" role="dialog" aria-modal="true" aria-labelledby="payoutConfirmTitle" tabindex="-1"><header class="modal-header"><h2 id="payoutConfirmTitle">确认出款（资金划转）</h2><button type="button" class="modal-close" data-modal-close aria-label="关闭此对话框">×</button></header><div class="modal-body"><div class="modal-section"><div class="modal-section-head"><strong>订单摘要</strong></div><div class="modal-basic-grid"><div class="modal-field"><label>划转单号</label><div class="mono">${order.no}</div></div><div class="modal-field"><label>币种 / 划转金额</label><div>${order.currency} / ${transferMoney(order.amount, order.currency)}</div></div><div class="modal-field full"><label>付款商户 / 出账钱包</label><div>${order.source[0]} / ${order.source[1]} / ${order.source[2]}</div></div><div class="modal-field full"><label>收款商户 / 入账钱包</label><div>${order.target[0]} / ${order.target[1]} / ${order.target[2]}</div></div></div></div><div class="modal-section"><div class="modal-section-head"><strong>可选填写备注</strong></div><input id="payoutRemark" class="modal-control" placeholder="备注（选填）"></div></div><footer class="modal-footer"><button type="button" class="btn" data-modal-close>取消</button><button type="button" class="btn primary" data-confirm-payout="${order.no}">确认出款</button></footer></section></div>`;
       document.body.style.overflow = "hidden";
       document.querySelector(".merchant-modal").focus();
     }
@@ -1175,15 +1176,23 @@
       const currentCurrency = ledgerCurrency[kind];
       const currencies = isPayout ? ["CNY", "USDT"] : ["CNY", "USDT", "TRX"];
       const completed = transferOrders.filter((order) => order.status === "已完成" && order.currency === currentCurrency);
-      const transferRows = completed.map((order, index) => {
-        const own = isPayout ? order.source : order.target;
-        const other = isPayout ? order.target : order.source;
-        const changed = isPayout ? -order.amount : order.received;
+      const walletBelongsToLedger = (walletName) => isPayout ? walletName.includes("代付") : walletName.includes("代收");
+      const transferEntries = completed.flatMap((order) => {
+        const entries = [];
+        if (walletBelongsToLedger(order.source[2])) entries.push({ order, own: order.source, other: order.target, outbound: true });
+        if (walletBelongsToLedger(order.target[2])) entries.push({ order, own: order.target, other: order.source, outbound: false });
+        return entries;
+      });
+      const transferRows = transferEntries.map(({ order, own, other, outbound }, index) => {
+        const changed = outbound ? -order.amount : order.received;
+        const directionRemark = outbound
+          ? `资金划转给：${other[0]}（${other[1]}）`
+          : `入账来源：${other[0]}（${other[1]}）划转给本商户`;
         return `<tr>
-          <td>${completed.length - index}</td><td>${own[0]}</td><td class="mono">${own[1]}</td><td class="mono">${order.no}</td><td>—</td>
-          <td><span class="tag ${isPayout ? "danger" : "success"}">资金划转${isPayout ? "转出" : "转入"}</span></td><td>${order.currency}</td>
-          <td>${transferMoney(own[3], order.currency)}</td><td class="${isPayout ? "red" : "green"}">${isPayout ? "-" : "+"}${transferMoney(Math.abs(changed), order.currency)}</td><td>${transferMoney(own[5], order.currency)}</td>
-          <td>${order.changed}</td><td>${other[0]} / ${other[1]} / ${other[2]}</td>
+          <td>${transferEntries.length - index}</td><td>${own[0]}</td><td class="mono">${own[1]}</td><td class="mono">${order.no}</td><td>—</td>
+          <td><span class="tag ${outbound ? "danger" : "success"}">资金划转${outbound ? "转出" : "转入"}</span></td><td>${order.currency}</td>
+          <td>${transferMoney(own[3], order.currency)}</td><td class="${outbound ? "red" : "green"}">${outbound ? "-" : "+"}${transferMoney(Math.abs(changed), order.currency)}</td><td>${transferMoney(own[5], order.currency)}</td>
+          <td>${order.changed}</td><td>${directionRemark}</td>
           <td class="op-links"><button type="button" class="link" data-transfer-detail="${order.no}">查看划转订单</button></td>
         </tr>`;
       }).join("");
@@ -1195,8 +1204,8 @@
       </div>
       <div class="subtabs" style="margin-top:22px">${currencies.map((currency) => `<button type="button" class="subtab ${currency === currentCurrency ? "active" : ""}" data-ledger-tab="${kind}:${currency}">${currency}</button>`).join("")}</div>
       <div class="table-wrap"><table style="min-width:1900px"><colgroup><col style="width:70px"><col style="width:150px"><col style="width:145px"><col style="width:190px"><col style="width:175px"><col style="width:145px"><col style="width:80px"><col style="width:130px"><col style="width:150px"><col style="width:140px"><col style="width:175px"><col style="width:280px"><col style="width:150px"></colgroup>
-        <thead><tr><th>序号</th><th>商户名称</th><th>商户号</th><th>平台订单号 / 划转单号</th><th>商户订单号</th><th>类型</th><th>币种</th><th>原金额</th><th>变动金额</th><th>变动后金额</th><th>变动时间</th><th>备注 / 对方商户</th><th>操作</th></tr></thead>
-        <tbody>${transferRows || `<tr><td colspan="13" class="recharge-empty">当前币种暂无已完成的资金划转记录</td></tr>`}${ordinaryRows}</tbody></table></div>${pagination(transferRows ? completed.length + 1 : 1)}`;
+        <thead><tr><th>序号</th><th>商户名称</th><th>商户号</th><th>平台订单号 / 划转单号</th><th>商户订单号</th><th>类型</th><th>币种</th><th>原金额</th><th>变动金额</th><th>变动后金额</th><th>变动时间</th><th>备注</th><th>操作</th></tr></thead>
+        <tbody>${transferRows || `<tr><td colspan="13" class="recharge-empty">当前币种暂无已完成的资金划转记录</td></tr>`}${ordinaryRows}</tbody></table></div>${pagination(transferRows ? transferEntries.length + 1 : 1)}`;
     }
 
     function transferOrdersPage() {
@@ -1208,7 +1217,7 @@
       const rows = transferOrders.map((order) => {
         const statusClass = order.status === "已完成" ? "success" : order.status === "确认中" ? "warning" : "danger";
         const action = order.status === "待出款" ? `${transferActionButton("出款", "payout", order.no)}${transferActionButton("取消", "cancel", order.no)}` : order.status === "确认中" ? `${transferActionButton("手动确认", "manual-confirm", order.no)}${transferActionButton("取消", "cancel", order.no)}` : "—";
-        return `<tr><td class="cell-center"><input type="checkbox" aria-label="选择${order.no}"></td><td class="cell-center">${transferOrders.indexOf(order) + 1}</td><td class="mono">${order.no}</td><td><span class="tag">划转</span></td><td>${order.source[0]}<br><span class="mono">${order.source[1]}</span></td><td>${transferMoney(order.amount, order.currency)}</td><td>${transferMoney(0, order.currency)}</td><td>${transferMoney(order.received, order.currency)}</td><td>${order.currency}</td><td>${order.target[1]} / ${order.target[2]}</td><td>${order.source[1]} / ${order.source[2]}</td><td><span class="tag ${statusClass}">${order.status}</span></td><td><span class="tag ${order.tgStatus === "已确认" ? "success" : "warning"}">${order.tgStatus}</span></td><td>${order.progress}</td><td>${order.confirmers}</td><td>${order.operationRemark}</td><td>${order.submitted}</td><td>${order.changed}</td><td>${order.operator}</td><td class="op-links"><button type="button" class="link" data-transfer-detail="${order.no}">查看</button>${action}</td></tr>`;
+        return `<tr><td class="cell-center"><input type="checkbox" aria-label="选择${order.no}"></td><td class="cell-center">${transferOrders.indexOf(order) + 1}</td><td class="mono">${order.no}</td><td><span class="tag">划转</span></td><td>${order.source[0]}<br><span class="mono">${order.source[1]}</span></td><td>${transferMoney(order.amount, order.currency)}</td><td>${transferMoney(0, order.currency)}</td><td>${transferMoney(order.received, order.currency)}</td><td>${order.currency}</td><td>${order.target[0]}<br><span class="mono">${order.target[1]} / ${order.target[2]}</span></td><td>${order.source[0]}<br><span class="mono">${order.source[1]} / ${order.source[2]}</span></td><td><span class="tag ${statusClass}">${order.status}</span></td><td><span class="tag ${order.tgStatus === "已确认" ? "success" : "warning"}">${order.tgStatus}</span></td><td>${order.progress}</td><td>${order.confirmers}</td><td>${order.operationRemark}</td><td>${order.submitted}</td><td>${order.changed}</td><td>${order.operator}</td><td class="op-links"><button type="button" class="link" data-transfer-detail="${order.no}">查看</button>${action}</td></tr>`;
       }).join("");
       return `<div class="filters" aria-label="资金划转筛选">
         ${field("单号", input("输入单号搜索", 200))}${field("下分单类型", select("全部", 140))}${field("状态", select("全部", 140))}
@@ -1217,7 +1226,7 @@
       <div class="stats-ribbon" aria-label="资金划转统计"><span>划转订单<strong>${transferOrders.length}</strong></span><span class="green">已完成<strong>${completed.length}</strong></span><span class="warning-text">确认中<strong>${transferOrders.filter((order) => order.status === "确认中").length}</strong></span><span class="red">资金异常<strong>${transferOrders.filter((order) => order.status === "资金异常").length}</strong></span></div>
       <div class="recharge-summary" aria-label="已完成资金统计">${Object.entries(completedByCurrency).map(([currency, amount]) => `<div class="recharge-metric"><span>已完成${currency}划转：</span><strong class="green">${transferMoney(amount, currency)}</strong></div>`).join("")}<div class="recharge-metric"><span>说明：</span><strong>按币种分别记账，统计不做跨币种汇总</strong></div></div>
       <div class="table-wrap"><table style="min-width:2500px"><colgroup><col style="width:48px"><col style="width:60px"><col style="width:180px"><col style="width:100px"><col style="width:175px"><col style="width:115px"><col style="width:95px"><col style="width:115px"><col style="width:80px"><col style="width:220px"><col style="width:220px"><col style="width:100px"><col style="width:115px"><col style="width:90px"><col style="width:180px"><col style="width:180px"><col style="width:160px"><col style="width:160px"><col style="width:105px"><col style="width:190px"></colgroup>
-        <thead><tr><th></th><th>序号</th><th>单号</th><th>下分单类型</th><th>商户名称/商户号</th><th>划转金额</th><th>手续费</th><th>到账金额</th><th>币种</th><th>转入商户/账户</th><th>转出商户/账户</th><th>状态</th><th>TG确认状态</th><th>确认人数</th><th>确认人</th><th>处理备注</th><th>提交时间</th><th>操作时间</th><th>操作人</th><th>操作</th></tr></thead>
+        <thead><tr><th></th><th>序号</th><th>单号</th><th>下分单类型</th><th>付款商户</th><th>划转金额</th><th>手续费</th><th>到账金额</th><th>币种</th><th>收款商户 / 入账钱包</th><th>付款商户 / 出账钱包</th><th>状态</th><th>TG确认状态</th><th>确认人数</th><th>确认人</th><th>备注</th><th>提交时间</th><th>操作时间</th><th>操作人</th><th>操作</th></tr></thead>
         <tbody>${rows}</tbody></table></div>${pagination(transferOrders.length)}`;
     }
 
@@ -1232,7 +1241,16 @@
 
     function appendTransferHandlingInfo(order) {
       const body = document.querySelector(".merchant-modal .modal-body");
-      if (body) body.innerHTML = transferDetailBody(order);
+      if (body) {
+        body.innerHTML = transferDetailBody(order);
+        body.querySelectorAll(".modal-field label").forEach((label) => {
+          if (label.textContent === "转出商户 / 账户") label.textContent = "付款商户 / 出账钱包";
+          if (label.textContent === "转入商户 / 账户") label.textContent = "收款商户 / 入账钱包";
+        });
+        body.querySelectorAll("th").forEach((header) => {
+          if (header.textContent === "商户 / 账户") header.textContent = "商户 / 钱包";
+        });
+      }
     }
 
     function transferDetailBody(order) {
@@ -1240,7 +1258,7 @@
       const statusClass = completed ? "success" : order.status === "资金异常" || order.status === "已取消" ? "danger" : "warning";
       const [confirmed, required] = order.progress.split("/").map(Number);
       const names = order.confirmers === "—" ? [] : order.confirmers.split("、");
-      const confirmationTimes = { "TRF202608170001": ["2026-08-17 10:22:11", "2026-08-17 10:22:36"], "TRF202608170002": ["2026-08-17 11:06:02", "2026-08-17 11:06:34"], "TRF202608170003": ["2026-08-17 14:41:02", "—"], "TRF202608170004": ["2026-08-17 15:19:05", "2026-08-17 15:19:29"] };
+      const confirmationTimes = { "TRF202608170001": ["2026-08-17 10:22:11", "2026-08-17 10:22:36"], "TRF202608170002": ["2026-08-17 11:06:02", "2026-08-17 11:06:34"], "TRF202608170003": ["2026-08-17 14:41:02", "—"], "TRF202608170004": ["2026-08-17 15:19:05", "2026-08-17 15:19:29"], "TRF202608180005": ["2026-08-18 18:23:11", "2026-08-18 18:23:29"] };
       const confirmationRows = required ? Array.from({ length: required }, (_, index) => {
         const name = names[index] || "待确认人";
         const isConfirmed = index < confirmed;
@@ -1252,8 +1270,8 @@
       if (order.status === "待出款") timeline.push({ time: "—", action: "等待出款", operator: order.operator, note: order.operationRemark });
       if (completed) timeline.push({ time: order.changed, action: "执行出款并完成双边记账", operator: order.operator, note: order.operationRemark });
       if (order.status === "已取消") timeline.push({ time: order.changed === "—" ? "—" : order.changed, action: "取消资金划转", operator: order.operator, note: order.operationRemark });
-      const ledger = completed ? `<div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>记账方向</th><th>商户 / 账户</th><th>账前金额</th><th>变动金额</th><th>账后金额</th><th>流水号</th><th>记账时间</th></tr></thead><tbody><tr><td>代付转出</td><td>${order.source[0]} / ${order.source[1]} / ${order.source[2]}</td><td>${transferMoney(order.source[3], order.currency)}</td><td class="red">-${transferMoney(order.source[4], order.currency)}</td><td>${transferMoney(order.source[5], order.currency)}</td><td class="mono">${order.source[6]}</td><td>${order.changed}</td></tr><tr><td>代收转入</td><td>${order.target[0]} / ${order.target[1]} / ${order.target[2]}</td><td>${transferMoney(order.target[3], order.currency)}</td><td class="green">+${transferMoney(order.target[4], order.currency)}</td><td>${transferMoney(order.target[5], order.currency)}</td><td class="mono">${order.target[6]}</td><td>${order.changed}</td></tr></tbody></table></div>` : `<div class="detail-empty">订单当前为「${order.status}」，尚未生成代付转出与代收转入流水；完成出款后才会记账。</div>`;
-      return `<div class="modal-section"><div class="modal-section-head"><strong>订单概览</strong><span class="tag ${statusClass}">${order.status}</span></div><div class="modal-basic-grid"><div class="modal-field"><label>划转单号</label><div class="mono">${order.no}</div></div><div class="modal-field"><label>下分单类型</label><div>划转</div></div><div class="modal-field"><label>转出商户 / 账户</label><div>${order.source[0]} / ${order.source[1]} / ${order.source[2]}</div></div><div class="modal-field"><label>转入商户 / 账户</label><div>${order.target[0]} / ${order.target[1]} / ${order.target[2]}</div></div><div class="modal-field"><label>币种 / 划转金额</label><div>${order.currency} / ${transferMoney(order.amount, order.currency)}</div></div><div class="modal-field"><label>手续费 / 到账金额</label><div>${transferMoney(0, order.currency)} / ${transferMoney(order.received, order.currency)}</div></div><div class="modal-field"><label>提交时间</label><div>${order.submitted}</div></div><div class="modal-field"><label>处理备注</label><div>${order.operationRemark}</div></div></div></div><div class="modal-section"><div class="modal-section-head"><strong>TG 确认记录</strong><span class="tag ${order.tgStatus === "已确认" ? "success" : "warning"}">${order.tgStatus} ${order.progress}</span></div><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>序号</th><th>确认人</th><th>TG 账号</th><th>确认时间</th><th>确认结果</th></tr></thead><tbody>${confirmationRows}</tbody></table></div></div><div class="modal-section"><div class="modal-section-head"><strong>处理轨迹</strong></div><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>处理时间</th><th>处理动作</th><th>操作人</th><th>处理备注</th></tr></thead><tbody>${timeline.map((item) => `<tr><td>${item.time}</td><td>${item.action}</td><td>${item.operator}</td><td>${item.note}</td></tr>`).join("")}</tbody></table></div></div><div class="modal-section"><div class="modal-section-head"><strong>账务结果</strong></div>${ledger}</div>`;
+      const ledger = completed ? `<div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>记账方向</th><th>商户 / 钱包</th><th>账前金额</th><th>变动金额</th><th>账后金额</th><th>流水号</th><th>记账时间</th></tr></thead><tbody><tr><td>资金划转转出</td><td>${order.source[0]} / ${order.source[1]} / ${order.source[2]}</td><td>${transferMoney(order.source[3], order.currency)}</td><td class="red">-${transferMoney(order.source[4], order.currency)}</td><td>${transferMoney(order.source[5], order.currency)}</td><td class="mono">${order.source[6]}</td><td>${order.changed}</td></tr><tr><td>资金划转转入</td><td>${order.target[0]} / ${order.target[1]} / ${order.target[2]}</td><td>${transferMoney(order.target[3], order.currency)}</td><td class="green">+${transferMoney(order.target[4], order.currency)}</td><td>${transferMoney(order.target[5], order.currency)}</td><td class="mono">${order.target[6]}</td><td>${order.changed}</td></tr></tbody></table></div>` : `<div class="detail-empty">订单当前为「${order.status}」，尚未生成双方实际钱包流水；完成出款后才会记账。</div>`;
+      return `<div class="modal-section"><div class="modal-section-head"><strong>订单概览</strong><span class="tag ${statusClass}">${order.status}</span></div><div class="modal-basic-grid"><div class="modal-field"><label>划转单号</label><div class="mono">${order.no}</div></div><div class="modal-field"><label>下分单类型</label><div>划转</div></div><div class="modal-field"><label>付款商户 / 出账钱包</label><div>${order.source[0]} / ${order.source[1]} / ${order.source[2]}</div></div><div class="modal-field"><label>收款商户 / 入账钱包</label><div>${order.target[0]} / ${order.target[1]} / ${order.target[2]}</div></div><div class="modal-field"><label>币种 / 划转金额</label><div>${order.currency} / ${transferMoney(order.amount, order.currency)}</div></div><div class="modal-field"><label>手续费 / 到账金额</label><div>${transferMoney(0, order.currency)} / ${transferMoney(order.received, order.currency)}</div></div><div class="modal-field"><label>提交时间</label><div>${order.submitted}</div></div><div class="modal-field"><label>备注</label><div>${order.operationRemark}</div></div></div></div><div class="modal-section"><div class="modal-section-head"><strong>TG 确认记录</strong><span class="tag ${order.tgStatus === "已确认" ? "success" : "warning"}">${order.tgStatus} ${order.progress}</span></div><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>序号</th><th>确认人</th><th>TG 账号</th><th>确认时间</th><th>确认结果</th></tr></thead><tbody>${confirmationRows}</tbody></table></div></div><div class="modal-section"><div class="modal-section-head"><strong>处理轨迹</strong></div><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>处理时间</th><th>处理动作</th><th>操作人</th><th>备注</th></tr></thead><tbody>${timeline.map((item) => `<tr><td>${item.time}</td><td>${item.action}</td><td>${item.operator}</td><td>${item.note}</td></tr>`).join("")}</tbody></table></div></div><div class="modal-section"><div class="modal-section-head"><strong>账务结果</strong></div>${ledger}</div>`;
     }
 
     function renderPage() {

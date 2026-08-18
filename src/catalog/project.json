@@ -76,8 +76,24 @@
         ]
       },
       { "label": "虚拟货币工单中心", "collapsed": true, "items": [] },
-      { "label": "账户记录", "collapsed": true, "items": [] },
-      { "label": "预付记录", "collapsed": true, "items": [] },
+      {
+        "label": "账户记录",
+        "items": [
+          { "id": "merchant-collect-account", "title": "代收账户记录", "doc": "TRX代收通道-demo", "boot": "m-account", "req": ["BP-REQ-008"] },
+          { "id": "merchant-payout-account", "title": "代付账户记录", "doc": "TRX代收通道-demo", "boot": "m-payout-account", "req": ["BP-REQ-008"] },
+          { "title": "USDT代付手续费账变记录", "static": true },
+          { "title": "钱包地址管理", "static": true }
+        ]
+      },
+      {
+        "label": "预付记录",
+        "items": [
+          { "title": "商户代收预付", "static": true },
+          { "title": "USDT代付充值", "static": true },
+          { "id": "merchant-payout-prepay", "title": "商户代付预付", "doc": "TRX代收通道-demo", "boot": "m-payout-prepay", "req": ["BP-REQ-008"] },
+          { "title": "预付服务费流水", "static": true }
+        ]
+      },
       { "label": "日终统计", "collapsed": true, "items": [] },
       {
         "label": "商户下发提现",
@@ -122,7 +138,7 @@
     {
       "id": "BP-REQ-003",
       "title": "商户增加资金划转",
-      "summary": "在蓝盛后台配置双向商户互转关系；代收 USDT余额与代付 USDT代付剩余预付均可任选为来源或目标。",
+      "summary": "在蓝盛后台记录并处理商户间资金划转；订单明确付款商户、出账钱包、收款商户与入账钱包，完成后按双方实际发生账变的钱包写入对应流水。",
       "moduleCodes": ["ADMIN"],
       "doc": "机器人分层播报与多人确认-demo"
     },
@@ -164,7 +180,7 @@
     {
       "id": "BP-REQ-008",
       "title": "商户端发起资金划转",
-      "summary": "在商户下发提现页新增资金划转入口，商户仅可向后台已绑定的目标商户发起既有划转流程。",
+      "summary": "商户可向后台已绑定的目标商户发起资金划转；完成后，付款方在实际出账钱包查看负数转出及去向，收款方在实际入账钱包查看正数入账及来源。",
       "moduleCodes": ["MERCHANT"],
       "doc": "TRX代收通道-demo"
     }

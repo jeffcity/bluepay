@@ -324,7 +324,9 @@ const PAGES = {
   'daily': { sys:'admin', title:'商户代收日终统计', menu:'日终数据统计', type:'daily', cols:['商户名称','订单金额','订单单量','成功订单量','成功率','商户服务费','期初余额','末期余额','期初预付','末期预付','操作'] },
   // Merchant pages
   'm-order': { sys:'merchant', title:'代收订单', menu:'代收管理', type:'order' },
-  'm-account': { sys:'merchant', title:'代收账户记录', menu:'代收管理', type:'flow', entity:'', cols:['序号','平台订单号','商户订单号','类型','币种','原金额','变动金额','变动后金额','变动时间','备注'] },
+  'm-account': { sys:'merchant', title:'代收账户记录', menu:'账户记录', type:'merchant-collect-account' },
+  'm-payout-account': { sys:'merchant', title:'代付账户记录', menu:'账户记录', type:'merchant-payout-account' },
+  'm-payout-prepay': { sys:'merchant', title:'商户代付预付', menu:'预付记录', type:'merchant-payout-prepay' },
   'm-withdraw': { sys:'merchant', title:'商户下发提现', menu:'', type:'withdraw' },
   'merchant-mgmt': { sys:'admin', title:'代收商户管理', menu:'代收管理', type:'merchant-mgmt' },
 };
@@ -363,8 +365,18 @@ const MENU_MERCHANT = [
     { label:'手动下单 NEW' },
   ]},
   { label:'虚拟货币工单中心', icon:true, children:[] },
-  { label:'账户记录', icon:true, children:[] },
-  { label:'预付记录', icon:true, children:[] },
+  { label:'账户记录', icon:true, open:true, children:[
+    { label:'代收账户记录', page:'m-account' },
+    { label:'代付账户记录', page:'m-payout-account' },
+    { label:'USDT代付手续费账变记录' },
+    { label:'钱包地址管理' },
+  ]},
+  { label:'预付记录', icon:true, open:true, children:[
+    { label:'商户代收预付' },
+    { label:'USDT代付充值' },
+    { label:'商户代付预付', page:'m-payout-prepay' },
+    { label:'预付服务费流水' },
+  ]},
   { label:'日终统计', icon:true, children:[] },
   { label:'商户下发提现', icon:true, page:'m-withdraw' },
   { label:'子商户数据 NEW', icon:true },
@@ -410,6 +422,32 @@ const PAYOUT_PREPAY_CNY = [
 const PAYOUT_PREPAY_USDT = [
   {idx:5,entity:'M00000306',plat:'–',merch:'–',type:'充值',cur:'USDT',orig:'0.000000',delta:'+10000.000000',after:'10000.000000',time:'2026/06/15 10:00:00',remark:'代付预付充值'},
 ];
+const MERCHANT_PAYOUT_PREPAY = [
+  {idx:3,plat:'TRF202608180005',merch:'—',type:'资金划转入账',cur:'USDT',orig:'500.000000',delta:'+100.000000',after:'600.000000',time:'2026/08/18 18:23:37',remark:'入账来源：TT商户（M00000139）划转给本商户'},
+  {idx:2,plat:'—',merch:'—',type:'后台调整',cur:'USDT',orig:'1000.000000',delta:'+200.000000',after:'1200.000000',time:'2026/08/16 14:25:10',remark:'运营补充预付'},
+  {idx:1,plat:'—',merch:'—',type:'充值',cur:'USDT',orig:'0.000000',delta:'+1000.000000',after:'1000.000000',time:'2026/08/12 10:10:36',remark:'代付预付充值'},
+];
+const MERCHANT_COLLECT_ACCOUNT = {
+  USDT: [
+    {idx:4,plat:'TRF202608170001',merch:'—',type:'资金划转入账',cur:'USDT',orig:'8500.000000',delta:'+10000.000000',after:'18500.000000',time:'2026/08/17 10:23:41',remark:'入账来源：远航商户（M00000001）划转给本商户'},
+    {idx:3,plat:'ORD-DEMO-0003',merch:'M-DEMO-0003',type:'代收',cur:'USDT',orig:'1000.000000',delta:'+500.000000',after:'1500.000000',time:'2026/08/16 09:30:18',remark:'代收订单入账'},
+    {idx:2,plat:'—',merch:'—',type:'后台调整',cur:'USDT',orig:'800.000000',delta:'+200.000000',after:'1000.000000',time:'2026/08/14 15:05:31',remark:'运营调整'},
+  ],
+  CNY: [
+    {idx:1,plat:'ORD-DEMO-CNY-0001',merch:'M-DEMO-CNY-0001',type:'代收',cur:'CNY',orig:'12000.00',delta:'+800.00',after:'12800.00',time:'2026/08/15 13:40:26',remark:'代收订单入账'},
+  ]
+};
+const MERCHANT_PAYOUT_ACCOUNT = {
+  USDT: [
+    {idx:5,plat:'TRF202608180005',merch:'—',type:'资金划转转出',cur:'USDT',orig:'1000.000000',delta:'-100.000000',after:'900.000000',time:'2026/08/18 18:23:37',remark:'资金划转给：阿才商户（M00000129）'},
+    {idx:4,plat:'TRF202608170001',merch:'—',type:'资金划转转出',cur:'USDT',orig:'16000.000000',delta:'-10000.000000',after:'6000.000000',time:'2026/08/17 10:23:41',remark:'资金划转给：北辰商户（M00000002）'},
+    {idx:3,plat:'PAY-DEMO-0003',merch:'P-DEMO-0003',type:'代付',cur:'USDT',orig:'4500.000000',delta:'-300.000000',after:'4200.000000',time:'2026/08/16 14:20:08',remark:'代付订单出账'},
+    {idx:2,plat:'—',merch:'—',type:'后台调整',cur:'USDT',orig:'4300.000000',delta:'+200.000000',after:'4500.000000',time:'2026/08/14 09:45:20',remark:'运营调整'},
+  ],
+  CNY: [
+    {idx:1,plat:'PAY-DEMO-CNY-0001',merch:'P-DEMO-CNY-0001',type:'代付',cur:'CNY',orig:'18000.00',delta:'-800.00',after:'17200.00',time:'2026/08/15 16:12:14',remark:'代付订单出账'},
+  ]
+};
 const ORDERS = [
   {idx:1,plat:'LS20260727001',merch:'M202607270001',name:'M00000306',cur:'TRX',amt:'1,500.000000',real:'1,500.000000',addr:'TXk9rF…f3Qz',status:'支付成功',statusCls:'tag-green',time:'2026/07/27 10:23:15',isNew:true},
   {idx:2,plat:'LS20260727002',merch:'M202607270002',name:'M00000306',cur:'TRX',amt:'200.500000',real:'–',addr:'TNp2mK…k8Wd',status:'待支付',statusCls:'tag-orange',time:'2026/07/27 11:05:42',isNew:true},
@@ -653,6 +691,12 @@ function renderContent() {
 
   if(p.type==='order') {
     html += renderOrderPage(p);
+  } else if(p.type==='merchant-payout-prepay') {
+    html += renderMerchantPayoutPrepayPage();
+  } else if(p.type==='merchant-collect-account') {
+    html += renderMerchantCollectAccountPage();
+  } else if(p.type==='merchant-payout-account') {
+    html += renderMerchantPayoutAccountPage();
   } else if(p.type==='flow') {
     html += renderFlowPage(p);
   } else if(p.type==='daily') {
@@ -787,6 +831,60 @@ function renderFlowPage(p) {
   <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span>${data.length>10?'<span class="pager-btn">2</span>':''}<span class="pager-btn disabled">&gt;</span></div>`;
 }
 
+function renderMerchantPayoutPrepayPage() {
+  const cols = ['序号','平台订单号','商户订单号','币种','类型','原金额','变动金额','变动后金额','变动时间','备注'];
+  const filters = `<div class="filter-card">
+    <input class="fc-input" placeholder="平台订单号"><input class="fc-input" placeholder="商户订单号">
+    <select class="fc-select"><option>全部类型</option><option>资金划转入账</option><option>资金划转转出</option><option>后台调整</option><option>充值</option></select>
+    <input class="fc-input" placeholder="变动起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="变动结束时间" style="width:130px">
+    <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备导出')">导出</button>
+  </div><div class="foot-note"><b>商户代付预付：</b>只有该钱包实际发生账变时才生成记录；收款方查看入账来源，付款方到实际出账钱包查看转出去向。</div>`;
+  const rows = MERCHANT_PAYOUT_PREPAY.map(record => `<tr>
+    <td>${record.idx}</td><td class="mono">${record.plat}</td><td class="mono">${record.merch}</td><td>${record.cur}</td>
+    <td><span class="tag ${record.type === '资金划转入账' ? 'tag-green' : record.type === '资金划转转出' ? 'tag-red' : 'tag-blue'}">${record.type}</span></td>
+    <td class="mono">${record.orig}</td><td><span class="${deltaClass(record.delta)}">${record.delta}</span></td><td class="mono">${record.after}</td><td>${record.time}</td>
+    <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${record.remark}">${record.remark}</td>
+  </tr>`).join('');
+  return filters + `<div class="table-card"><table style="min-width:1500px"><thead><tr>${cols.map(column => `<th>${column}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="pager"><span>共 ${MERCHANT_PAYOUT_PREPAY.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select"><option>10条/页</option></select><span>前往</span><input class="fc-input" value="1" style="width:48px"></div>`;
+}
+
+function renderMerchantCollectAccountPage() {
+  const cols = ['序号','平台订单号','商户订单号','币种','类型','账变前余额','变动金额','账变后余额','变动时间','备注'];
+  const filters = `<div class="filter-card">
+    <input class="fc-input" placeholder="平台订单号"><input class="fc-input" placeholder="商户订单号"><select class="fc-select"><option>全部状态</option></select>
+    <input class="fc-input" placeholder="变更起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="变更结束时间" style="width:130px">
+    <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备导出')">导出</button>
+  </div><div class="curr-tabs"><div class="curr-tab${curCurrency==='USDT'?' active':''}" data-cur="USDT">USDT</div><div class="curr-tab${curCurrency==='CNY'?' active':''}" data-cur="CNY">CNY</div></div><div class="foot-note"><b>代收账户记录：</b>资金划转完成并进入代收钱包后，收款商户在此查看入账金额及付款商户来源。</div>`;
+  const data = MERCHANT_COLLECT_ACCOUNT[curCurrency] || [];
+  const rows = data.map(record => `<tr>
+    <td>${record.idx}</td><td class="mono">${record.plat}</td><td class="mono">${record.merch}</td><td>${record.cur}</td>
+    <td><span class="tag ${record.type === '资金划转入账' ? 'tag-green' : 'tag-blue'}">${record.type}</span></td>
+    <td class="mono">${record.orig}</td><td><span class="${deltaClass(record.delta)}">${record.delta}</span></td><td class="mono">${record.after}</td><td>${record.time}</td>
+    <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${record.remark}">${record.remark}</td>
+  </tr>`).join('') || `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:#999">暂无 ${curCurrency} 数据</td></tr>`;
+  return filters + `<div class="table-card"><table style="min-width:1500px"><thead><tr>${cols.map(column => `<th>${column}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select"><option>10条/页</option></select><span>前往</span><input class="fc-input" value="1" style="width:48px"></div>`;
+}
+
+function renderMerchantPayoutAccountPage() {
+  const cols = ['序号','平台订单号','商户订单号','币种','类型','账变前余额','变动金额','账变后余额','变动时间','备注'];
+  const filters = `<div class="filter-card">
+    <input class="fc-input" placeholder="平台订单号"><input class="fc-input" placeholder="商户订单号"><select class="fc-select"><option>全部状态</option></select>
+    <input class="fc-input" placeholder="变更起始时间" style="width:130px"><span class="fc-sep">至</span><input class="fc-input" placeholder="变更结束时间" style="width:130px">
+    <button class="btn btn-primary" onclick="toast('已搜索')">搜索</button><button class="btn" onclick="toast('已重置')">重置</button><button class="btn" onclick="toast('已准备导出')">导出</button>
+  </div><div class="curr-tabs"><div class="curr-tab${curCurrency==='USDT'?' active':''}" data-cur="USDT">USDT</div><div class="curr-tab${curCurrency==='CNY'?' active':''}" data-cur="CNY">CNY</div></div><div class="foot-note"><b>代付账户记录：</b>资金从代付账户划出后，付款商户在此查看扣款金额及收款商户去向。</div>`;
+  const data = MERCHANT_PAYOUT_ACCOUNT[curCurrency] || [];
+  const rows = data.map(record => `<tr>
+    <td>${record.idx}</td><td class="mono">${record.plat}</td><td class="mono">${record.merch}</td><td>${record.cur}</td>
+    <td><span class="tag ${record.type === '资金划转转出' ? 'tag-red' : 'tag-blue'}">${record.type}</span></td>
+    <td class="mono">${record.orig}</td><td><span class="${deltaClass(record.delta)}">${record.delta}</span></td><td class="mono">${record.after}</td><td>${record.time}</td>
+    <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${record.remark}">${record.remark}</td>
+  </tr>`).join('') || `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:#999">暂无 ${curCurrency} 数据</td></tr>`;
+  return filters + `<div class="table-card"><table style="min-width:1500px"><thead><tr>${cols.map(column => `<th>${column}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="pager"><span>共 ${data.length} 条</span><span class="pager-btn disabled">&lt;</span><span class="pager-btn active">1</span><span class="pager-btn disabled">&gt;</span><select class="fc-select"><option>10条/页</option></select><span>前往</span><input class="fc-input" value="1" style="width:48px"></div>`;
+}
+
 function getFlowData(p, cur) {
   if(p.title.includes('通道')) return cur==='CNY'?CH_CNY:cur==='USDT'?CH_USDT:CH_TRX;
   if(p.title.includes('代收预付')) return cur==='CNY'?PREPAY_CNY:cur==='USDT'?PREPAY_USDT:PREPAY_TRX;
@@ -844,7 +942,7 @@ function go(pageKey, skipHash) {
     $('sysBadge').textContent = curSys==='admin' ? '蓝盛后台' : '商户端后台';
   }
   curPage = pageKey;
-  curCurrency = 'CNY';
+  curCurrency = ['m-account','m-payout-account'].includes(pageKey) ? 'USDT' : 'CNY';
   if(!openTabs.includes(pageKey)) openTabs.push(pageKey);
   if(!skipHash) {
     try {

@@ -65,7 +65,7 @@ test("页面导航关联表与当前清单一致", async () => {
 
   assert.match(navigation, /admin-withdraw-fee/);
   for (const id of navIds) assert.match(navigation, new RegExp(`\\b${id}\\b`));
-  assert.doesNotMatch(navigation, /admin-ch-flow|admin-mp-flow|admin-mp-prepay|merchant-account|merchant-payout|merchant-paccount/);
+  assert.doesNotMatch(navigation, /admin-ch-flow|admin-mp-flow|admin-mp-prepay|merchant-account|merchant-paccount/);
   assert.doesNotMatch(navigation, /TRX代收归属|蓝胜/);
 });
 
