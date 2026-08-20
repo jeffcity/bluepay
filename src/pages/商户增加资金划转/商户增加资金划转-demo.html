@@ -1210,10 +1210,9 @@
 
     function transferOrdersPage() {
       const completed = transferOrders.filter((order) => order.status === "已完成");
-      const completedByCurrency = completed.reduce((totals, order) => {
-        totals[order.currency] = (totals[order.currency] || 0) + order.amount;
-        return totals;
-      }, {});
+      const completedUsdtAmount = completed
+        .filter((order) => order.currency === "USDT")
+        .reduce((total, order) => total + order.amount, 0);
       const rows = transferOrders.map((order) => {
         const statusClass = order.status === "已完成" ? "success" : order.status === "确认中" ? "warning" : "danger";
         const action = order.status === "待出款" ? `${transferActionButton("出款", "payout", order.no)}${transferActionButton("取消", "cancel", order.no)}` : order.status === "确认中" ? `${transferActionButton("手动确认", "manual-confirm", order.no)}${transferActionButton("取消", "cancel", order.no)}` : "—";
@@ -1224,7 +1223,7 @@
         ${field("提交时间", '<div class="control range" style="width:280px"><span>◷　开始时间</span><strong>-</strong><span>结束时间</span></div>')}${button("搜索", "primary")}
       </div>
       <div class="stats-ribbon" aria-label="资金划转统计"><span>划转订单<strong>${transferOrders.length}</strong></span><span class="green">已完成<strong>${completed.length}</strong></span><span class="warning-text">确认中<strong>${transferOrders.filter((order) => order.status === "确认中").length}</strong></span><span class="red">资金异常<strong>${transferOrders.filter((order) => order.status === "资金异常").length}</strong></span></div>
-      <div class="recharge-summary" aria-label="已完成资金统计">${Object.entries(completedByCurrency).map(([currency, amount]) => `<div class="recharge-metric"><span>已完成${currency}划转：</span><strong class="green">${transferMoney(amount, currency)}</strong></div>`).join("")}<div class="recharge-metric"><span>说明：</span><strong>按币种分别记账，统计不做跨币种汇总</strong></div></div>
+      <div class="recharge-summary" aria-label="已完成资金统计"><div class="recharge-metric"><span>已完成USDT划转：</span><strong class="green">${transferMoney(completedUsdtAmount, "USDT")}</strong></div></div>
       <div class="table-wrap"><table style="min-width:2500px"><colgroup><col style="width:48px"><col style="width:60px"><col style="width:180px"><col style="width:100px"><col style="width:175px"><col style="width:115px"><col style="width:95px"><col style="width:115px"><col style="width:80px"><col style="width:220px"><col style="width:220px"><col style="width:100px"><col style="width:115px"><col style="width:90px"><col style="width:180px"><col style="width:180px"><col style="width:160px"><col style="width:160px"><col style="width:105px"><col style="width:190px"></colgroup>
         <thead><tr><th></th><th>序号</th><th>单号</th><th>下分单类型</th><th>付款商户</th><th>划转金额</th><th>手续费</th><th>到账金额</th><th>币种</th><th>收款商户 / 入账钱包</th><th>付款商户 / 出账钱包</th><th>状态</th><th>TG确认状态</th><th>确认人数</th><th>确认人</th><th>备注</th><th>提交时间</th><th>操作时间</th><th>操作人</th><th>操作</th></tr></thead>
         <tbody>${rows}</tbody></table></div>${pagination(transferOrders.length)}`;
