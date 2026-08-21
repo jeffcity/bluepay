@@ -13,7 +13,7 @@
       {
         "label": "商户管理",
         "items": [
-          { "id": "admin-merchant", "title": "商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "merchant", "req": ["BP-REQ-002", "BP-REQ-003"] },
+          { "id": "admin-merchant", "title": "商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "merchant", "req": ["BP-REQ-002", "BP-REQ-003", "BP-REQ-009"] },
           { "id": "admin-withdraw", "title": "商户下分", "doc": "机器人分层播报与多人确认-demo", "boot": "withdraw", "req": ["BP-REQ-002", "BP-REQ-005", "BP-REQ-007"] },
           { "id": "admin-withdraw-fee", "title": "商户手续费配置", "doc": "机器人分层播报与多人确认-demo", "boot": "feeConfig", "req": ["BP-REQ-005"] },
           { "id": "admin-recharge", "title": "商户充值订单", "doc": "商户充值订单统计栏位-demo", "boot": "", "req": ["BP-REQ-001"] },
@@ -183,6 +183,13 @@
       "summary": "商户可向后台已绑定的目标商户发起资金划转；完成后，付款方在实际出账钱包查看负数转出及去向，收款方在实际入账钱包查看正数入账及来源。",
       "moduleCodes": ["MERCHANT"],
       "doc": "TRX代收通道-demo"
+    },
+    {
+      "id": "BP-REQ-009",
+      "title": "余额与资金划转 TG 通知人",
+      "summary": "在余额提醒和资金划转配置中维护可选 TG 通知人；机器人向配置群播报时，有通知人则在消息内容中增加 @，未设置则仅群内播报。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "机器人分层播报与多人确认-demo"
     }
   ],
   "documents": [

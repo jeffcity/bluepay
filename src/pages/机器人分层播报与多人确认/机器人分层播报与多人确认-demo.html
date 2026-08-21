@@ -833,6 +833,7 @@
     .config-tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 9px; }
     .config-tag { display: inline-flex; align-items: center; gap: 5px; min-height: 25px; padding: 0 8px; color: #337ecc; background: #ecf5ff; border: 1px solid #d9ecff; border-radius: 3px; font-size: 12px; }
     .config-tag button { color: inherit; background: transparent; border: 0; padding: 0; cursor: pointer; font-size: 15px; line-height: 1; }
+    .form-help { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
     .transfer-status { display: flex; align-items: center; gap: 8px; min-height: 42px; margin-top: 12px; padding: 9px 11px; color: #8a6d1d; background: #fdf6ec; border: 1px solid #faecd8; border-radius: 4px; font-size: 13px; }
     .check-row { display: flex; flex-wrap: wrap; gap: 18px; min-height: 32px; align-items: center; }
     .check-row label { display: inline-flex; align-items: center; gap: 6px; }
@@ -1105,10 +1106,13 @@
       M00000905: { bot: "商户下分确认机器人 B" }
     };
     const transferReviewConfigs = {
-      M00000901: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2 },
-      M00000902: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], required: 2 },
-      M00000904: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2 },
-      M00000905: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], required: 2 }
+      M00000901: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], notifyUsers: [], required: 2 },
+      M00000902: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], notifyUsers: [], required: 2 },
+      M00000904: { group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], notifyUsers: [], required: 2 },
+      M00000905: { group: "资金划转审核群 B", reviewers: ["审核员丙", "审核员丁"], notifyUsers: [], required: 2 }
+    };
+    const balanceAlertConfigs = demoState.balanceAlertConfigs ||= {
+      M00000901: { enabled: false, notifyUsers: [] }
     };
     const transferOrders = [
       { no: "TRF202608050001", sourceNo: "M00000901", targetNo: "M00000902", sourceWallet: "collect", targetWallet: "payout", amount: "120.000000", bot: "商户下分确认机器人 A", group: "资金划转审核群 A", reviewers: ["审核员甲", "审核员乙"], required: 2, created: "2026-08-05 11:40:00" }
@@ -1138,11 +1142,26 @@
         ? targets.map((targetNo) => `<span class="config-tag">${merchantLabel(targetNo)}<button type="button" data-transfer-remove-relation="${targetNo}" aria-label="移除${merchantLabel(targetNo)}">×</button></span>`).join("")
         : '<span class="white-empty">暂未配置可划转商户</span>';
     }
+    function balanceAlertConfig(merchantNo) {
+      return balanceAlertConfigs[merchantNo] ||= { enabled: false, notifyUsers: [] };
+    }
+    function balanceAlertNotifyTags(merchantNo) {
+      const config = balanceAlertConfig(merchantNo);
+      return config.notifyUsers.length
+        ? config.notifyUsers.map((username) => `<span class="config-tag">${username}<button type="button" data-config-field="balance-alert" data-balance-alert-remove-notify-user="${username}" aria-label="移除通知人 ${username}" ${config.enabled ? "" : "disabled"}>×</button></span>`).join("")
+        : '<span class="white-empty">暂未设置 TG 通知人</span>';
+    }
     function transferReviewInfo(sourceNo) {
       const config = transferReviewConfigs[sourceNo];
       const bot = withdrawConfirmConfigs[sourceNo]?.bot;
       if (!config || !bot) return "未配置商户下分确认机器人或资金划转审核群与确认人，不能提交。";
       return `共用商户下分确认机器人：${bot}；资金划转审核群：${config.group}；有效确认人：${config.reviewers.join("、")}；需 ${config.required} 人确认。`;
+    }
+    function transferNotifyTags(sourceNo) {
+      const notifyUsers = transferReviewConfigs[sourceNo]?.notifyUsers || [];
+      return notifyUsers.length
+        ? notifyUsers.map((username) => `<span class="config-tag">${username}<button type="button" data-transfer-remove-notify-user="${username}" aria-label="移除通知人 ${username}">×</button></span>`).join("")
+        : '<span class="white-empty">暂未设置 TG 通知人</span>';
     }
 
     const withdrawRows = [
@@ -1494,7 +1513,8 @@
     function openMerchantModal(index, focusTransfer = false) {
       const merchant = merchants[index] || merchants[0];
       const withdrawConfirmConfig = withdrawConfirmConfigs[merchant[1]] || { bot: "" };
-      const transferConfig = transferReviewConfigs[merchant[1]] || { group: "", reviewers: [], required: 2 };
+      const transferConfig = transferReviewConfigs[merchant[1]] || { group: "", reviewers: [], notifyUsers: [], required: 2 };
+      const balanceAlertConfig = balanceAlertConfigs[merchant[1]] || { enabled: false, notifyUsers: [] };
       const root = document.getElementById("merchantModalRoot");
       root.innerHTML = `<div class="modal-layer">
         <section class="merchant-modal" role="dialog" aria-modal="true" aria-labelledby="merchantModalTitle" tabindex="-1">
@@ -1571,6 +1591,7 @@
                     <p class="transfer-note">配置一对商户后，双方可互相发起划转。审核机器人共用「商户下分（提现）」配置。</p>
                     <div class="config-row"><div class="config-label">可互转商户</div><div class="config-main"><div class="config-tags" data-transfer-relation-tags>${relationTags(merchant[1])}</div><div class="config-inline"><select class="modal-control" data-transfer-relation-select><option value="">选择商户</option>${merchants.filter((item) => item[1] !== merchant[1]).map((item) => `<option value="${item[1]}">${item[0]} / ${item[1]}</option>`).join("")}</select><button type="button" class="btn" data-transfer-add-relation>+ 添加</button></div></div></div>
                     <div class="config-row"><div class="config-label">审核群 ID</div><div class="config-main"><input class="modal-control" data-transfer-group value="${transferConfig.group}" placeholder="请输入资金划转审核群 ID"></div></div>
+                    <div class="config-row"><div class="config-label">TG 通知人</div><div class="config-main"><div class="config-tags" data-transfer-notify-tags>${transferNotifyTags(merchant[1])}</div><div class="config-inline"><input class="modal-control" data-transfer-notify-input placeholder="输入 Telegram username，多个用逗号或回车分隔"><button type="button" class="btn" data-transfer-add-notify>+ 添加</button></div><p class="form-help">资金划转消息播报至审核群时，机器人会 @ 已设置的通知人；未设置时只在群内播报。</p></div></div>
                     <div class="config-row"><div class="config-label">有效确认人</div><div class="config-main"><div class="config-tags" data-transfer-reviewer-tags>${transferConfig.reviewers.length ? transferConfig.reviewers.map((name) => `<span class="config-tag">${name}<button type="button" data-transfer-remove-reviewer="${name}" aria-label="移除${name}">×</button></span>`).join("") : '<span class="white-empty">暂未配置有效确认人</span>'}</div><div class="config-inline"><input class="modal-control" data-transfer-reviewer-input placeholder="输入 TG username"><button type="button" class="btn" data-transfer-add-reviewer>+ 添加</button></div></div></div>
                     <div class="config-row"><div class="config-label">需确认人数</div><div class="config-main"><input class="modal-control" data-transfer-required type="number" min="1" value="${transferConfig.required}"></div></div>
                   </div>
@@ -1595,17 +1616,18 @@
                   ${tierRulesPanel()}
                 </section>
 
-                <section class="config-panel" id="merchantPanelBalance" role="tabpanel" data-modal-section-panel="balance-alert" hidden>
+                <section class="config-panel" id="merchantPanelBalance" role="tabpanel" data-modal-section-panel="balance-alert" data-balance-alert-config="${merchant[1]}" hidden>
                   <header class="config-panel-header">
                     <div><h3>USDT 余额提醒配置</h3><p>设置代付余额、手续费余额与提醒频率。</p></div>
-                    <span class="config-panel-status">已关闭</span>
+                    <span class="config-panel-status" data-config-status="balance-alert">${balanceAlertConfig.enabled ? "已开启" : "已关闭"}</span>
                   </header>
                   <div class="config-card">
-                    <div class="config-row"><div class="config-label">是否开启余额提醒</div><div class="config-main"><div class="config-inline"><button type="button" class="switch" data-config-toggle="balance-alert" role="switch" aria-checked="false"></button><span class="switch-copy" data-config-status="balance-alert">已关闭</span></div></div></div>
-                    <div class="config-row"><div class="config-label">代付余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入代付余额预警值" disabled><span class="unit">USDT</span></div></div></div>
-                    <div class="config-row"><div class="config-label">手续费余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入手续费余额预警值" disabled><span class="unit">USDT</span></div></div></div>
-                    <div class="config-row"><div class="config-label">提醒间隔</div><div class="config-main"><select class="modal-control" data-config-field="balance-alert" disabled><option>30 分钟</option><option>1 小时</option><option>2 小时</option></select></div></div>
-                    <div class="config-row"><div class="config-label">提醒类型</div><div class="config-main"><div class="check-row"><label><input type="checkbox" data-config-field="balance-alert" disabled>代付余额不足</label><label><input type="checkbox" data-config-field="balance-alert" disabled>手续费余额不足</label><label><input type="checkbox" data-config-field="balance-alert" disabled>余额恢复</label></div></div></div>
+                    <div class="config-row"><div class="config-label">是否开启余额提醒</div><div class="config-main"><div class="config-inline"><button type="button" class="switch ${balanceAlertConfig.enabled ? "on" : ""}" data-config-toggle="balance-alert" role="switch" aria-checked="${balanceAlertConfig.enabled}"></button><span class="switch-copy" data-config-status="balance-alert">${balanceAlertConfig.enabled ? "已开启" : "已关闭"}</span></div></div></div>
+                    <div class="config-row"><div class="config-label">代付余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入代付余额预警值" ${balanceAlertConfig.enabled ? "" : "disabled"}><span class="unit">USDT</span></div></div></div>
+                    <div class="config-row"><div class="config-label">手续费余额预警值</div><div class="config-main"><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" value="0" placeholder="请输入手续费余额预警值" ${balanceAlertConfig.enabled ? "" : "disabled"}><span class="unit">USDT</span></div></div></div>
+                    <div class="config-row"><div class="config-label">提醒间隔</div><div class="config-main"><select class="modal-control" data-config-field="balance-alert" ${balanceAlertConfig.enabled ? "" : "disabled"}><option>30 分钟</option><option>1 小时</option><option>2 小时</option></select></div></div>
+                    <div class="config-row"><div class="config-label">TG 通知人</div><div class="config-main"><div class="config-tags" data-balance-alert-notify-tags>${balanceAlertNotifyTags(merchant[1])}</div><div class="config-inline"><input class="modal-control" data-config-field="balance-alert" data-balance-alert-notify-input placeholder="输入 Telegram username，多个用逗号或回车分隔" ${balanceAlertConfig.enabled ? "" : "disabled"}><button type="button" class="btn" data-config-field="balance-alert" data-balance-alert-add-notify-user ${balanceAlertConfig.enabled ? "" : "disabled"}>+ 添加</button></div><p class="form-help">余额提醒发送至该商户的通知群时，通知机器人会 @ 已设置的通知人。</p></div></div>
+                    <div class="config-row"><div class="config-label">提醒类型</div><div class="config-main"><div class="check-row"><label><input type="checkbox" data-config-field="balance-alert" ${balanceAlertConfig.enabled ? "" : "disabled"}>代付余额不足</label><label><input type="checkbox" data-config-field="balance-alert" ${balanceAlertConfig.enabled ? "" : "disabled"}>手续费余额不足</label><label><input type="checkbox" data-config-field="balance-alert" ${balanceAlertConfig.enabled ? "" : "disabled"}>余额恢复</label></div></div></div>
                     <div class="modal-alert">当该商户 USDT 代付费率为 0 时，不监测手续费余额，也不发送手续费余额不足或恢复提醒。</div>
                   </div>
                 </section>
@@ -1749,7 +1771,7 @@
       const section = root.querySelector("[data-transfer-config]");
       if (!section) return;
       const merchantNo = section.dataset.transferConfig;
-      const current = transferReviewConfigs[merchantNo] || { reviewers: [], required: 2 };
+      const current = transferReviewConfigs[merchantNo] || { reviewers: [], notifyUsers: [], required: 2 };
       transferReviewConfigs[merchantNo] = { ...current, group: section.querySelector("[data-transfer-group]").value.trim(), required: Number(section.querySelector("[data-transfer-required]").value) || current.required };
     }
 
@@ -1769,11 +1791,50 @@
       section.querySelector("[data-transfer-reviewer-tags]").innerHTML = reviewers.length ? reviewers.map((name) => `<span class="config-tag">${name}<button type="button" data-transfer-remove-reviewer="${name}" aria-label="移除${name}">×</button></span>`).join("") : '<span class="white-empty">暂未配置有效确认人</span>';
     }
 
+    function refreshTransferNotifyTags(section) {
+      section.querySelector("[data-transfer-notify-tags]").innerHTML = transferNotifyTags(section.dataset.transferConfig);
+    }
+
+    function addTransferNotifyUsers(section) {
+      const input = section.querySelector("[data-transfer-notify-input]");
+      const names = input.value.split(/[，,\s]+/).map((item) => item.trim().replace(/^@+/, "")).filter(Boolean);
+      if (!names.length) return showToast("请输入 Telegram username。");
+      if (names.some((name) => !/^[A-Za-z0-9_]{5,32}$/.test(name))) return showToast("Telegram username 仅支持 5–32 位字母、数字或下划线。");
+      const sourceNo = section.dataset.transferConfig;
+      const config = transferReviewConfigs[sourceNo] ||= { group: "", reviewers: [], notifyUsers: [], required: 2 };
+      config.notifyUsers ||= [];
+      const users = names.map((name) => `@${name}`);
+      const added = users.filter((username) => !config.notifyUsers.includes(username));
+      if (!added.length) return showToast("输入的 TG 通知人已全部存在。");
+      config.notifyUsers.push(...added);
+      input.value = "";
+      refreshTransferNotifyTags(section);
+      showToast(`已添加 ${added.length} 位 TG 通知人。`);
+    }
+
+    function refreshBalanceAlertNotifyTags(section) {
+      section.querySelector("[data-balance-alert-notify-tags]").innerHTML = balanceAlertNotifyTags(section.dataset.balanceAlertConfig);
+    }
+
+    function addBalanceAlertNotifyUsers(section) {
+      const input = section.querySelector("[data-balance-alert-notify-input]");
+      const names = input.value.split(/[，,\s]+/).map((item) => item.trim().replace(/^@+/, "")).filter(Boolean);
+      if (!names.length) return showToast("请输入 Telegram username。");
+      if (names.some((name) => !/^[A-Za-z0-9_]{5,32}$/.test(name))) return showToast("Telegram username 仅支持 5–32 位字母、数字或下划线。");
+      const config = balanceAlertConfig(section.dataset.balanceAlertConfig);
+      const users = names.map((name) => `@${name}`);
+      const added = users.filter((username) => !config.notifyUsers.includes(username));
+      if (!added.length) return showToast("输入的 TG 通知人已全部存在。");
+      config.notifyUsers.push(...added);
+      input.value = "";
+      refreshBalanceAlertNotifyTags(section);
+      showToast(`已添加 ${added.length} 位 TG 通知人。`);
+    }
+
     function setConfigSectionState(key, enabled) {
       const root = document.getElementById("merchantModalRoot");
       root.querySelectorAll(`[data-config-field="${key}"]`).forEach((control) => { control.disabled = !enabled; });
-      const status = root.querySelector(`[data-config-status="${key}"]`);
-      if (status) status.textContent = enabled ? "已开启" : "已关闭";
+      root.querySelectorAll(`[data-config-status="${key}"]`).forEach((status) => { status.textContent = enabled ? "已开启" : "已关闭"; });
     }
 
     function withdrawPage() {
@@ -2247,12 +2308,36 @@
         showToast("已添加有效确认人。");
         return;
       }
+      if (target.dataset.transferAddNotify !== undefined) {
+        addTransferNotifyUsers(target.closest("[data-transfer-config]"));
+        return;
+      }
+      if (target.dataset.transferRemoveNotifyUser !== undefined) {
+        const section = target.closest("[data-transfer-config]");
+        const config = transferReviewConfigs[section.dataset.transferConfig];
+        config.notifyUsers = (config.notifyUsers || []).filter((username) => username !== target.dataset.transferRemoveNotifyUser);
+        refreshTransferNotifyTags(section);
+        showToast("已移除 TG 通知人。");
+        return;
+      }
       if (target.dataset.transferRemoveReviewer !== undefined) {
         const section = target.closest("[data-transfer-config]");
         const sourceNo = section.dataset.transferConfig;
         transferReviewConfigs[sourceNo].reviewers = transferReviewConfigs[sourceNo].reviewers.filter((item) => item !== target.dataset.transferRemoveReviewer);
         refreshReviewerTags(section);
         showToast("已移除有效确认人。");
+        return;
+      }
+      if (target.dataset.balanceAlertAddNotifyUser !== undefined) {
+        addBalanceAlertNotifyUsers(target.closest("[data-balance-alert-config]"));
+        return;
+      }
+      if (target.dataset.balanceAlertRemoveNotifyUser !== undefined) {
+        const section = target.closest("[data-balance-alert-config]");
+        const config = balanceAlertConfig(section.dataset.balanceAlertConfig);
+        config.notifyUsers = config.notifyUsers.filter((username) => username !== target.dataset.balanceAlertRemoveNotifyUser);
+        refreshBalanceAlertNotifyTags(section);
+        showToast("已移除 TG 通知人。");
         return;
       }
       if (target.dataset.modalClose !== undefined) {
@@ -2296,6 +2381,11 @@
         target.classList.toggle("on", enabled);
         target.setAttribute("aria-checked", String(enabled));
         setConfigSectionState(configToggle, enabled);
+        if (configToggle === "balance-alert") {
+          const section = target.closest("[data-balance-alert-config]");
+          balanceAlertConfig(section.dataset.balanceAlertConfig).enabled = enabled;
+          refreshBalanceAlertNotifyTags(section);
+        }
         return;
       }
       if (target.dataset.currency) {
@@ -2345,6 +2435,16 @@
       if (event.target.matches("[data-crypto-rate-source]")) updateCryptoRatePreview();
     });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && event.target.matches("[data-transfer-notify-input]")) {
+        event.preventDefault();
+        addTransferNotifyUsers(event.target.closest("[data-transfer-config]"));
+        return;
+      }
+      if (event.key === "Enter" && event.target.matches("[data-balance-alert-notify-input]")) {
+        event.preventDefault();
+        addBalanceAlertNotifyUsers(event.target.closest("[data-balance-alert-config]"));
+        return;
+      }
       if (event.key === "Escape" && document.getElementById("cryptoRateModalRoot").innerHTML) {
         closeCryptoRateModal();
         return;
