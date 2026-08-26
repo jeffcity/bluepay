@@ -36,7 +36,7 @@
       {
         "label": "代收管理",
         "items": [
-          { "id": "admin-collect", "title": "代收商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "collect", "req": ["BP-REQ-005"] }
+          { "id": "admin-collect", "title": "代收商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "collect", "req": ["BP-REQ-005", "BP-REQ-004"] }
         ]
       },
       {
@@ -152,7 +152,7 @@
     {
       "id": "BP-REQ-004",
       "title": "VND 法币代收",
-      "summary": "法币代收新增 VND 币种：商户下单传 VND，平台按汇率换算 USDT 收款，回调按 VND 金额；复用虚拟币充值配置与订单管理的既有字段和流程。",
+      "summary": "法币代收新增 VND 币种：商户下单传 VND，平台按汇率换算 USDT 收款，回调按 VND 金额；成功订单按原始 VND 金额累计商户今日成交，且不重复计入 USDT 今日成交。",
       "moduleCodes": ["ADMIN"],
       "doc": "机器人分层播报与多人确认-demo"
     },

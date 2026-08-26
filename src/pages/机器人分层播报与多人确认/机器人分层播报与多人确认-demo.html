@@ -811,6 +811,7 @@
     .asset-line .tag { min-width: 39px; justify-content: center; font-size: 11px; }
     .asset-line.cny .tag { color: #3f8ed9; background: #ecf5ff; }
     .asset-line.trx .tag { color: #0f8d91; background: #e6fffb; }
+    .asset-line.vnd .tag { color: #8b5a2b; background: #fff7e6; }
     .asset-value { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; min-width: 0; line-height: 22px; }
     .asset-empty { color: var(--muted); }
     .collect-table-wrap { overflow-x: hidden; }
@@ -1940,9 +1941,10 @@
       const rows = merchants.map((m, i) => {
         const trxBal = i === 0 ? "1500.000000" : "0.000000";
         const trxVolume = i === 0 ? "1500.000000" : "0.000000";
+        const vndTurnover = ["100,000", "0", "250,000", "0", "0", "50,000"][i];
         return `<tr>
         <td class="cell-center"><input type="checkbox" aria-label="选择${m[0]}"></td><td>${m[0]}</td>
-        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>0</span></span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${i === 3 ? "30.01" : "0"}</span></span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span>${trxVolume}</span></span></div></div></td>
+        <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>0</span></span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${i === 3 ? "30.01" : "0"}</span></span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span>${trxVolume}</span></span></div><div class="asset-line vnd"><span class="tag">VND</span><span class="asset-value"><span>${vndTurnover}</span></span></div></div></td>
         <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "11205.00" : i === 2 ? "19.00" : "0.00"}</span>${mockLink("调整")}${mockLink("下发")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${m[2]}</span>${mockLink("调整")}${mockLink("下发")}${transferLink("collect", i)}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span>${trxBal}</span></span></div></div></td>
         <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "30000.00" : i === 2 ? "30.00" : "0.00"}</span>${mockLink("调整")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${m[3]}</span>${mockLink("调整")}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span class="asset-empty">—</span></span></div></div></td>
         <td><div class="asset-stack"><div class="asset-line cny"><span class="tag">CNY</span><span class="asset-value"><span>${i === 4 ? "18795.00" : i === 2 ? "11.00" : "0.00"}</span>${mockLink("结算")}</span></div><div class="asset-line"><span class="tag">USDT</span><span class="asset-value"><span>${i === 3 ? "-70.00" : "0.00"}</span>${mockLink("结算")}</span></div><div class="asset-line trx"><span class="tag">TRX</span><span class="asset-value"><span class="asset-empty">—</span></span></div></div></td>

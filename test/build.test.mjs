@@ -42,6 +42,13 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /USDT/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /TRX/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /VND/);
+  const collectSource = documents["机器人分层播报与多人确认-demo"].slice(
+    documents["机器人分层播报与多人确认-demo"].indexOf("function collectPage()"),
+    documents["机器人分层播报与多人确认-demo"].indexOf("let cryptoRateRows")
+  );
+  assert.match(collectSource, /const vndTurnover = \["100,000", "0", "250,000", "0", "0", "50,000"\]\[i\]/);
+  assert.match(collectSource, /asset-line vnd[^]*>VND<[^]*vndTurnover/);
+  assert.equal((collectSource.match(/>VND</g) || []).length, 1);
   assert.match(documents["机器人分层播报与多人确认-demo"], /cryptoConfig|虚拟币充值配置/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /新增币种|不同法币/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-edit/);
@@ -100,6 +107,16 @@ test("资金划转只关联资金划转订单和实际钱包流水", async () =>
   assert.deepEqual(transfer.req, ["BP-REQ-003"]);
   assert.doesNotMatch(catalog.pages.find((page) => page.id === "BP-REQ-008").summary, /均可在商户代付预付/);
   assert.match(catalog.pages.find((page) => page.id === "BP-REQ-008").summary, /实际出账钱包/);
+});
+
+test("代收商户管理同时关联 TRX 与 VND 需求", async () => {
+  const catalog = JSON.parse(await readFile("src/catalog/project.json", "utf8"));
+  const adminItems = catalog.nav.ADMIN.flatMap((group) => group.items || []);
+  const collect = adminItems.find((item) => item.id === "admin-collect");
+  const vndRequirement = catalog.pages.find((page) => page.id === "BP-REQ-004");
+
+  assert.deepEqual(collect.req, ["BP-REQ-005", "BP-REQ-004"]);
+  assert.match(vndRequirement.summary, /原始 VND 金额.*不重复计入 USDT 今日成交/);
 });
 
 test("后台默认进产品导航页且商户不串后台", async () => {
