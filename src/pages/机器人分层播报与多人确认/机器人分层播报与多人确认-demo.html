@@ -425,6 +425,12 @@
       box-shadow: -8px 0 10px -10px rgba(35, 62, 96, .45);
     }
     .crypto-rate-table th:last-child { z-index: 3; background: #fafafa; }
+    .crypto-order-table { min-width: 3330px; }
+    .crypto-order-table .crypto-order-rate,
+    .crypto-order-table .crypto-order-float-rate,
+    .crypto-order-table .crypto-order-float-amount {
+      font-variant-numeric: tabular-nums;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -1990,7 +1996,7 @@
       {idx:1,plat:"LS20260727001",channel:"CH202607270001",merch:"M202607270001",name:"M00000306",cur:"TRX",amt:"1,500.000000",fee:"15.000000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"1,500.000000",addr:"TXk9rF…f3Qz",payAddr:"TNp2mK…k8Wd",hash:"a8f2…d71c",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/07/27 10:23:15",callbackTime:"2026/07/27 10:23:19",remark:"",ip:"203.0.113.21",time:"2026/07/27 10:20:03"},
       {idx:2,plat:"LS20260727002",channel:"CH202607270002",merch:"M202607270002",name:"M00000306",cur:"TRX",amt:"200.500000",fee:"2.005000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"是",pool:"普通池",real:"—",addr:"TNp2mK…k8Wd",payAddr:"—",hash:"—",status:"待支付",cls:"warning",notify:"未通知",payTime:"—",callbackTime:"—",remark:"",ip:"203.0.113.87",time:"2026/07/27 11:05:42"},
       {idx:3,plat:"LS20260727003",channel:"CH202607270003",merch:"M202607270003",name:"M00000284",cur:"TRX",amt:"50.000000",fee:"0.500000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRON",ipWhite:"否",pool:"普通池",real:"—",addr:"TQw7nL…m2Xa",payAddr:"—",hash:"—",status:"支付失败",cls:"danger",notify:"通知成功",payTime:"—",callbackTime:"2026/07/27 09:16:01",remark:"付款地址命中风险名单",ip:"198.51.100.32",time:"2026/07/27 09:15:33"},
-      {idx:4,plat:"LS20260811001",channel:"CH202608110001",merch:"M202608110001",name:"M00000306",cur:"VND",amt:"100,000",fee:"0.00",rate:"26,150.00 → 26,150.02",floatRate:"0.0200 VND/USDT",floatAmount:"—",protocol:"TRC20",ipWhite:"是",pool:"白名单池",real:"3.82408886 USDT",addr:"TQx7aJ…Z8qH",payAddr:"TLm8pQ…Y1uA",hash:"aa29…31b9",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/08/11 10:37:12",callbackTime:"2026/08/11 10:37:15",remark:"锁定汇率，USDT 向上取整至 8 位",ip:"198.51.100.14",time:"2026/08/11 10:34:40"},
+      {idx:4,plat:"LS20260811001",channel:"CH202608110001",merch:"M202608110001",name:"M00000306",cur:"VND",amt:"100,000",fee:"0.00",rate:"26,150.02",floatRate:"0.0200",floatAmount:"0.00000292",protocol:"TRC20",ipWhite:"是",pool:"白名单池",real:"3.82408886 USDT",addr:"TQx7aJ…Z8qH",payAddr:"TLm8pQ…Y1uA",hash:"aa29…31b9",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/08/11 10:37:12",callbackTime:"2026/08/11 10:37:15",remark:"锁定汇率，USDT 向上取整至 8 位",ip:"198.51.100.14",time:"2026/08/11 10:34:40"},
       {idx:5,plat:"LS20260726015",channel:"CH202607260015",merch:"M202607260015",name:"M00000140",cur:"USDT",amt:"500.000000",fee:"5.000000",rate:"—",floatRate:"—",floatAmount:"—",protocol:"TRC20",ipWhite:"否",pool:"普通池",real:"500.000000",addr:"TYu3qH…n5Rb",payAddr:"TNq4mL…Y2wK",hash:"e723…16af",status:"支付成功",cls:"success",notify:"通知成功",payTime:"2026/07/26 16:42:08",callbackTime:"2026/07/26 16:42:11",remark:"",ip:"192.0.2.55",time:"2026/07/26 16:40:12"}
     ];
     const flowByCur = {
@@ -2096,16 +2102,17 @@
     }
     function cryptoOrderPage() {
       const rows = cryptoOrders.map((o) => `<tr>
-        <td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.channel}<br>${o.merch}</td><td>${o.name}</td><td>虚拟币充值</td><td class="mono">${o.amt}</td><td><span class="tag">${o.cur}</span></td><td>${o.fee}</td><td>${o.rate}</td><td>${o.floatRate}</td><td>${o.floatAmount}</td><td>${o.protocol}</td><td>${o.ipWhite}</td><td>${o.pool}</td><td class="mono">${o.real}</td><td class="mono">${o.addr}</td><td class="mono">${o.payAddr}</td><td class="mono">${o.hash}</td><td><span class="status ${o.cls==="success"?"done":o.cls==="warning"?"processing":o.cls==="danger"?"rejected":"expired"}">${o.status}</span></td><td>${o.notify}</td><td>${o.payTime}</td><td>${o.callbackTime}</td><td>${o.remark || "—"}</td><td>${o.ip}</td><td>${o.time}</td><td>${mockLink("详情")}</td>
+        <td>${o.idx}</td><td class="mono">${o.plat}</td><td class="mono">${o.channel}<br>${o.merch}</td><td>${o.name}</td><td>虚拟币充值</td><td class="mono">${o.amt}</td><td><span class="tag">${o.cur}</span></td><td>${o.fee}</td><td class="mono crypto-order-rate">${o.rate}</td><td class="mono crypto-order-float-rate">${o.floatRate}</td><td class="mono crypto-order-float-amount">${o.floatAmount}</td><td>${o.protocol}</td><td>${o.ipWhite}</td><td>${o.pool}</td><td class="mono">${o.real}</td><td class="mono">${o.addr}</td><td class="mono">${o.payAddr}</td><td class="mono">${o.hash}</td><td><span class="status ${o.cls==="success"?"done":o.cls==="warning"?"processing":o.cls==="danger"?"rejected":"expired"}">${o.status}</span></td><td>${o.notify}</td><td>${o.payTime}</td><td>${o.callbackTime}</td><td>${o.remark || "—"}</td><td>${o.ip}</td><td>${o.time}</td><td>${mockLink("详情")}</td>
       </tr>`).join("");
       return `<div class="filters">
         ${field("系统订单号", input("请输入系统订单号"))}${field("通道订单号", input("请输入通道订单号"))}${field("商家订单号", input("请输入商家订单号"))}${field("商户", select("全部商户", 120))}${field("币种", '<select class="control" style="width:110px"><option>全部币种</option><option>USDT</option><option>TRX</option><option>VND</option></select>')}${field("支付状态", select("支付状态", 120))}${field("通知状态", select("通知状态", 120))}${field("协议类型", select("协议类型", 120))}
         ${button("搜索","primary")}${button("导出数据")}${button("导出任务列表")}
       </div>
-      <div class="table-wrap"><table style="min-width:2800px">
+      <div class="table-wrap"><table class="crypto-order-table">
+        <colgroup class="crypto-order-columns"><col style="width:60px"><col style="width:150px"><col style="width:180px"><col style="width:120px"><col style="width:100px"><col style="width:120px"><col style="width:70px"><col style="width:100px"><col style="width:210px"><col style="width:160px"><col style="width:120px"><col style="width:100px"><col style="width:90px"><col style="width:110px"><col style="width:160px"><col style="width:140px"><col style="width:140px"><col style="width:120px"><col style="width:100px"><col style="width:100px"><col style="width:150px"><col style="width:150px"><col style="width:220px"><col style="width:130px"><col style="width:150px"><col style="width:80px"></colgroup>
         <thead><tr><th>序号</th><th>系统订单号</th><th>通道订单号/商家订单号</th><th>商户名/商户号</th><th>类型</th><th>交易金额</th><th>币种</th><th>服务费</th><th>汇率</th><th>浮动费率</th><th>浮动金额</th><th>协议类型</th><th>IP白名单</th><th>地址池类型</th><th>到账金额</th><th>收款钱包地址</th><th>付款地址</th><th>Hash</th><th>支付状态</th><th>通知状态</th><th>支付时间</th><th>回调时间</th><th>驳回描述</th><th>IP</th><th>提交时间</th><th>操作</th></tr></thead>
         <tbody>${rows}</tbody></table></div>${pagination(cryptoOrders.length)}
-      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">本页是统一的虚拟币充值订单管理页。VND 订单：交易金额为原始 VND；汇率展示锁定的基准 → 有效值；浮动费率为 VND/USDT 加点，浮动金额无既有数据时显示 —；到账金额为按既有规则向上取整的实际 USDT。USDT 与 TRX 订单继续按原有规则展示。</p>`;
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">本页是统一的虚拟币充值订单管理页。VND 订单：交易金额为原始 VND；汇率仅展示本单锁定的最终有效值；浮动费率与浮动金额沿用既有栏位规则，仅展示数值；到账金额为按既有规则向上取整的实际 USDT。USDT 与 TRX 订单继续按原有规则展示。</p>`;
     }
     function accountFlowPage(kind) {
       const entityLabel = kind === "chFlow" ? "通道名称" : "商户名称";
