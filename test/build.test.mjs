@@ -37,9 +37,9 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /TG确认状态/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /cryptoOrder|虚拟币充值订单管理/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /<table class="crypto-order-table">/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /<colgroup class="crypto-order-columns">[^]*width:210px[^]*width:160px[^]*width:120px[^]*<\/colgroup>/);
-  assert.match(documents["机器人分层播报与多人确认-demo"], /cur:"VND"[^]*rate:"26,150\.02",floatRate:"0\.0200",floatAmount:"0\.00000292"/);
-  assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /26,150\.00 → 26,150\.02|0\.0200 VND\/USDT|0\.00000292 USDT/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /<colgroup class="crypto-order-columns">[^]*width:210px[^]*width:160px[^]*width:100px[^]*<\/colgroup>/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /cur:"VND"[^]*rate:"26,673\.00",floatRate:"0\.0200",floatAmount:"0\.00"/);
+  assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /26,150\.00 → 26,150\.02|0\.0200 VND\/USDT|0\.00000292/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /<th>余额<\/th>/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /<th>预付<\/th>/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /<th>剩余预付<\/th>/);
@@ -58,6 +58,12 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-edit/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /openCryptoRateModal/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-save/);
+  assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /统一汇率浮动比例|统一浮动比例/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /<th>浮动汇率<\/th>/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /cur: "CNY"[^]*floating: "0\.1430"[^]*effective: "7\.2953"/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /cur: "VND"[^]*floating: "523\.00"[^]*effective: "26,673\.00"/);
+  assert.doesNotMatch(documents["机器人分层播报与多人确认-demo"], /cryptoUnifiedFloatRatio|calculateCryptoFloatingRate|saveCryptoUnifiedFloatRatio|data-crypto-unified-float-save/);
+  assert.match(documents["机器人分层播报与多人确认-demo"], /data-crypto-rate-floating/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /汇率状态/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /已获取/);
   assert.match(documents["机器人分层播报与多人确认-demo"], /获取失败/);
