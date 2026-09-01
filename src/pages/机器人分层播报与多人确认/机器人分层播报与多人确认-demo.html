@@ -223,6 +223,75 @@
       gap: 14px 28px;
     }
     .filters.two-line { max-width: 1480px; }
+    .filters.withdraw-filters { column-gap: 18px; }
+    .withdraw-auto-refresh {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .withdraw-auto-refresh-label { color: var(--regular); }
+    .withdraw-auto-refresh-help {
+      position: relative;
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      padding: 0;
+      color: var(--muted);
+      background: #fff;
+      border: 1px solid #b8c0cc;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1;
+      cursor: help;
+    }
+    .withdraw-auto-refresh-help::before,
+    .withdraw-auto-refresh-help::after {
+      position: absolute;
+      z-index: 20;
+      left: 50%;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+    }
+    .withdraw-auto-refresh-help::before {
+      content: "";
+      bottom: calc(100% + 3px);
+      border: 5px solid transparent;
+      border-top-color: #303133;
+      transform: translate(-50%, 4px);
+    }
+    .withdraw-auto-refresh-help::after {
+      content: attr(data-tooltip);
+      bottom: calc(100% + 13px);
+      width: max-content;
+      max-width: 240px;
+      padding: 8px 10px;
+      color: #fff;
+      background: #303133;
+      border-radius: 4px;
+      box-shadow: var(--shadow-float);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      white-space: normal;
+      transform: translate(-50%, 4px);
+    }
+    .withdraw-auto-refresh-help:hover::before,
+    .withdraw-auto-refresh-help:hover::after,
+    .withdraw-auto-refresh-help:focus-visible::before,
+    .withdraw-auto-refresh-help:focus-visible::after {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+    }
+    .withdraw-auto-refresh-status { min-width: 136px; color: var(--muted); font-size: 12px; }
     .withdraw-summary {
       margin: 16px 0;
       overflow-x: auto;
@@ -1042,6 +1111,10 @@
     const tabOrder = ["address", "withdraw", "recharge", "payout", "collect", "merchant", "feeConfig", "cryptoConfig", "cryptoOrder", "mcFlow", "daily"];
     let currentPage = "merchant";
     let toastTimer;
+    const WITHDRAW_AUTO_REFRESH_MS = 10000;
+    let withdrawAutoRefresh = false;
+    let withdrawAutoRefreshTimer = null;
+    let withdrawLastRefreshAt = "";
 
     const menus = [
       { label: "首页", icon: "home" },
@@ -1844,6 +1917,24 @@
       root.querySelectorAll(`[data-config-status="${key}"]`).forEach((status) => { status.textContent = enabled ? "已开启" : "已关闭"; });
     }
 
+    function withdrawRefreshTime() {
+      return new Date().toLocaleTimeString("zh-CN", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function refreshWithdrawData() {
+      if (currentPage !== "withdraw" || !withdrawAutoRefresh) return;
+      withdrawLastRefreshAt = withdrawRefreshTime();
+      renderPage();
+    }
+
+    function syncWithdrawAutoRefresh() {
+      clearInterval(withdrawAutoRefreshTimer);
+      withdrawAutoRefreshTimer = null;
+      if (currentPage === "withdraw" && withdrawAutoRefresh) {
+        withdrawAutoRefreshTimer = setInterval(refreshWithdrawData, WITHDRAW_AUTO_REFRESH_MS);
+      }
+    }
+
     function withdrawPage() {
       const records = withdrawRecords();
       const rows = records.map((record) => {
@@ -1868,11 +1959,17 @@
       </tr>`;
       }).join("") || '<tr><td colspan="23" style="padding:42px;text-align:center;color:var(--muted)">当前筛选条件下暂无下分记录</td></tr>';
       return `<div class="subtabs"><button class="subtab active" type="button">商户下分记录</button><button class="subtab" type="button" data-action="平台收款钱包余额">平台收款钱包余额</button></div>
-      <div class="filters" style="margin-top:14px">
+      <div class="filters withdraw-filters" style="margin-top:14px">
         ${field("单号", `<input id="withdrawOrder" class="control" style="width:200px" placeholder="输入单号搜索" value="${withdrawQuery.order}">`)}
         ${field("下分单类型", `<select id="withdrawType" class="control" style="width:140px"><option value="">全部</option><option value="单" ${withdrawQuery.type === "单" ? "selected" : ""}>单</option><option value="划转" ${withdrawQuery.type === "划转" ? "selected" : ""}>划转</option></select>`)}
         ${field("状态", `<select id="withdrawStatus" class="control" style="width:140px"><option value="">全部</option><option value="待处理" ${withdrawQuery.status === "待处理" ? "selected" : ""}>待处理</option><option value="已处理" ${withdrawQuery.status === "已处理" ? "selected" : ""}>已处理</option><option value="已取消" ${withdrawQuery.status === "已取消" ? "selected" : ""}>已取消</option></select>`)}
         ${field("提交时间", '<div class="control range" style="width:280px"><span>◷　开始时间</span><strong>-</strong><span>结束时间</span></div>')}
+        <div class="withdraw-auto-refresh">
+          <span class="withdraw-auto-refresh-label">自动刷新</span>
+          <button type="button" class="withdraw-auto-refresh-help" aria-label="自动刷新说明：每 10 秒自动刷新，保留当前筛选条件。" data-tooltip="每 10 秒自动刷新，保留当前筛选条件。">?</button>
+          <button type="button" class="switch ${withdrawAutoRefresh ? "on" : ""}" data-withdraw-auto-refresh role="switch" aria-checked="${withdrawAutoRefresh}" aria-label="自动刷新商户下分记录"></button>
+          <span class="withdraw-auto-refresh-status">${withdrawAutoRefresh ? `每 10 秒${withdrawLastRefreshAt ? ` · 上次刷新 ${withdrawLastRefreshAt}` : ""}` : withdrawLastRefreshAt ? `已关闭 · 上次刷新 ${withdrawLastRefreshAt}` : "已关闭"}</span>
+        </div>
         <button type="button" class="btn primary" data-withdraw-search>搜索</button>
         <button type="button" class="btn" data-withdraw-export>导出</button>
       </div>
@@ -2202,6 +2299,7 @@
       }
       currentPage = page;
       if (["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"].includes(page)) accountCurrency = "TRX";
+      syncWithdrawAutoRefresh();
       renderPage();
       document.querySelector(".page").scrollTop = 0;
     }
@@ -2217,6 +2315,14 @@
     document.addEventListener("click", (event) => {
       const target = event.target.closest("button");
       if (!target) return;
+      if (target.dataset.withdrawAutoRefresh !== undefined) {
+        withdrawAutoRefresh = !withdrawAutoRefresh;
+        if (withdrawAutoRefresh) withdrawLastRefreshAt = withdrawRefreshTime();
+        syncWithdrawAutoRefresh();
+        renderPage();
+        showToast(withdrawAutoRefresh ? "已开启自动刷新，每 10 秒更新下分统计与记录。" : "已关闭自动刷新。");
+        return;
+      }
       if (target.dataset.transferOpen !== undefined) {
         renderTransferModal(target.dataset.transferOpen, Number(target.dataset.transferIndex));
         return;
@@ -2227,6 +2333,7 @@
           type: document.getElementById("withdrawType")?.value || "",
           status: document.getElementById("withdrawStatus")?.value || ""
         };
+        withdrawLastRefreshAt = withdrawRefreshTime();
         renderPage();
         showToast("已按当前筛选条件刷新下分统计与记录。");
         return;
@@ -2485,6 +2592,7 @@
     const bootPage = (typeof window !== "undefined" && window.__BP_BOOT__) || location.hash.replace("#", "") || new URLSearchParams(location.search).get("page") || "";
     if (openPages.includes(bootPage)) currentPage = bootPage;
     if (["mcFlow","chFlow","mcPrepay","mpFlow","mpPrepay","daily"].includes(currentPage)) accountCurrency = "TRX";
+    syncWithdrawAutoRefresh();
     renderPage();
   </script>
 </body>
