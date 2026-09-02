@@ -6,7 +6,8 @@
   "modules": [
     ["ADMIN", "后台"],
     ["MERCHANT", "商户"],
-    ["ADDRESS", "地址池"]
+    ["ADDRESS", "地址池"],
+    ["BEAUTY_MERCHANT", "美人桥商户端"]
   ],
   "nav": {
     "ADMIN": [
@@ -25,6 +26,12 @@
         "items": [
           { "id": "admin-crypto-config", "title": "虚拟币充值配置", "doc": "机器人分层播报与多人确认-demo", "boot": "cryptoConfig", "req": ["BP-REQ-004"] },
           { "id": "admin-crypto-order", "title": "虚拟币充值订单管理", "doc": "机器人分层播报与多人确认-demo", "boot": "cryptoOrder", "req": ["BP-REQ-004", "BP-REQ-005"] }
+        ]
+      },
+      {
+        "label": "美人桥业务",
+        "items": [
+          { "id": "admin-pay-order", "title": "订单管理", "doc": "美人桥订单管理-demo", "boot": "", "req": ["BP-REQ-010", "BP-REQ-012"] }
         ]
       },
       {
@@ -125,6 +132,17 @@
           }
         ]
       }
+    ],
+    "BEAUTY_MERCHANT": [
+      {
+        "label": "美人桥商户",
+        "items": [
+          { "id": "beauty-order-list", "title": "订单列表", "doc": "美人桥商户端订单列表-demo", "boot": "", "req": ["BP-REQ-011", "BP-REQ-012"] },
+          { "title": "修改密码", "static": true },
+          { "title": "备用网址", "static": true },
+          { "title": "我的工单", "static": true }
+        ]
+      }
     ]
   },
   "pages": [
@@ -190,6 +208,27 @@
       "summary": "在余额提醒和资金划转配置中维护可选 TG 通知人；机器人向配置群播报时，有通知人则在消息内容中增加 @，未设置则仅群内播报。",
       "moduleCodes": ["ADMIN"],
       "doc": "机器人分层播报与多人确认-demo"
+    },
+    {
+      "id": "BP-REQ-010",
+      "title": "美人桥订单管理现状复刻",
+      "summary": "复刻美人桥订单管理的筛选、提醒与维护开关、默认汇率、订单明细、汇总分页、人工上分和订单日志，作为后续需求迭代基线。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "美人桥订单管理-demo"
+    },
+    {
+      "id": "BP-REQ-011",
+      "title": "美人桥商户端订单列表骨架",
+      "summary": "新增美人桥商户端独立入口，复刻订单列表、筛选、添加编辑与分页；修改密码、备用网址和我的工单仅保留导航位置。",
+      "moduleCodes": ["BEAUTY_MERCHANT"],
+      "doc": "美人桥商户端订单列表-demo"
+    },
+    {
+      "id": "BP-REQ-012",
+      "title": "美人桥 TRX 充值与兑U上分",
+      "summary": "美人桥商户创建充值订单增加 TRX；汇率由美人桥业务订单管理页的默认汇率设置维护，按 1 USDT 约等于 N 源币种的方向锁定本单兑U汇率并计算应上分U。商户端与后台订单列表增加 TRX 筛选、样例数据及多币种通用表头。",
+      "moduleCodes": ["ADMIN", "BEAUTY_MERCHANT"],
+      "doc": "美人桥商户端订单列表-demo"
     }
   ],
   "documents": [
@@ -228,6 +267,14 @@
     {
       "id": "商户代收流水记录-demo",
       "source": "pages/商户代收流水记录/商户代收流水记录-demo.html"
+    },
+    {
+      "id": "美人桥订单管理-demo",
+      "source": "pages/美人桥订单管理/美人桥订单管理-demo.html"
+    },
+    {
+      "id": "美人桥商户端订单列表-demo",
+      "source": "pages/美人桥商户端订单列表/美人桥商户端订单列表-demo.html"
     }
   ]
 }
