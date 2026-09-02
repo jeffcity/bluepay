@@ -85,7 +85,7 @@ for (const [code, groups] of Object.entries(catalog.nav)) {
         assert.ok(item.title, `静态导航缺少 title`);
         continue;
       }
-      assert.match(item.id, /^(admin|merchant|address)-[a-z0-9-]+$/, `${item.id} 页面 id 不规范`);
+      assert.match(item.id, /^(admin|merchant|address|beauty)-[a-z0-9-]+$/, `${item.id} 页面 id 不规范`);
       assert.ok(item.title, `${item.id} 缺少 title`);
       assert.ok(documentIds.has(item.doc), `${item.id} doc 不存在`);
       assert.ok(Array.isArray(item.req) && item.req.length, `${item.id} 需关联 req`);
@@ -103,6 +103,7 @@ for (const document of catalog.documents) {
 assert.equal(new Set(navIds).size, navIds.length, "导航页面 ID 不得重复");
 assert.ok((catalog.nav.ADMIN || []).some((g) => (g.items || []).length), "后台导航不能为空");
 assert.ok((catalog.nav.MERCHANT || []).some((g) => (g.items || []).length), "商户导航不能为空");
+assert.ok((catalog.nav.BEAUTY_MERCHANT || []).some((g) => (g.items || []).length), "美人桥商户端导航不能为空");
 assert.ok(
   catalog.nav.MERCHANT.flatMap((g) => g.items || []).filter((item) => !item.static).every((item) => item.id.startsWith("merchant-")),
   "商户导航只能挂 merchant-* 页面"
@@ -114,6 +115,10 @@ assert.ok(
 assert.ok(
   (catalog.nav.ADDRESS || []).flatMap((g) => g.items || []).filter((item) => !item.static).every((item) => item.id.startsWith("address-")),
   "地址池导航只能挂 address-* 页面"
+);
+assert.ok(
+  (catalog.nav.BEAUTY_MERCHANT || []).flatMap((g) => g.items || []).filter((item) => !item.static).every((item) => item.id.startsWith("beauty-")),
+  "美人桥商户端导航只能挂 beauty-* 页面"
 );
 
 const [index, distribution] = await Promise.all([

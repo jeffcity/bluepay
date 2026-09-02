@@ -17,6 +17,7 @@ test("构建生成一致的本地入口", async () => {
   assert.match(root, /\["ADMIN","后台"\]/);
   assert.match(root, /\["MERCHANT","商户"\]/);
   assert.match(root, /\["ADDRESS","地址池"\]/);
+  assert.match(root, /\["BEAUTY_MERCHANT","美人桥商户端"\]/);
   assert.doesNotMatch(root, /需求 Demo 中心|项目说明|跨后台|HTML DEMO/);
   assert.doesNotMatch(root, /\/Users\/|file:\/\//);
   assert.match(root, /id="sideNav"/);
@@ -26,6 +27,8 @@ test("构建生成一致的本地入口", async () => {
   assert.match(root, /merchant-payout-prepay/);
   assert.match(root, /merchant-collect-account/);
   assert.match(root, /merchant-payout-account/);
+  assert.match(root, /admin-pay-order/);
+  assert.match(root, /beauty-order-list/);
 
   const documentStart =
     root.indexOf("const DOCUMENTS=") + "const DOCUMENTS=".length;
@@ -80,6 +83,39 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["商户代付流水记录-demo"], /USDT代付预付/);
   assert.ok(documents["商户代收流水记录-demo"]);
   assert.match(documents["商户代收流水记录-demo"], /accountLedgerPage\("collect-record"\)/);
+  assert.ok(documents["美人桥订单管理-demo"]);
+  assert.match(documents["美人桥订单管理-demo"], /美人桥工号/);
+  assert.match(documents["美人桥订单管理-demo"], /未处理订单提醒/);
+  assert.match(documents["美人桥订单管理-demo"], /充值币种/);
+  assert.match(documents["美人桥订单管理-demo"], /应上分U/);
+  assert.match(documents["美人桥订单管理-demo"], /兑U汇率/);
+  assert.match(documents["美人桥订单管理-demo"], /浮动金额/);
+  assert.match(documents["美人桥订单管理-demo"], /浮动费率/);
+  assert.match(documents["美人桥订单管理-demo"], /currency:'TRX'/);
+  assert.match(documents["美人桥订单管理-demo"], /美人桥默认汇率设置/);
+  assert.match(documents["美人桥订单管理-demo"], /beautyRateSettings/);
+  assert.match(documents["美人桥订单管理-demo"], /bluepay\.beauty-merchant-rates\.v1/);
+  assert.doesNotMatch(documents["美人桥订单管理-demo"], /<th>USDT\/CNY<\/th>|<th>上浮费用<\/th>|<th>产生费率<\/th>/);
+  assert.doesNotMatch(documents["美人桥订单管理-demo"], /统一汇率表/);
+  assert.match(documents["美人桥订单管理-demo"], /data-credit/);
+  assert.match(documents["美人桥订单管理-demo"], /data-log/);
+  assert.ok(documents["美人桥商户端订单列表-demo"]);
+  assert.match(documents["美人桥商户端订单列表-demo"], /美人桥工号/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /修改密码|订单列表/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /TRX充值/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /应上分U/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /兑U汇率/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /beautyRateSettings/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /bluepay\.beauty-merchant-rates\.v1/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /amount \/ quote\.effective/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /本单锁定汇率/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /source:'本单锁定汇率'/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /createAmount'\)\.disabled=Boolean\(item\)/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /保留本单锁定的/);
+  assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /<th>USDT→CNY<\/th>|<th>上浮费用<\/th>/);
+  assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /统一汇率表/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /data-edit/);
+  assert.match(documents["美人桥订单管理-demo"], /currency:'TRX'[^]*status:'done',credit:'done'[^]*address:'TDEMOTrx/);
   for (const documentName of [
     "商户增加资金划转-demo",
     "商户代付流水记录-demo",
@@ -105,6 +141,15 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["TRX代收通道-demo"], /完成起始时间/);
   assert.match(documents["TRX代收通道-demo"], /商户代理费/);
   assert.match(documents["TRX代收通道-demo"], /交易金额/);
+});
+
+test("美人桥 TRX 金额精度校验拒绝科学计数法", async () => {
+  const source = await readFile("src/pages/美人桥商户端订单列表/美人桥商户端订单列表-demo.html", "utf8");
+  const decimalFunction = source.match(/function decimalPlaces\(value\)\{[^\n]+\}/)?.[0];
+  assert.ok(decimalFunction, "缺少金额小数位校验函数");
+  const sandbox = {};
+  vm.runInNewContext(`${decimalFunction};result=[decimalPlaces('350'),decimalPlaces('1.123456'),decimalPlaces('1.1234567'),decimalPlaces('1e-7')]`, sandbox);
+  assert.deepEqual(Array.from(sandbox.result), [0, 6, 7, Infinity]);
 });
 
 test("资金划转只关联资金划转订单和实际钱包流水", async () => {
