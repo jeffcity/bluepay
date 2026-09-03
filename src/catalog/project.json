@@ -68,6 +68,13 @@
           { "title": "关键词配置", "static": true },
           { "id": "admin-tg-system-message", "title": "TG系统消息配置", "doc": "TG系统消息配置-demo", "boot": "", "req": ["BP-REQ-006"] }
         ]
+      },
+      {
+        "label": "系统管理",
+        "items": [
+          { "title": "登录ip白名单", "static": true },
+          { "id": "admin-black-list", "title": "封禁ip管理", "doc": "封禁IP管理-demo", "boot": "", "req": ["BP-REQ-013"] }
+        ]
       }
     ],
     "MERCHANT": [
@@ -229,6 +236,13 @@
       "summary": "美人桥商户创建充值订单增加 TRX；商户填写上分 CNY 金额，系统读取并锁定美人桥订单管理页维护的 TRX/CNY 默认汇率，计算应转 TRX。TRX 未启用默认汇率时禁止下单；USDT 未启用默认汇率时可回退线上 USDT/CNY。TRX 到账后直接上分 CNY，不经过 USDT 中转。",
       "moduleCodes": ["ADMIN", "BEAUTY_MERCHANT"],
       "doc": "美人桥商户端订单列表-demo"
+    },
+    {
+      "id": "BP-REQ-013",
+      "title": "登录失败临时封锁与后台解锁",
+      "summary": "复用系统管理下的封禁IP管理入口：登录密码或Google验证码在5分钟内累计错误5次时自动封锁IP 24小时，并支持按权限手动解除及保留审计记录。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "封禁IP管理-demo"
     }
   ],
   "documents": [
@@ -275,6 +289,10 @@
     {
       "id": "美人桥商户端订单列表-demo",
       "source": "pages/美人桥商户端订单列表/美人桥商户端订单列表-demo.html"
+    },
+    {
+      "id": "封禁IP管理-demo",
+      "source": "pages/封禁IP管理/封禁IP管理-demo.html"
     }
   ]
 }

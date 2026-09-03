@@ -26,6 +26,7 @@ test("项目清单含四端与产品导航", async () => {
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-merchant-transfer")));
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-daifu-flow")));
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-pay-order")));
+  assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-black-list")));
   assert.ok(catalog.nav.MERCHANT.some((g) => g.items.some((i) => i.id === "merchant-order")));
   assert.ok(catalog.nav.BEAUTY_MERCHANT.some((g) => g.items.some((i) => i.id === "beauty-order-list")));
   assert.ok(catalog.nav.ADMIN.flatMap((g) => g.items || []).find((i) => i.id === "admin-pay-order").req.includes("BP-REQ-012"));

@@ -29,6 +29,7 @@ test("构建生成一致的本地入口", async () => {
   assert.match(root, /merchant-payout-account/);
   assert.match(root, /admin-pay-order/);
   assert.match(root, /beauty-order-list/);
+  assert.match(root, /admin-black-list/);
 
   const documentStart =
     root.indexOf("const DOCUMENTS=") + "const DOCUMENTS=".length;
@@ -135,6 +136,15 @@ test("构建生成一致的本地入口", async () => {
   assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /统一汇率表/);
   assert.match(documents["美人桥商户端订单列表-demo"], /data-edit/);
   assert.match(documents["美人桥订单管理-demo"], /currency:'TRX'[^]*status:'done',credit:'done'[^]*address:'TDEMOTrx/);
+  assert.ok(documents["封禁IP管理-demo"]);
+  assert.match(documents["封禁IP管理-demo"], /24 小时/);
+  assert.match(documents["封禁IP管理-demo"], /Google验证码/);
+  assert.match(documents["封禁IP管理-demo"], /解除临时拉黑/);
+  assert.match(documents["封禁IP管理-demo"], /<th>主键<\/th>/);
+  assert.match(documents["封禁IP管理-demo"], /请输入备注/);
+  assert.match(documents["封禁IP管理-demo"], /解除方式/);
+  assert.doesNotMatch(documents["封禁IP管理-demo"], /批量删除/);
+  assert.doesNotMatch(documents["封禁IP管理-demo"], /selectAll|row-check|batchDelete/);
   for (const documentName of [
     "商户增加资金划转-demo",
     "商户代付流水记录-demo",
