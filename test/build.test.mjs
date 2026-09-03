@@ -114,10 +114,14 @@ test("构建生成一致的本地入口", async () => {
   assert.ok(documents["美人桥统计报表-demo"]);
   assert.match(documents["美人桥统计报表-demo"], /商户报表/);
   assert.match(documents["美人桥统计报表-demo"], /归属收款统计报表/);
-  assert.match(documents["美人桥统计报表-demo"], /今日充值/);
-  assert.match(documents["美人桥统计报表-demo"], /应转U/);
+  assert.match(documents["美人桥统计报表-demo"], /上分金额（CNY）/);
+  assert.match(documents["美人桥统计报表-demo"], /充值数量/);
+  assert.match(documents["美人桥统计报表-demo"], /充值币种/);
+  assert.doesNotMatch(documents["美人桥统计报表-demo"], /<th>今日充值<\/th>|<th>应转U<\/th>/);
   assert.match(documents["美人桥统计报表-demo"], /产生费率/);
   assert.match(documents["美人桥统计报表-demo"], /上浮费用/);
+  assert.match(documents["美人桥统计报表-demo"], /百分比/);
+  assert.match(documents["美人桥统计报表-demo"], /同一商户同一天存在不同充值币种时按币种分行统计/);
   assert.match(documents["美人桥统计报表-demo"], /导出 Excel/);
   assert.match(documents["美人桥统计报表-demo"], /收入总额\(应转u\)/);
   assert.match(documents["美人桥统计报表-demo"], /暂无数据，可调整筛选条件后重试/);
