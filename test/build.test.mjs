@@ -123,7 +123,8 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["美人桥统计报表-demo"], /百分比/);
   assert.match(documents["美人桥统计报表-demo"], /同一商户同一天存在不同充值币种时按币种分行统计/);
   assert.match(documents["美人桥统计报表-demo"], /导出 Excel/);
-  assert.match(documents["美人桥统计报表-demo"], /收入总额\(应转u\)/);
+  assert.match(documents["美人桥统计报表-demo"], /<th>收入总额<\/th>/);
+  assert.doesNotMatch(documents["美人桥统计报表-demo"], /收入总额\(应转u\)/);
   assert.match(documents["美人桥统计报表-demo"], /暂无数据，可调整筛选条件后重试/);
   assert.ok(documents["美人桥商户端订单列表-demo"]);
   assert.match(documents["美人桥商户端订单列表-demo"], /美人桥工号/);
