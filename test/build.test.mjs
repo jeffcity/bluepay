@@ -111,6 +111,16 @@ test("构建生成一致的本地入口", async () => {
   assert.doesNotMatch(documents["美人桥订单管理-demo"], /统一汇率表/);
   assert.match(documents["美人桥订单管理-demo"], /data-credit/);
   assert.match(documents["美人桥订单管理-demo"], /data-log/);
+  assert.ok(documents["美人桥统计报表-demo"]);
+  assert.match(documents["美人桥统计报表-demo"], /商户报表/);
+  assert.match(documents["美人桥统计报表-demo"], /归属收款统计报表/);
+  assert.match(documents["美人桥统计报表-demo"], /今日充值/);
+  assert.match(documents["美人桥统计报表-demo"], /应转U/);
+  assert.match(documents["美人桥统计报表-demo"], /产生费率/);
+  assert.match(documents["美人桥统计报表-demo"], /上浮费用/);
+  assert.match(documents["美人桥统计报表-demo"], /导出 Excel/);
+  assert.match(documents["美人桥统计报表-demo"], /收入总额\(应转u\)/);
+  assert.match(documents["美人桥统计报表-demo"], /暂无数据，可调整筛选条件后重试/);
   assert.ok(documents["美人桥商户端订单列表-demo"]);
   assert.match(documents["美人桥商户端订单列表-demo"], /美人桥工号/);
   assert.match(documents["美人桥商户端订单列表-demo"], /修改密码|订单列表/);

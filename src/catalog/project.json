@@ -31,7 +31,8 @@
       {
         "label": "美人桥业务",
         "items": [
-          { "id": "admin-pay-order", "title": "订单管理", "doc": "美人桥订单管理-demo", "boot": "", "req": ["BP-REQ-010", "BP-REQ-012"] }
+          { "id": "admin-pay-order", "title": "订单管理", "doc": "美人桥订单管理-demo", "boot": "", "req": ["BP-REQ-010", "BP-REQ-012"] },
+          { "id": "admin-beauty-statistical-reports", "title": "统计报表", "doc": "美人桥统计报表-demo", "boot": "", "req": ["BP-REQ-014"] }
         ]
       },
       {
@@ -243,6 +244,13 @@
       "summary": "复用系统管理下的封禁IP管理入口：登录密码或Google验证码在5分钟内累计错误5次时自动封锁IP 24小时，并支持按权限手动解除及保留审计记录。",
       "moduleCodes": ["ADMIN"],
       "doc": "封禁IP管理-demo"
+    },
+    {
+      "id": "BP-REQ-014",
+      "title": "美人桥统计报表现状复刻",
+      "summary": "复刻蓝盛后台美人桥业务下的统计报表页面，保留商户报表、归属收款统计报表、筛选、更新、导出、列表、空态和分页，作为后续需求讨论基准。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "美人桥统计报表-demo"
     }
   ],
   "documents": [
@@ -293,6 +301,10 @@
     {
       "id": "封禁IP管理-demo",
       "source": "pages/封禁IP管理/封禁IP管理-demo.html"
+    },
+    {
+      "id": "美人桥统计报表-demo",
+      "source": "pages/美人桥统计报表/美人桥统计报表-demo.html"
     }
   ]
 }
