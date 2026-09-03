@@ -87,15 +87,26 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["美人桥订单管理-demo"], /美人桥工号/);
   assert.match(documents["美人桥订单管理-demo"], /未处理订单提醒/);
   assert.match(documents["美人桥订单管理-demo"], /充值币种/);
-  assert.match(documents["美人桥订单管理-demo"], /应上分U/);
-  assert.match(documents["美人桥订单管理-demo"], /兑U汇率/);
-  assert.match(documents["美人桥订单管理-demo"], /浮动金额/);
+  assert.match(documents["美人桥订单管理-demo"], /上分金额（CNY）/);
+  assert.match(documents["美人桥订单管理-demo"], /应转数量/);
+  assert.match(documents["美人桥订单管理-demo"], /兑CNY汇率/);
+  assert.match(documents["美人桥订单管理-demo"], /浮动数量/);
   assert.match(documents["美人桥订单管理-demo"], /浮动费率/);
   assert.match(documents["美人桥订单管理-demo"], /currency:'TRX'/);
   assert.match(documents["美人桥订单管理-demo"], /美人桥默认汇率设置/);
   assert.match(documents["美人桥订单管理-demo"], /beautyRateSettings/);
-  assert.match(documents["美人桥订单管理-demo"], /bluepay\.beauty-merchant-rates\.v1/);
+  assert.match(documents["美人桥订单管理-demo"], /bluepay\.beauty-merchant-cny-rates\.v3/);
+  assert.match(documents["美人桥订单管理-demo"], /<th>币种<\/th><th>汇率（兑 CNY）<\/th><th>默认<\/th>/);
+  assert.match(documents["美人桥订单管理-demo"], /data-rate-currency="USDT"[^>]*role="switch"/);
+  assert.match(documents["美人桥订单管理-demo"], /data-rate-currency="TRX"[^>]*role="switch"/);
+  assert.match(documents["美人桥订单管理-demo"], /defaultEnabled:\{USDT:true,TRX:false\}/);
+  assert.match(documents["美人桥订单管理-demo"], /USDT 未开启默认汇率时查询线上 USDT\/CNY/);
+  assert.match(documents["美人桥订单管理-demo"], /TRX 未开启默认汇率时无法创建 TRX 订单/);
+  assert.doesNotMatch(documents["美人桥订单管理-demo"], /data-default-currency=|defaultCurrency|role="radio"/);
+  assert.doesNotMatch(documents["美人桥订单管理-demo"], /id="rateCurrency"/);
   assert.doesNotMatch(documents["美人桥订单管理-demo"], /<th>USDT\/CNY<\/th>|<th>上浮费用<\/th>|<th>产生费率<\/th>/);
+  assert.doesNotMatch(documents["美人桥订单管理-demo"], /应上分U|兑U汇率|1 USDT ≈[^<]*TRX/);
+  assert.match(documents["美人桥订单管理-demo"], /不经过 USDT 中转/);
   assert.doesNotMatch(documents["美人桥订单管理-demo"], /统一汇率表/);
   assert.match(documents["美人桥订单管理-demo"], /data-credit/);
   assert.match(documents["美人桥订单管理-demo"], /data-log/);
@@ -103,15 +114,23 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["美人桥商户端订单列表-demo"], /美人桥工号/);
   assert.match(documents["美人桥商户端订单列表-demo"], /修改密码|订单列表/);
   assert.match(documents["美人桥商户端订单列表-demo"], /TRX充值/);
-  assert.match(documents["美人桥商户端订单列表-demo"], /应上分U/);
-  assert.match(documents["美人桥商户端订单列表-demo"], /兑U汇率/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /上分金额（CNY）/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /应转数量/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /兑CNY汇率/);
   assert.match(documents["美人桥商户端订单列表-demo"], /beautyRateSettings/);
-  assert.match(documents["美人桥商户端订单列表-demo"], /bluepay\.beauty-merchant-rates\.v1/);
-  assert.match(documents["美人桥商户端订单列表-demo"], /amount \/ quote\.effective/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /bluepay\.beauty-merchant-cny-rates\.v3/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /onlineUsdtCnyRate=6\.71/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /线上 USDT\/CNY 汇率/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /TRX 默认汇率未启用，当前无法创建 TRX 充值订单/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /defaultEnabled\.TRX/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /creditCny\/quote\.effective/);
+  assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /currencyToMethod/);
   assert.match(documents["美人桥商户端订单列表-demo"], /本单锁定汇率/);
   assert.match(documents["美人桥商户端订单列表-demo"], /source:'本单锁定汇率'/);
   assert.match(documents["美人桥商户端订单列表-demo"], /createAmount'\)\.disabled=Boolean\(item\)/);
   assert.match(documents["美人桥商户端订单列表-demo"], /保留本单锁定的/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /不经过 USDT 中转/);
+  assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /应上分U|兑U汇率|creditU|\.usdt/);
   assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /<th>USDT→CNY<\/th>|<th>上浮费用<\/th>/);
   assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /统一汇率表/);
   assert.match(documents["美人桥商户端订单列表-demo"], /data-edit/);
@@ -143,13 +162,13 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["TRX代收通道-demo"], /交易金额/);
 });
 
-test("美人桥 TRX 金额精度校验拒绝科学计数法", async () => {
+test("美人桥 CNY 上分金额最多两位小数且拒绝科学计数法", async () => {
   const source = await readFile("src/pages/美人桥商户端订单列表/美人桥商户端订单列表-demo.html", "utf8");
   const decimalFunction = source.match(/function decimalPlaces\(value\)\{[^\n]+\}/)?.[0];
   assert.ok(decimalFunction, "缺少金额小数位校验函数");
   const sandbox = {};
-  vm.runInNewContext(`${decimalFunction};result=[decimalPlaces('350'),decimalPlaces('1.123456'),decimalPlaces('1.1234567'),decimalPlaces('1e-7')]`, sandbox);
-  assert.deepEqual(Array.from(sandbox.result), [0, 6, 7, Infinity]);
+  vm.runInNewContext(`${decimalFunction};result=[decimalPlaces('950'),decimalPlaces('950.12'),decimalPlaces('950.123'),decimalPlaces('1e-7')]`, sandbox);
+  assert.deepEqual(Array.from(sandbox.result), [0, 2, 3, Infinity]);
 });
 
 test("资金划转只关联资金划转订单和实际钱包流水", async () => {
