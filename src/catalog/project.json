@@ -225,8 +225,8 @@
     },
     {
       "id": "BP-REQ-012",
-      "title": "美人桥 TRX 充值与兑U上分",
-      "summary": "美人桥商户创建充值订单增加 TRX；汇率由美人桥业务订单管理页的默认汇率设置维护，按 1 USDT 约等于 N 源币种的方向锁定本单兑U汇率并计算应上分U。商户端与后台订单列表增加 TRX 筛选、样例数据及多币种通用表头。",
+      "title": "美人桥 TRX 充值并上分 CNY",
+      "summary": "美人桥商户创建充值订单增加 TRX；商户填写上分 CNY 金额，系统读取并锁定美人桥订单管理页维护的 TRX/CNY 默认汇率，计算应转 TRX。TRX 未启用默认汇率时禁止下单；USDT 未启用默认汇率时可回退线上 USDT/CNY。TRX 到账后直接上分 CNY，不经过 USDT 中转。",
       "moduleCodes": ["ADMIN", "BEAUTY_MERCHANT"],
       "doc": "美人桥商户端订单列表-demo"
     }
