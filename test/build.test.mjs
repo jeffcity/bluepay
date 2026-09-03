@@ -114,7 +114,9 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["美人桥商户端订单列表-demo"], /美人桥工号/);
   assert.match(documents["美人桥商户端订单列表-demo"], /修改密码|订单列表/);
   assert.match(documents["美人桥商户端订单列表-demo"], /TRX充值/);
-  assert.match(documents["美人桥商户端订单列表-demo"], /for="createAmount">请输入金额<\/label>/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /id="createAmountLabel">请输入金额<\/label>/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /label:'请输入USDT数量'/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /label:'请输入TRX数量'/);
   assert.match(documents["美人桥商户端订单列表-demo"], /上分金额（CNY）/);
   assert.match(documents["美人桥商户端订单列表-demo"], /应转数量/);
   assert.match(documents["美人桥商户端订单列表-demo"], /兑CNY汇率/);
@@ -124,7 +126,7 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["美人桥商户端订单列表-demo"], /线上 USDT\/CNY 汇率/);
   assert.match(documents["美人桥商户端订单列表-demo"], /TRX 默认汇率未启用，当前无法创建 TRX 充值订单/);
   assert.match(documents["美人桥商户端订单列表-demo"], /defaultEnabled\.TRX/);
-  assert.match(documents["美人桥商户端订单列表-demo"], /creditCny\/quote\.effective/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /payAmount\*quote\.effective/);
   assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /currencyToMethod/);
   assert.match(documents["美人桥商户端订单列表-demo"], /本单锁定汇率/);
   assert.match(documents["美人桥商户端订单列表-demo"], /source:'本单锁定汇率'/);
