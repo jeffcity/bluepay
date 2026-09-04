@@ -50,7 +50,7 @@
           </section>
           <section class="view" id="ownerView" role="tabpanel" aria-label="归属收款统计报表" hidden>
             <div class="toolbar"><div class="filters">
-              <div class="field"><label>时间</label><div class="date-range"><input id="ownerStart" placeholder="开始时间" aria-label="开始时间"><span>−</span><input id="ownerEnd" placeholder="结束时间" aria-label="结束时间"></div></div>
+              <div class="field"><label>时间</label><div class="date-range"><input id="ownerStart" value="2026-05-01" placeholder="开始时间" aria-label="开始时间"><span>−</span><input id="ownerEnd" value="2026-05-30" placeholder="结束时间" aria-label="结束时间"></div></div>
               <div class="field"><label for="ownerName">归属</label><select class="control owner-select" id="ownerName"><option value="">请选择归属</option><option>归属1</option><option>归属2</option><option>归属3</option></select></div>
               <div class="field"><label for="receiveAddress">收款地址</label><input class="control address-input" id="receiveAddress" placeholder="输入收款地址搜索"></div>
               <div class="filter-actions"><button class="btn primary" type="button" data-search="owner">搜索</button><button class="btn" type="button" data-reset="owner">重置</button></div>
@@ -79,15 +79,16 @@
       ['演示商户 C','归属3','2200.00','310.000000','USDT','1','0.22','0.2','62','62.22','2.83%','2026-08-14']
     ];
     const ownerData=[
-      ['归属1','TDEMO-TRON-ADDRESS-01','95.45','678.947368','644.00','6.7857'],
-      ['归属2','TDEMO-TRON-ADDRESS-01','122.05','873.684211','830.00','6.8000']
+      ['归属1','TDEMO-TRON-ADDRESS-01','95.45','678.947368','644.00','6.7857','2026-05-15'],
+      ['归属2','TDEMO-TRON-ADDRESS-01','122.05','873.684211','830.00','6.8000','2026-05-20']
     ];
     const $=id=>document.getElementById(id);let toastTimer;
     function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),1800)}
     function filteredMerchant(){const name=$('merchantName').value.trim().toLowerCase(),owner=$('merchantOwner').value;return merchantData.filter(row=>(!name||row[0].toLowerCase().includes(name))&&(!owner||row[1]===owner))}
     function renderMerchant(){const rows=filteredMerchant();$('merchantRows').innerHTML=rows.length?rows.map(row=>`<tr>${row.map(cell=>`<td title="${cell}">${cell}</td>`).join('')}</tr>`).join(''):'<tr class="empty-row"><td colspan="12">暂无数据，可调整筛选条件后重试</td></tr>';$('merchantTotal').textContent=`共 ${rows.length===merchantData.length?18:rows.length} 条`}
-    function filteredOwner(){const owner=$('ownerName').value,address=$('receiveAddress').value.trim().toLowerCase();return ownerData.filter(row=>(!owner||row[0]===owner)&&(!address||row[1].toLowerCase().includes(address)))}
-    function renderOwner(){const rows=filteredOwner();$('ownerRows').innerHTML=rows.length?rows.map(row=>`<tr>${row.map(cell=>`<td title="${cell}">${cell}</td>`).join('')}</tr>`).join(''):'<tr class="empty-row"><td colspan="6">暂无数据，可调整筛选条件后重试</td></tr>';const total=`共 ${rows.length} 条`;$('ownerTotal').textContent=total;$('ownerFooterTotal').textContent=total}
+    function filterOwnerRows(rows,{owner='',address='',start='',end=''}){const term=address.trim().toLowerCase();return rows.filter(row=>(!owner||row[0]===owner)&&(!term||row[1].toLowerCase().includes(term))&&(!start||row[6]>=start)&&(!end||row[6]<=end))}
+    function filteredOwner(){return filterOwnerRows(ownerData,{owner:$('ownerName').value,address:$('receiveAddress').value,start:$('ownerStart').value.trim(),end:$('ownerEnd').value.trim()})}
+    function renderOwner(){const rows=filteredOwner();$('ownerRows').innerHTML=rows.length?rows.map(row=>`<tr>${row.slice(0,6).map(cell=>`<td title="${cell}">${cell}</td>`).join('')}</tr>`).join(''):'<tr class="empty-row"><td colspan="6">暂无数据，可调整筛选条件后重试</td></tr>';const total=`共 ${rows.length} 条`;$('ownerTotal').textContent=total;$('ownerFooterTotal').textContent=total}
     document.querySelector('.report-tabs').onclick=event=>{const button=event.target.closest('[data-report]');if(!button)return;document.querySelectorAll('[data-report]').forEach(tab=>{const active=tab===button;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active))});$('merchantView').hidden=button.dataset.report!=='merchant';$('ownerView').hidden=button.dataset.report!=='owner'};
     document.querySelectorAll('[data-search]').forEach(button=>button.onclick=()=>{button.dataset.search==='merchant'?renderMerchant():renderOwner();toast('已按当前条件查询')});
     document.querySelectorAll('[data-reset]').forEach(button=>button.onclick=()=>{if(button.dataset.reset==='merchant'){['merchantName','merchantStart','merchantEnd'].forEach(id=>$(id).value='');$('merchantOwner').value='';renderMerchant()}else{['ownerStart','ownerEnd','receiveAddress'].forEach(id=>$(id).value='');$('ownerName').value='';renderOwner()}toast('筛选条件已重置')});
