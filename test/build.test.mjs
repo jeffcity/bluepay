@@ -125,6 +125,11 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["美人桥统计报表-demo"], /导出 Excel/);
   assert.match(documents["美人桥统计报表-demo"], /<th>收入总额<\/th>/);
   assert.doesNotMatch(documents["美人桥统计报表-demo"], /收入总额\(应转u\)/);
+  assert.match(documents["美人桥统计报表-demo"], /<th>TRX充值数量<\/th>/);
+  assert.match(documents["美人桥统计报表-demo"], /const ownerData=\[/);
+  assert.match(documents["美人桥统计报表-demo"], /TDEMO-TRON-ADDRESS-01/);
+  assert.match(documents["美人桥统计报表-demo"], /function renderOwner\(\)/);
+  assert.match(documents["美人桥统计报表-demo"], /colspan="6"/);
   assert.match(documents["美人桥统计报表-demo"], /暂无数据，可调整筛选条件后重试/);
   assert.ok(documents["美人桥商户端订单列表-demo"]);
   assert.match(documents["美人桥商户端订单列表-demo"], /美人桥工号/);
@@ -197,6 +202,25 @@ test("美人桥 CNY 上分金额最多两位小数且拒绝科学计数法", asy
   const sandbox = {};
   vm.runInNewContext(`${decimalFunction};result=[decimalPlaces('950'),decimalPlaces('950.12'),decimalPlaces('950.123'),decimalPlaces('1e-7')]`, sandbox);
   assert.deepEqual(Array.from(sandbox.result), [0, 2, 3, Infinity]);
+});
+
+test("美人桥归属收款报表支持归属、地址与时间筛选", async () => {
+  const source = await readFile("src/pages/美人桥统计报表/美人桥统计报表-demo.html", "utf8");
+  const filterFunction = source.match(/function filterOwnerRows\(rows,\{owner='',address='',start='',end=''\}\)\{[^\n]+\}/)?.[0];
+  assert.ok(filterFunction, "缺少归属收款报表筛选函数");
+  const sandbox = {
+    rows: [
+      ["归属1", "TDEMO-TRON-ADDRESS-01", "95.45", "678.947368", "644.00", "6.7857", "2026-05-15"],
+      ["归属2", "TDEMO-TRON-ADDRESS-01", "122.05", "873.684211", "830.00", "6.8000", "2026-05-20"]
+    ]
+  };
+  vm.runInNewContext(`${filterFunction};result={all:filterOwnerRows(rows,{}),owner:filterOwnerRows(rows,{owner:'归属1'}),address:filterOwnerRows(rows,{address:'address-01'}),time:filterOwnerRows(rows,{start:'2026-05-16',end:'2026-05-30'}),empty:filterOwnerRows(rows,{start:'2026-06-01'})}`, sandbox);
+  assert.equal(sandbox.result.all.length, 2);
+  assert.equal(sandbox.result.owner.length, 1);
+  assert.equal(sandbox.result.address.length, 2);
+  assert.equal(sandbox.result.time.length, 1);
+  assert.equal(sandbox.result.time[0][0], "归属2");
+  assert.equal(sandbox.result.empty.length, 0);
 });
 
 test("资金划转只关联资金划转订单和实际钱包流水", async () => {
