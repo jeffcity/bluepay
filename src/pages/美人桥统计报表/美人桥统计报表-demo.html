@@ -55,9 +55,9 @@
               <div class="field"><label for="receiveAddress">收款地址</label><input class="control address-input" id="receiveAddress" placeholder="输入收款地址搜索"></div>
               <div class="filter-actions"><button class="btn primary" type="button" data-search="owner">搜索</button><button class="btn" type="button" data-reset="owner">重置</button></div>
             </div></div>
-            <div class="result-head"><span>共 0 条</span></div>
-            <div class="table-wrap"><table><thead><tr><th>归属名称</th><th>收款地址</th><th>收入总额</th><th>人民币总金额</th><th>平均汇率</th></tr></thead><tbody><tr class="empty-row"><td colspan="5">暂无数据，可调整筛选条件后重试</td></tr></tbody></table></div>
-            <footer class="footer"><span class="total">共 0 条</span><select class="page-size" aria-label="每页条数"><option>10条/页</option><option>20条/页</option></select><button class="page-btn" disabled aria-label="上一页">‹</button><button class="page-btn active">1</button><button class="page-btn" disabled aria-label="下一页">›</button><span>前往</span><input class="jump" value="1" inputmode="numeric" aria-label="页"><span>页</span></footer>
+            <div class="result-head"><span id="ownerTotal">共 2 条</span></div>
+            <div class="table-wrap"><table><thead><tr><th>归属名称</th><th>收款地址</th><th>收入总额</th><th>TRX充值数量</th><th>人民币总金额</th><th>平均汇率</th></tr></thead><tbody id="ownerRows"></tbody></table></div>
+            <footer class="footer"><span class="total" id="ownerFooterTotal">共 2 条</span><select class="page-size" aria-label="每页条数"><option>10条/页</option><option>20条/页</option></select><button class="page-btn" disabled aria-label="上一页">‹</button><button class="page-btn active">1</button><button class="page-btn" disabled aria-label="下一页">›</button><span>前往</span><input class="jump" value="1" inputmode="numeric" aria-label="页"><span>页</span></footer>
           </section>
           <div class="notes"><strong>使用说明｜数据口径与更新节奏</strong><ul><li>报表默认展示昨日汇总数据。</li><li>选择查询时间后，展示该时间段内的合计统计。</li><li>统计维度来源于支付订单金额与手续费等字段。</li><li>同一商户同一天存在不同充值币种时按币种分行统计，充值数量不跨币种合计。</li><li>系统于每日凌晨 1 点滚动更新昨日数据（每日一次）。</li></ul></div>
         </section>
@@ -78,17 +78,23 @@
       ['演示商户 E','归属1','35.00','36.842105','TRX','1','0','2','0','0','0.00%','2026-08-14'],
       ['演示商户 C','归属3','2200.00','310.000000','USDT','1','0.22','0.2','62','62.22','2.83%','2026-08-14']
     ];
+    const ownerData=[
+      ['归属1','TDEMO-TRON-ADDRESS-01','95.45','678.947368','644.00','6.7857'],
+      ['归属2','TDEMO-TRON-ADDRESS-01','122.05','873.684211','830.00','6.8000']
+    ];
     const $=id=>document.getElementById(id);let toastTimer;
     function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),1800)}
     function filteredMerchant(){const name=$('merchantName').value.trim().toLowerCase(),owner=$('merchantOwner').value;return merchantData.filter(row=>(!name||row[0].toLowerCase().includes(name))&&(!owner||row[1]===owner))}
     function renderMerchant(){const rows=filteredMerchant();$('merchantRows').innerHTML=rows.length?rows.map(row=>`<tr>${row.map(cell=>`<td title="${cell}">${cell}</td>`).join('')}</tr>`).join(''):'<tr class="empty-row"><td colspan="12">暂无数据，可调整筛选条件后重试</td></tr>';$('merchantTotal').textContent=`共 ${rows.length===merchantData.length?18:rows.length} 条`}
+    function filteredOwner(){const owner=$('ownerName').value,address=$('receiveAddress').value.trim().toLowerCase();return ownerData.filter(row=>(!owner||row[0]===owner)&&(!address||row[1].toLowerCase().includes(address)))}
+    function renderOwner(){const rows=filteredOwner();$('ownerRows').innerHTML=rows.length?rows.map(row=>`<tr>${row.map(cell=>`<td title="${cell}">${cell}</td>`).join('')}</tr>`).join(''):'<tr class="empty-row"><td colspan="6">暂无数据，可调整筛选条件后重试</td></tr>';const total=`共 ${rows.length} 条`;$('ownerTotal').textContent=total;$('ownerFooterTotal').textContent=total}
     document.querySelector('.report-tabs').onclick=event=>{const button=event.target.closest('[data-report]');if(!button)return;document.querySelectorAll('[data-report]').forEach(tab=>{const active=tab===button;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active))});$('merchantView').hidden=button.dataset.report!=='merchant';$('ownerView').hidden=button.dataset.report!=='owner'};
-    document.querySelectorAll('[data-search]').forEach(button=>button.onclick=()=>{if(button.dataset.search==='merchant')renderMerchant();toast('已按当前条件查询')});
-    document.querySelectorAll('[data-reset]').forEach(button=>button.onclick=()=>{if(button.dataset.reset==='merchant'){['merchantName','merchantStart','merchantEnd'].forEach(id=>$(id).value='');$('merchantOwner').value='';renderMerchant()}else{['ownerStart','ownerEnd','receiveAddress'].forEach(id=>$(id).value='');$('ownerName').value=''}toast('筛选条件已重置')});
+    document.querySelectorAll('[data-search]').forEach(button=>button.onclick=()=>{button.dataset.search==='merchant'?renderMerchant():renderOwner();toast('已按当前条件查询')});
+    document.querySelectorAll('[data-reset]').forEach(button=>button.onclick=()=>{if(button.dataset.reset==='merchant'){['merchantName','merchantStart','merchantEnd'].forEach(id=>$(id).value='');$('merchantOwner').value='';renderMerchant()}else{['ownerStart','ownerEnd','receiveAddress'].forEach(id=>$(id).value='');$('ownerName').value='';renderOwner()}toast('筛选条件已重置')});
     $('refreshBtn').onclick=()=>toast('数据已更新');$('exportBtn').onclick=()=>toast('已按当前条件导出 Excel');
     document.querySelectorAll('[data-page]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-page]').forEach(page=>page.classList.toggle('active',page===button));document.querySelector('#merchantView .jump').value=button.dataset.page;toast(`已切换到第 ${button.dataset.page} 页`)});
     document.querySelectorAll('.jump').forEach(input=>input.addEventListener('change',()=>toast(`已前往第 ${input.value||1} 页`)));
-    renderMerchant();
+    renderMerchant();renderOwner();
   </script>
 </body>
 </html>
