@@ -111,10 +111,33 @@ test("构建生成一致的本地入口", async () => {
   assert.doesNotMatch(documents["美人桥订单管理-demo"], /统一汇率表/);
   assert.match(documents["美人桥订单管理-demo"], /data-credit/);
   assert.match(documents["美人桥订单管理-demo"], /data-log/);
+  assert.ok(documents["美人桥统计报表-demo"]);
+  assert.match(documents["美人桥统计报表-demo"], /商户报表/);
+  assert.match(documents["美人桥统计报表-demo"], /归属收款统计报表/);
+  assert.match(documents["美人桥统计报表-demo"], /上分金额（CNY）/);
+  assert.match(documents["美人桥统计报表-demo"], /充值数量/);
+  assert.match(documents["美人桥统计报表-demo"], /充值币种/);
+  assert.doesNotMatch(documents["美人桥统计报表-demo"], /<th>今日充值<\/th>|<th>应转U<\/th>/);
+  assert.match(documents["美人桥统计报表-demo"], /产生费率/);
+  assert.match(documents["美人桥统计报表-demo"], /上浮费用/);
+  assert.match(documents["美人桥统计报表-demo"], /百分比/);
+  assert.match(documents["美人桥统计报表-demo"], /同一商户同一天存在不同充值币种时按币种分行统计/);
+  assert.match(documents["美人桥统计报表-demo"], /导出 Excel/);
+  assert.match(documents["美人桥统计报表-demo"], /<th>收入总额<\/th>/);
+  assert.doesNotMatch(documents["美人桥统计报表-demo"], /收入总额\(应转u\)/);
+  assert.match(documents["美人桥统计报表-demo"], /<th>TRX充值数量<\/th>/);
+  assert.match(documents["美人桥统计报表-demo"], /const ownerData=\[/);
+  assert.match(documents["美人桥统计报表-demo"], /TDEMO-TRON-ADDRESS-01/);
+  assert.match(documents["美人桥统计报表-demo"], /function renderOwner\(\)/);
+  assert.match(documents["美人桥统计报表-demo"], /colspan="6"/);
+  assert.match(documents["美人桥统计报表-demo"], /暂无数据，可调整筛选条件后重试/);
   assert.ok(documents["美人桥商户端订单列表-demo"]);
   assert.match(documents["美人桥商户端订单列表-demo"], /美人桥工号/);
   assert.match(documents["美人桥商户端订单列表-demo"], /修改密码|订单列表/);
   assert.match(documents["美人桥商户端订单列表-demo"], /TRX充值/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /id="createAmountLabel">请输入金额<\/label>/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /label:'请输入USDT数量'/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /label:'请输入TRX数量'/);
   assert.match(documents["美人桥商户端订单列表-demo"], /上分金额（CNY）/);
   assert.match(documents["美人桥商户端订单列表-demo"], /应转数量/);
   assert.match(documents["美人桥商户端订单列表-demo"], /兑CNY汇率/);
@@ -124,7 +147,7 @@ test("构建生成一致的本地入口", async () => {
   assert.match(documents["美人桥商户端订单列表-demo"], /线上 USDT\/CNY 汇率/);
   assert.match(documents["美人桥商户端订单列表-demo"], /TRX 默认汇率未启用，当前无法创建 TRX 充值订单/);
   assert.match(documents["美人桥商户端订单列表-demo"], /defaultEnabled\.TRX/);
-  assert.match(documents["美人桥商户端订单列表-demo"], /creditCny\/quote\.effective/);
+  assert.match(documents["美人桥商户端订单列表-demo"], /payAmount\*quote\.effective/);
   assert.doesNotMatch(documents["美人桥商户端订单列表-demo"], /currencyToMethod/);
   assert.match(documents["美人桥商户端订单列表-demo"], /本单锁定汇率/);
   assert.match(documents["美人桥商户端订单列表-demo"], /source:'本单锁定汇率'/);
@@ -179,6 +202,25 @@ test("美人桥 CNY 上分金额最多两位小数且拒绝科学计数法", asy
   const sandbox = {};
   vm.runInNewContext(`${decimalFunction};result=[decimalPlaces('950'),decimalPlaces('950.12'),decimalPlaces('950.123'),decimalPlaces('1e-7')]`, sandbox);
   assert.deepEqual(Array.from(sandbox.result), [0, 2, 3, Infinity]);
+});
+
+test("美人桥归属收款报表支持归属、地址与时间筛选", async () => {
+  const source = await readFile("src/pages/美人桥统计报表/美人桥统计报表-demo.html", "utf8");
+  const filterFunction = source.match(/function filterOwnerRows\(rows,\{owner='',address='',start='',end=''\}\)\{[^\n]+\}/)?.[0];
+  assert.ok(filterFunction, "缺少归属收款报表筛选函数");
+  const sandbox = {
+    rows: [
+      ["归属1", "TDEMO-TRON-ADDRESS-01", "95.45", "678.947368", "644.00", "6.7857", "2026-05-15"],
+      ["归属2", "TDEMO-TRON-ADDRESS-01", "122.05", "873.684211", "830.00", "6.8000", "2026-05-20"]
+    ]
+  };
+  vm.runInNewContext(`${filterFunction};result={all:filterOwnerRows(rows,{}),owner:filterOwnerRows(rows,{owner:'归属1'}),address:filterOwnerRows(rows,{address:'address-01'}),time:filterOwnerRows(rows,{start:'2026-05-16',end:'2026-05-30'}),empty:filterOwnerRows(rows,{start:'2026-06-01'})}`, sandbox);
+  assert.equal(sandbox.result.all.length, 2);
+  assert.equal(sandbox.result.owner.length, 1);
+  assert.equal(sandbox.result.address.length, 2);
+  assert.equal(sandbox.result.time.length, 1);
+  assert.equal(sandbox.result.time[0][0], "归属2");
+  assert.equal(sandbox.result.empty.length, 0);
 });
 
 test("资金划转只关联资金划转订单和实际钱包流水", async () => {

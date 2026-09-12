@@ -31,7 +31,8 @@
       {
         "label": "美人桥业务",
         "items": [
-          { "id": "admin-pay-order", "title": "订单管理", "doc": "美人桥订单管理-demo", "boot": "", "req": ["BP-REQ-010", "BP-REQ-012"] }
+          { "id": "admin-pay-order", "title": "订单管理", "doc": "美人桥订单管理-demo", "boot": "", "req": ["BP-REQ-010", "BP-REQ-012"] },
+          { "id": "admin-beauty-statistical-reports", "title": "统计报表", "doc": "美人桥统计报表-demo", "boot": "", "req": ["BP-REQ-014"] }
         ]
       },
       {
@@ -73,8 +74,8 @@
         "label": "系统管理",
         "items": [
           { "title": "登录ip白名单", "static": true },
-          { "id": "admin-black-list", "title": "封禁ip管理", "doc": "封禁IP管理-demo", "boot": "", "req": ["BP-REQ-013", "BP-REQ-014"] },
-          { "id": "admin-telegram-config", "title": "机器人设置", "doc": "机器人设置-demo", "boot": "", "req": ["BP-REQ-014"] }
+          { "id": "admin-black-list", "title": "封禁ip管理", "doc": "封禁IP管理-demo", "boot": "", "req": ["BP-REQ-013", "BP-REQ-015"] },
+          { "id": "admin-telegram-config", "title": "机器人设置", "doc": "机器人设置-demo", "boot": "", "req": ["BP-REQ-015"] }
         ]
       }
     ],
@@ -234,7 +235,7 @@
     {
       "id": "BP-REQ-012",
       "title": "美人桥 TRX 充值并上分 CNY",
-      "summary": "美人桥商户创建充值订单增加 TRX；商户填写上分 CNY 金额，系统读取并锁定美人桥订单管理页维护的 TRX/CNY 默认汇率，计算应转 TRX。TRX 未启用默认汇率时禁止下单；USDT 未启用默认汇率时可回退线上 USDT/CNY。TRX 到账后直接上分 CNY，不经过 USDT 中转。",
+      "summary": "美人桥商户创建充值订单增加 TRX；TRX 与 USDT 一样由商户填写充值数量，系统读取并锁定美人桥订单管理页维护的 TRX/CNY 默认汇率，计算应上分 CNY。TRX 未启用默认汇率时禁止下单；USDT 未启用默认汇率时可回退线上 USDT/CNY。TRX 到账后直接上分 CNY，不经过 USDT 中转。",
       "moduleCodes": ["ADMIN", "BEAUTY_MERCHANT"],
       "doc": "美人桥商户端订单列表-demo"
     },
@@ -247,6 +248,13 @@
     },
     {
       "id": "BP-REQ-014",
+      "title": "美人桥统计报表多币种展示",
+      "summary": "在蓝盛后台美人桥统计报表中，将今日充值、应转U调整为上分金额（CNY）、充值数量，新增充值币种并按币种分行；归属收款统计报表补充演示数据与TRX充值数量。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "美人桥统计报表-demo"
+    },
+    {
+      "id": "BP-REQ-015",
       "title": "系统管理机器人解除登录 IP 临时封禁",
       "summary": "在机器人设置中配置系统管理机器人 Token、群 ID 和功能状态；配置群内任一成员可通过 /unblock IP 直接解除登录失败产生的临时封禁。其他群和私聊不执行，不修改 Cloudflare 白名单，不处理人工永久封禁。",
       "moduleCodes": ["ADMIN"],
@@ -301,6 +309,10 @@
     {
       "id": "封禁IP管理-demo",
       "source": "pages/封禁IP管理/封禁IP管理-demo.html"
+    },
+    {
+      "id": "美人桥统计报表-demo",
+      "source": "pages/美人桥统计报表/美人桥统计报表-demo.html"
     },
     {
       "id": "机器人设置-demo",
