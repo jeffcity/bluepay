@@ -73,7 +73,8 @@
         "label": "系统管理",
         "items": [
           { "title": "登录ip白名单", "static": true },
-          { "id": "admin-black-list", "title": "封禁ip管理", "doc": "封禁IP管理-demo", "boot": "", "req": ["BP-REQ-013"] }
+          { "id": "admin-black-list", "title": "封禁ip管理", "doc": "封禁IP管理-demo", "boot": "", "req": ["BP-REQ-013", "BP-REQ-014"] },
+          { "id": "admin-telegram-config", "title": "机器人设置", "doc": "机器人设置-demo", "boot": "", "req": ["BP-REQ-014"] }
         ]
       }
     ],
@@ -243,6 +244,13 @@
       "summary": "复用系统管理下的封禁IP管理入口：登录密码或Google验证码在5分钟内累计错误5次时自动封锁IP 24小时，并支持按权限手动解除及保留审计记录。",
       "moduleCodes": ["ADMIN"],
       "doc": "封禁IP管理-demo"
+    },
+    {
+      "id": "BP-REQ-014",
+      "title": "系统管理机器人解除登录 IP 临时封禁",
+      "summary": "在机器人设置中配置系统管理机器人 Token、群 ID 和功能状态；配置群内任一成员可通过 /unblock IP 直接解除登录失败产生的临时封禁。其他群和私聊不执行，不修改 Cloudflare 白名单，不处理人工永久封禁。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "机器人设置-demo"
     }
   ],
   "documents": [
@@ -293,6 +301,10 @@
     {
       "id": "封禁IP管理-demo",
       "source": "pages/封禁IP管理/封禁IP管理-demo.html"
+    },
+    {
+      "id": "机器人设置-demo",
+      "source": "pages/机器人设置/机器人设置-demo.html"
     }
   ]
 }

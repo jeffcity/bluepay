@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>蓝盛支付 - 机器人设置</title>
+  <style>
+    :root{--blue:#5a9df6;--blue2:#78adf3;--purple:#7650a4;--indigo:#6679df;--canvas:#f4f6fa;--card:#fff;--text:#303133;--sub:#606266;--muted:#909399;--line:#e4e7ed;--line2:#dcdfe6;--green:#67c23a;--red:#f56c6c;--orange:#e6a23c;--soft-blue:#ecf5ff;--shadow:0 2px 12px rgba(31,45,61,.06);font-family:"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--text);font-size:14px}button,input,textarea,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(90,157,246,.25);outline-offset:2px}.app{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:100vh}.sidebar{background:#f6f8fb;border-right:1px solid #e7eaf0}.brand{height:56px;display:flex;align-items:center;padding:0 47px;background:#fff;color:#4e9af5;font-size:22px;font-weight:600;border-bottom:1px solid #eef0f4}.menu{padding:10px 0 32px}.menu-item{height:50px;display:flex;align-items:center;gap:12px;padding:0 40px;color:#7d8794}.menu-item svg{width:17px;height:17px;fill:none;stroke:#87b4e3;stroke-width:1.8}.menu-item.active{background:#e8f2ff;color:#6c7682}.menu-item.active svg{stroke:var(--blue)}.menu-item.section{justify-content:space-between}.menu-item .label{display:flex;align-items:center;gap:12px}.content{min-width:0}.topbar{height:56px;background:linear-gradient(90deg,#5a9df6,#78adf3);display:flex;justify-content:flex-end;align-items:center;padding:0 24px;color:#fff}.user{display:flex;align-items:center;gap:9px}.avatar{width:31px;height:31px;border-radius:50%;background:#cdd3da;border:1px solid rgba(255,255,255,.65)}.tabbar{height:40px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px;padding:5px 16px}.tab{height:29px;display:inline-flex;align-items:center;padding:0 11px;border:1px solid var(--line2);border-radius:3px;color:#606266}.tab.active{background:var(--blue);border-color:var(--blue);color:#fff}.page{padding:14px 20px 38px}.panel{background:var(--card);border-radius:6px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}.panel-head{height:55px;display:flex;align-items:center;gap:10px;padding:0 20px;background:linear-gradient(100deg,var(--indigo),var(--purple));color:#fff;font-size:16px}.panel-head svg{width:17px;height:17px;fill:none;stroke:#b7c9ff;stroke-width:1.8}.badge{margin-left:auto;padding:3px 8px;border-radius:3px;background:#d9a936;color:#fff;font-size:11px}.panel-body{padding:18px 20px}.form-grid{display:grid;grid-template-columns:140px minmax(260px,1fr) 140px minmax(260px,1fr);gap:14px 10px;align-items:center}.label{text-align:right;color:#565e69}.required::before{content:"*";color:var(--red);margin-right:4px}.input,.textarea,.select{width:100%;border:1px solid var(--line2);border-radius:4px;background:#fff;color:#4b5563;transition:.18s}.input,.select{height:34px;padding:0 11px}.textarea{min-height:80px;padding:9px 11px;resize:vertical}.input:hover,.input:focus,.textarea:hover,.textarea:focus,.select:hover,.select:focus{border-color:#8dc1fa}.input::placeholder,.textarea::placeholder{color:#b5bac2}.input-wrap{position:relative}.input-wrap .input{padding-right:42px}.eye{position:absolute;right:0;top:0;width:38px;height:34px;border:0;background:transparent;color:#8f98a5}.switch-row{display:flex;align-items:center;gap:10px}.switch{width:40px;height:20px;border:0;border-radius:12px;background:#dcdfe6;padding:2px;transition:.2s}.switch::after{content:"";display:block;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:.2s}.switch.on{background:var(--green)}.switch.on::after{transform:translateX(20px)}.number{display:grid;grid-template-columns:1fr 32px}.number .input{border-radius:4px 0 0 4px;text-align:center}.step{display:grid}.step button{height:17px;border:1px solid var(--line2);background:#fafafa;color:#8d95a0;line-height:12px}.step button:first-child{border-radius:0 4px 0 0}.step button:last-child{border-radius:0 0 4px 0;border-top:0}.actions{display:flex;align-items:center;gap:10px;margin-top:14px;padding-left:150px}.btn{height:34px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;border:1px solid var(--line2);border-radius:4px;background:#fff;color:#606266;transition:.18s}.btn:hover{border-color:#9ac9fb;color:#409eff;background:#f5faff}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.primary:hover{background:#438ee9}.btn.danger{color:var(--red);border-color:#fab6b6;background:#fef0f0}.btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9}.help{grid-column:2/5;color:#9aa1aa;font-size:12px;line-height:1.65;margin-top:-4px}.scope-box{grid-column:2/5;display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1px solid #c6e2ff;border-radius:4px;background:#f2f8ff;color:#597492;font-size:12px;line-height:1.65}.scope-box svg{flex:0 0 auto;width:16px;height:16px;margin-top:2px;fill:none;stroke:#409eff;stroke-width:2}.capability-line{grid-column:2/5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#7a8491}.command-box{grid-column:2/5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fafbfc}.command-box code,.chat-bubble code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#7447a5}.command-format{font-size:12px;color:#8a929d}.copy-command{height:28px;padding:0 10px;margin-left:auto}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.search{display:flex;gap:10px}.search .input{width:220px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:4px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{background:#f7f8fa;color:#606266;font-weight:500}td{color:#596273}.token{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#667085}.table-actions{display:flex;gap:12px;white-space:nowrap}.link{border:0;background:transparent;padding:0;color:#409eff}.link.red{color:var(--red)}.status{display:inline-flex;align-items:center;gap:7px;color:var(--green)}.status .switch{transform:scale(.82);transform-origin:left center;margin-right:-5px}.pager{display:flex;justify-content:flex-end;align-items:center;gap:9px;padding-top:14px;color:#7b8491}.page-btn{min-width:30px;height:30px;border:1px solid var(--line2);border-radius:3px;background:#fff;color:#666}.page-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}.dialog-mask{position:fixed;inset:0;z-index:30;display:none;place-items:center;background:rgba(15,23,42,.48);padding:20px}.dialog-mask.show{display:grid}.dialog{width:min(560px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:6px;box-shadow:0 16px 50px rgba(15,23,42,.22)}.dialog.wide{width:min(680px,100%)}.dialog-head{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line)}.dialog-head h2{margin:0;font-size:17px;font-weight:500}.close{width:34px;height:34px;border:0;background:transparent;color:#909399;font-size:22px}.dialog-body{padding:22px 28px}.dialog-grid{display:grid;grid-template-columns:120px 1fr;gap:16px 12px;align-items:center}.dialog-grid .label{text-align:right}.checks{display:flex;gap:20px;flex-wrap:wrap}.check{display:flex;align-items:center;gap:7px}.check input{accent-color:var(--blue)}.dialog-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 18px;border-top:1px solid var(--line)}.chat-demo{padding:18px;background:#f3f5f8;border-radius:5px}.chat-row{display:flex;margin-bottom:12px}.chat-row.mine{justify-content:flex-end}.chat-bubble{max-width:88%;padding:11px 13px;border-radius:6px;background:#fff;border:1px solid var(--line);line-height:1.55}.chat-row.mine .chat-bubble{background:#eaf4ff;border-color:#c6e2ff}.bot-name{font-weight:600;color:#596273;margin-bottom:8px}.receipt{display:grid;grid-template-columns:100px 1fr;gap:7px 10px;font-size:13px}.receipt dt{color:#909399}.receipt dd{margin:0;color:#4b5563}.command-step[hidden]{display:none}.verify-note{margin:0 0 14px;color:#606b78;line-height:1.65}.success-mark{width:48px;height:48px;display:grid;place-items:center;margin:0 auto 12px;border-radius:50%;background:#f0f9eb;color:#67c23a;font-size:25px}.success-title{text-align:center;font-size:17px;color:#303133;margin-bottom:18px}.toast{position:fixed;right:24px;top:72px;z-index:50;display:flex;align-items:center;gap:9px;padding:12px 16px;border-radius:5px;background:#f0f9eb;border:1px solid #c2e7b0;color:#529b2e;box-shadow:0 6px 22px rgba(0,0,0,.12);opacity:0;transform:translateY(-8px);pointer-events:none;transition:.22s}.toast.show{opacity:1;transform:none}.tag{display:inline-flex;padding:3px 8px;border-radius:3px;background:var(--soft-blue);color:#409eff;font-size:12px;margin:2px 4px 2px 0}
+    @media(max-width:1050px){.app{grid-template-columns:72px minmax(0,1fr)}.brand{padding:0;justify-content:center;font-size:0}.brand::after{content:"LS";font-size:18px}.menu-item{padding:0;justify-content:center}.menu-item span,.menu-item .caret{display:none}.form-grid{grid-template-columns:130px 1fr}.help,.scope-box{grid-column:2}.form-grid>.label:nth-of-type(n){text-align:right}.actions{padding-left:140px}}
+    @media(max-width:720px){.app{display:block}.sidebar{display:none}.page{padding:12px}.topbar{height:50px}.form-grid,.dialog-grid{grid-template-columns:1fr}.label,.dialog-grid .label{text-align:left}.help,.scope-box{grid-column:auto}.actions{padding-left:0;flex-wrap:wrap}.toolbar{align-items:stretch;flex-direction:column}.search{flex-wrap:wrap}.search .input{width:100%}.panel-body{padding:16px}.panel-head{height:50px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="系统菜单">
+    <div class="brand">蓝盛支付</div>
+    <nav class="menu">
+      <div class="menu-item"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg><span>封禁ip管理</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg><span>导出任务管理</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20c0-4 3-7 7-7s7 3 7 7"/></svg><span>用户管理</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><path d="M6 21v-3a6 6 0 0 1 12 0v3"/></svg><span>角色配置</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>菜单管理</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg><span>部门管理</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6"/></svg><span>岗位管理</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h5"/></svg><span>字典管理</span></div>
+      <div class="menu-item section"><span class="label"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8M8 13h5"/></svg><span>审计日志</span></span><span class="caret">⌄</span></div>
+      <div class="menu-item section"><span class="label"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6"/></svg><span>OAuth 2.0</span></span><span class="caret">⌄</span></div>
+      <div class="menu-item section"><span class="label"><svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 5-3 8-7 9-4-1-7-4-7-9V7z"/></svg><span>三方登录</span></span><span class="caret">⌄</span></div>
+      <div class="menu-item active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M4 12a8 8 0 0 1 16 0M7 18h10"/></svg><span>机器人设置</span></div>
+      <div class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 21s6-5 6-11a6 6 0 1 0-12 0c0 6 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg><span>地区管理</span></div>
+    </nav>
+  </aside>
+  <main class="content">
+    <header class="topbar"><div class="user"><div class="avatar"></div><span>芋道源码</span></div></header>
+    <div class="tabbar"><span class="tab">首页</span><span class="tab active">● 机器人设置&nbsp; ×</span></div>
+    <div class="page">
+      <section class="panel">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg>代收机器人</div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="label">回调报警机器人</div><input class="input" value="872181******f8Q8" aria-label="代收回调报警机器人">
+            <div class="label">查单机器人token</div><input class="input" value="840723******xfRA" aria-label="代收查单机器人token">
+            <div class="label">回调群ID</div><input class="input" value="-5158******" aria-label="代收回调群ID" style="grid-column:2/5">
+          </div>
+          <div class="actions"><button class="btn primary save-btn">✓ 保存</button></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg>代付机器人</div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="label">回调报警机器人</div><input class="input" value="867314******9-XI" aria-label="代付回调报警机器人">
+            <div class="label">查单机器人token</div><input class="input" value="861480******Txsc" aria-label="代付查单机器人token">
+            <div class="label">报警群ID</div><input class="input" value="-5158******" aria-label="报警群ID">
+            <div class="label">回调群ID</div><input class="input" value="-5158******" aria-label="回调群ID">
+            <div class="label">驳回通知开关</div><div class="switch-row"><button class="switch on toggle" aria-label="驳回通知开关"></button><span>启用</span></div>
+            <div class="label">报警开关</div><div class="switch-row"><button class="switch toggle" aria-label="报警开关"></button><span>停用</span></div>
+            <div class="label">商户预付报警余额</div><div class="number"><input class="input" value="2.00"><span class="step"><button>⌃</button><button>⌄</button></span></div>
+            <div class="label">通道预付报警余额</div><div class="number"><input class="input" value="0.00"><span class="step"><button>⌃</button><button>⌄</button></span></div>
+          </div>
+          <div class="actions"><button class="btn primary save-btn">✓ 保存</button></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><path d="M6 11a6 6 0 1 1 12 0v7H6zM9 18v2h6v-2"/></svg>审批机器人<span class="badge">NEW</span></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="label required">审批机器人 Token</div><input class="input" value="854141******RBxA" aria-label="审批机器人 Token">
+            <div class="help">现有审批／审核风控机器人配置保持原样，不参与 USDT 代付确认。审批消息目标群由各商户在「商户管理」中单独配置审核风控群 ID。</div>
+          </div>
+          <div class="actions"><button class="btn primary save-btn">✓ 保存</button></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><path d="M6 11a6 6 0 1 1 12 0v7H6zM9 18v2h6v-2"/></svg>USDT 代付确认机器人<span class="badge">NEW</span></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="label required">确认机器人 Token</div><div class="input-wrap"><input class="input secret" type="password" value="demo-usdt-confirm-token"><button class="eye reveal" aria-label="显示 Token">显示</button></div>
+            <div class="help">该机器人仅处理 USDT 代付确认消息；目标群读取商户的「USDT 代付确认 Chat ID」，操作权限读取该商户的「USDT 代付确认白名单」。不共用现有审批／审核风控机器人。</div>
+          </div>
+          <div class="actions"><button class="btn primary save-btn">✓ 保存</button></div>
+        </div>
+      </section>
+
+      <section class="panel" id="ipBotPanel">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 5-3 8-7 9-4-1-7-4-7-9V7z"/><path d="M9 12l2 2 4-5"/></svg>系统管理机器人<span class="badge">NEW</span></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="label required">系统管理机器人 Token</div><div class="input-wrap"><input id="ipBotToken" class="input secret" type="password" value="demo-system-admin-bot-token"><button class="eye reveal" aria-label="显示系统管理机器人 Token">显示</button></div>
+            <div class="label">功能状态</div><div class="switch-row"><button id="ipBotSwitch" class="switch on toggle" aria-label="系统管理机器人状态"></button><span id="ipBotStatus">启用</span></div>
+            <div class="label required">群 ID</div><input id="systemBotGroupId" class="input" value="-5189******" aria-label="系统管理机器人群 ID" style="grid-column:2/5">
+          </div>
+          <div class="actions">
+            <button id="saveIpBot" class="btn primary">✓ 保存</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><path d="M5 18h14M7 18V8l5-4 5 4v10"/></svg>通知机器人</div>
+        <div class="panel-body">
+          <div class="toolbar"><div class="search"><input id="robotSearch" class="input" placeholder="请输入机器人名称"><button id="robotSearchBtn" class="btn primary">搜索</button></div><button id="addRobot" class="btn primary">＋ 新增</button></div>
+          <div class="table-wrap"><table><thead><tr><th>序号</th><th>名称</th><th>token</th><th>状态</th><th>备注</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="robotRows"></tbody></table></div>
+          <div class="pager"><span>共 6 条</span><select class="select" style="width:98px"><option>10条/页</option></select><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn" disabled>›</button><span>前往</span><input class="input" value="1" style="width:50px"><span>页</span></div>
+        </div>
+      </section>
+
+      <section class="panel" id="operators">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20c0-4 3-7 7-7s7 3 7 7"/></svg>TG操作员</div>
+        <div class="panel-body">
+          <div class="toolbar"><div class="search"><input id="operatorSearch" class="input" placeholder="请输入TG账号"><button id="operatorSearchBtn" class="btn primary">搜索</button></div><button id="addOperator" class="btn primary">＋ 新增</button></div>
+          <div class="table-wrap"><table><thead><tr><th>序号</th><th>用户名</th><th>业务类型</th><th>业务权限</th><th>系统管理员账号</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="operatorRows"></tbody></table></div>
+          <div class="pager"><span>共 3 条</span><select class="select" style="width:98px"><option>10条/页</option></select><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn" disabled>›</button><span>前往</span><input class="input" value="1" style="width:50px"><span>页</span></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="dialog-mask" id="robotDialog" role="dialog" aria-modal="true" aria-labelledby="robotDialogTitle"><div class="dialog"><div class="dialog-head"><h2 id="robotDialogTitle">新增通知机器人</h2><button class="close" data-close="robotDialog">×</button></div><div class="dialog-body"><div class="dialog-grid"><div class="label required">名称</div><input id="robotName" class="input" maxlength="30" placeholder="请输入机器人名称"><div class="label required">token</div><input id="robotToken" class="input" placeholder="请输入机器人 Token"><div class="label">备注</div><textarea id="robotRemark" class="textarea" maxlength="200" placeholder="请输入备注"></textarea><div class="label required">状态</div><div class="switch-row"><button class="switch on toggle"></button><span>启用</span></div></div></div><div class="dialog-foot"><button class="btn" data-close="robotDialog">取消</button><button id="submitRobot" class="btn primary">立即提交</button></div></div></div>
+
+<div class="dialog-mask" id="operatorDialog" role="dialog" aria-modal="true" aria-labelledby="operatorDialogTitle"><div class="dialog wide"><div class="dialog-head"><h2 id="operatorDialogTitle">新增TG操作员</h2><button class="close" data-close="operatorDialog">×</button></div><div class="dialog-body"><div class="dialog-grid"><div class="label required">用户名</div><input id="operatorName" class="input" placeholder="请输入带@的TG用户名，例如：@pay_oncall"><div class="label">状态</div><div class="switch-row"><button class="switch on toggle"></button><span>启用</span></div><div class="label">业务类型</div><div class="checks"><label class="check"><input type="checkbox">代收</label><label class="check"><input type="checkbox">代付</label></div><div class="label">业务权限</div><select id="operatorPermission" class="select"><option>绑定商户，绑定通道，查单反馈，回调确认</option></select><div class="label required">系统管理员账号</div><input id="adminAccount" class="input" placeholder="请输入关联的系统管理员账号"></div></div><div class="dialog-foot"><button class="btn" data-close="operatorDialog">取消</button><button id="submitOperator" class="btn primary">✓ 确定</button></div></div></div>
+
+<div class="toast" id="toast">✓ <span id="toastText">保存成功</span></div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const robots=[
+    {name:'蓝盛通知机器人',token:'880926******K2nQ',on:true,remark:'订单与系统消息通知',time:'2026-08-18 18:01:40'},
+    {name:'稽核通知机器人',token:'882170******aywg',on:true,remark:'用于代付订单与稽核消息',time:'2026-08-04 23:46:01'},
+    {name:'代收值班机器人',token:'860976******djtI',on:true,remark:'—',time:'2026-06-11 12:40:23'},
+    {name:'代付值班机器人',token:'861480******Txsc',on:true,remark:'测试环境',time:'2026-06-11 12:28:02'},
+    {name:'财务通知机器人',token:'858358******NoNU',on:true,remark:'—',time:'2026-05-25 16:06:38'},
+    {name:'系统测试机器人',token:'861480******Txsc',on:true,remark:'联调使用',time:'2026-05-22 18:31:21'}
+  ];
+  const operators=[
+    {name:'@pay_oncall',types:'代付，代收',permissions:'绑定商户，绑定通道，查单反馈，回调确认',admin:'pay-oncall',on:true,time:'2026-06-24 19:56:09'},
+    {name:'@risk_audit',types:'代付',permissions:'查单反馈',admin:'risk-audit',on:true,time:'2026-05-05 10:26:08'},
+    {name:'@finance_ops',types:'代收',permissions:'绑定商户，执行对账',admin:'finance-ops',on:true,time:'2026-03-30 11:18:47'}
+  ];
+  function notify(text){$('toastText').textContent=text;$('toast').classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>$('toast').classList.remove('show'),1800)}
+  function switchHtml(on,label=''){return `<span class="status"><button class="switch ${on?'on':''} row-toggle" aria-label="${label}"></button>${on?'启用':'停用'}</span>`}
+  function renderRobots(filter=''){const rows=robots.map((r,i)=>({r,i})).filter(x=>x.r.name.includes(filter));$('robotRows').innerHTML=rows.map(({r,i})=>`<tr><td>${i+1}</td><td>${r.name}</td><td class="token">${r.token}</td><td>${switchHtml(r.on,'机器人状态')}</td><td>${r.remark}</td><td>${r.time}</td><td><div class="table-actions"><button class="link edit-robot" data-i="${i}">修改</button><button class="link red delete-robot" data-i="${i}">删除</button><button class="link test-robot">测试发送</button></div></td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#909399">暂无匹配数据</td></tr>'}
+  function renderOperators(filter=''){const rows=operators.map((r,i)=>({r,i})).filter(x=>x.r.name.includes(filter));$('operatorRows').innerHTML=rows.map(({r,i})=>`<tr><td>${i+1}</td><td style="color:#409eff">${r.name}</td><td>${r.types}</td><td>${r.permissions}</td><td>${r.admin}</td><td>${switchHtml(r.on,'操作员状态')}</td><td>${r.time}</td><td><div class="table-actions"><button class="link edit-operator" data-i="${i}">修改</button><button class="link red delete-operator" data-i="${i}">删除</button></div></td></tr>`).join('')||'<tr><td colspan="8" style="text-align:center;color:#909399">暂无匹配数据</td></tr>'}
+  function openDialog(id){$(id).classList.add('show');setTimeout(()=>$(id).querySelector('input,button')?.focus(),20)}function closeDialog(id){$(id).classList.remove('show')}
+  document.querySelectorAll('.toggle').forEach(btn=>btn.addEventListener('click',()=>{btn.classList.toggle('on');const label=btn.parentElement.querySelector('span');if(label)label.textContent=btn.classList.contains('on')?'启用':'停用'}));
+  document.querySelectorAll('.reveal').forEach(btn=>btn.addEventListener('click',()=>{const input=btn.previousElementSibling;input.type=input.type==='password'?'text':'password';btn.textContent=input.type==='password'?'显示':'隐藏'}));
+  document.querySelectorAll('.save-btn').forEach(btn=>btn.addEventListener('click',()=>notify('机器人配置已保存')));
+  $('ipBotSwitch').addEventListener('click',()=>{$('ipBotStatus').textContent=$('ipBotSwitch').classList.contains('on')?'启用':'停用'});
+  $('saveIpBot').onclick=()=>{if(!$('ipBotToken').value.trim()){notify('请输入系统管理机器人 Token');$('ipBotToken').focus();return}if(!$('systemBotGroupId').value.trim()){notify('请输入群 ID');$('systemBotGroupId').focus();return}notify('系统管理机器人配置已保存')};
+  $('addRobot').onclick=()=>openDialog('robotDialog');$('addOperator').onclick=()=>openDialog('operatorDialog');
+  document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeDialog(btn.dataset.close)));
+  $('submitRobot').onclick=()=>{const name=$('robotName').value.trim(),token=$('robotToken').value.trim();if(!name||!token){notify('请填写机器人名称和 Token');return}robots.unshift({name,token:'已配置（脱敏展示）',on:true,remark:$('robotRemark').value.trim()||'—',time:'2026-09-11 11:00:00'});renderRobots();closeDialog('robotDialog');notify('通知机器人已新增')};
+  $('submitOperator').onclick=()=>{const name=$('operatorName').value.trim(),admin=$('adminAccount').value.trim();if(!name||!admin){notify('请填写TG用户名和系统管理员账号');return}operators.unshift({name:name.startsWith('@')?name:`@${name}`,types:'代付，代收',permissions:$('operatorPermission').value,admin,on:true,time:'2026-09-11 11:00:00'});renderOperators();closeDialog('operatorDialog');notify('TG操作员已新增')};
+  $('robotSearchBtn').onclick=()=>renderRobots($('robotSearch').value.trim());$('operatorSearchBtn').onclick=()=>renderOperators($('operatorSearch').value.trim());
+  $('robotRows').addEventListener('click',e=>{if(e.target.closest('.row-toggle')){const row=e.target.closest('tr'),i=[...$('robotRows').children].indexOf(row);robots[i].on=!robots[i].on;renderRobots();notify(robots[i].on?'机器人已启用':'机器人已停用')}if(e.target.closest('.test-robot'))notify('测试消息发送成功');if(e.target.closest('.edit-robot'))openDialog('robotDialog');if(e.target.closest('.delete-robot'))notify('演示模式不执行真实删除')});
+  $('operatorRows').addEventListener('click',e=>{if(e.target.closest('.row-toggle')){const row=e.target.closest('tr'),i=[...$('operatorRows').children].indexOf(row);operators[i].on=!operators[i].on;renderOperators();notify(operators[i].on?'操作员已启用':'操作员已停用')}if(e.target.closest('.edit-operator'))openDialog('operatorDialog');if(e.target.closest('.delete-operator'))notify('演示模式不执行真实删除')});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.dialog-mask.show').forEach(x=>x.classList.remove('show'))});
+  renderRobots();renderOperators();
+</script>
+</body>
+</html>

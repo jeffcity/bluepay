@@ -27,11 +27,15 @@ test("项目清单含四端与产品导航", async () => {
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-daifu-flow")));
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-pay-order")));
   assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-black-list")));
+  assert.ok(catalog.nav.ADMIN.some((g) => g.items.some((i) => i.id === "admin-telegram-config")));
   assert.ok(catalog.nav.MERCHANT.some((g) => g.items.some((i) => i.id === "merchant-order")));
   assert.ok(catalog.nav.BEAUTY_MERCHANT.some((g) => g.items.some((i) => i.id === "beauty-order-list")));
   assert.ok(catalog.nav.ADMIN.flatMap((g) => g.items || []).find((i) => i.id === "admin-pay-order").req.includes("BP-REQ-012"));
   assert.ok(catalog.nav.BEAUTY_MERCHANT.flatMap((g) => g.items || []).find((i) => i.id === "beauty-order-list").req.includes("BP-REQ-012"));
   assert.deepEqual(catalog.pages.find((page) => page.id === "BP-REQ-012").moduleCodes, ["ADMIN", "BEAUTY_MERCHANT"]);
+  assert.equal(catalog.pages.find((page) => page.id === "BP-REQ-014").doc, "机器人设置-demo");
+  assert.match(catalog.pages.find((page) => page.id === "BP-REQ-014").summary, /\/unblock/);
+  assert.match(catalog.pages.find((page) => page.id === "BP-REQ-014").summary, /群 ID/);
   assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN") || page.moduleCodes.includes("MERCHANT") || page.moduleCodes.includes("ADDRESS") || page.moduleCodes.includes("BEAUTY_MERCHANT")));
 });
 
