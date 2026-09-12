@@ -36,6 +36,10 @@ test("项目清单含四端与产品导航", async () => {
   assert.equal(catalog.pages.find((page) => page.id === "BP-REQ-015").doc, "机器人设置-demo");
   assert.match(catalog.pages.find((page) => page.id === "BP-REQ-015").summary, /\/unblock/);
   assert.match(catalog.pages.find((page) => page.id === "BP-REQ-015").summary, /群 ID/);
+  assert.equal(catalog.pages.find((page) => page.id === "BP-REQ-016").doc, "TG系统消息配置-demo");
+  assert.match(catalog.pages.find((page) => page.id === "BP-REQ-016").summary, /进入黑名单/);
+  assert.match(catalog.pages.find((page) => page.id === "BP-REQ-016").summary, /移出黑名单/);
+  assert.ok(catalog.nav.ADMIN.flatMap((g) => g.items || []).find((i) => i.id === "admin-tg-system-message").req.includes("BP-REQ-016"));
   assert.ok(catalog.pages.every((page) => page.moduleCodes.includes("ADMIN") || page.moduleCodes.includes("MERCHANT") || page.moduleCodes.includes("ADDRESS") || page.moduleCodes.includes("BEAUTY_MERCHANT")));
 });
 

@@ -67,7 +67,7 @@
         "items": [
           { "title": "转发消息模板配置", "static": true },
           { "title": "关键词配置", "static": true },
-          { "id": "admin-tg-system-message", "title": "TG系统消息配置", "doc": "TG系统消息配置-demo", "boot": "", "req": ["BP-REQ-006"] }
+          { "id": "admin-tg-system-message", "title": "TG系统消息配置", "doc": "TG系统消息配置-demo", "boot": "", "req": ["BP-REQ-006", "BP-REQ-016"] }
         ]
       },
       {
@@ -259,6 +259,13 @@
       "summary": "在机器人设置中配置系统管理机器人 Token、群 ID 和功能状态；配置群内任一成员可通过 /unblock IP 直接解除登录失败产生的临时封禁。其他群和私聊不执行，不修改 Cloudflare 白名单，不处理人工永久封禁。",
       "moduleCodes": ["ADMIN"],
       "doc": "机器人设置-demo"
+    },
+    {
+      "id": "BP-REQ-016",
+      "title": "登录 IP 黑名单状态通知",
+      "summary": "在 TG 系统消息配置中新增登录IP进入黑名单、登录IP移出黑名单两种消息类型，变量映射封禁 IP 管理记录；临时封禁首次生效及自动、后台人工或系统管理机器人解除成功时发送通知。",
+      "moduleCodes": ["ADMIN"],
+      "doc": "TG系统消息配置-demo"
     }
   ],
   "documents": [
