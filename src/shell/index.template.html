@@ -68,6 +68,13 @@
     .beauty-side-btn.active{color:#fff;background:#2454f5;box-shadow:0 10px 25px rgba(24,54,205,.24)}
     .beauty-side-btn.static{cursor:default}
     .beauty-side-btn.static:hover{color:#bbb4ca;background:transparent}
+    .beauty-side-children{display:grid;gap:4px;margin:5px 0 4px 29px;padding-left:10px;border-left:1px solid rgba(255,255,255,.16)}
+    .beauty-side-children[hidden]{display:none}
+    .beauty-side-children .beauty-side-btn{min-height:42px;padding:0 12px;gap:10px;border-radius:8px;font-size:14px}
+    .beauty-side-children .beauty-side-btn.active{background:#3145aa;box-shadow:none}
+    .beauty-side-arrow{margin-left:auto;font-size:12px}
+    .beauty-side-btn.ancestor{color:#fff}
+    .beauty-side-btn:focus-visible{outline:3px solid #96adff;outline-offset:2px}
     .beauty-side-icon{width:22px;height:22px;display:grid;place-items:center;flex:0 0 auto;color:currentColor;font-size:17px}
     .workspace{min-height:0;position:relative}
     .frame-wrap{position:absolute;inset:0;overflow:hidden;background:var(--surface)}
@@ -157,10 +164,16 @@
         merchantCrumb.textContent="";
         const icons=["▤","▣","▰","▦"];
         const items=groups.flatMap(function(group){return group.items||[];});
-        sideNav.innerHTML=items.map(function(item,index){
+        function beautyButton(item,children,expanded){
           const active=item.id===currentPageId;
           const page=item.id&&item.doc?' data-page="'+escapeHtml(item.id)+'"':'';
-          return '<button class="beauty-side-btn'+(active?' active':'')+(!page?' static':'')+'" type="button"'+page+'><span class="beauty-side-icon">'+icons[index%icons.length]+'</span><span>'+escapeHtml(item.title)+'</span></button>';
+          const disclosure=children.length?' aria-expanded="'+expanded+'" aria-controls="'+escapeHtml(item.id)+'-children"':'';
+          return '<button class="beauty-side-btn'+(active?' active':'')+(children.length&&expanded&&!active?' ancestor':'')+(!page?' static':'')+'" type="button"'+page+disclosure+'><span class="beauty-side-icon">'+icons[items.indexOf(item)%icons.length]+'</span><span>'+escapeHtml(item.title)+'</span>'+(children.length?'<span class="beauty-side-arrow" aria-hidden="true">'+(expanded?'⌄':'›')+'</span>':'')+'</button>';
+        }
+        sideNav.innerHTML=items.filter(function(item){return !item.parent;}).map(function(item){
+          const children=items.filter(function(child){return Boolean(child.parent)&&child.parent===item.id;});
+          const expanded=item.id===currentPageId||children.some(function(child){return child.id===currentPageId;});
+          return '<div class="beauty-side-group">'+beautyButton(item,children,expanded)+(children.length?'<div class="beauty-side-children" id="'+escapeHtml(item.id)+'-children"'+(expanded?'':' hidden')+'>'+children.map(function(child){return beautyButton(child,[],false);}).join('')+'</div>':'')+'</div>';
         }).join('');
         return;
       }
@@ -193,8 +206,9 @@
       }
       sideNav.innerHTML=groups.map(function(group){
         if(!(group.items||[]).length) return "";
-        const buttons=group.items.map(function(item){
-          const active=item.id===currentPageId;
+        const buttons=group.items.filter(function(item){return !item.hidden;}).map(function(item){
+          const current=findPage(currentPageId);
+          const active=item.id===currentPageId||Boolean(current?.item.parent)&&item.id===current.item.parent;
           const page=item.id&&item.doc?' data-page="'+escapeHtml(item.id)+'"':'';
           return '<button class="side-btn'+(active?" active":"")+(!page?' static':'')+'" type="button"'+page+'>'+escapeHtml(item.title)+'</button>';
         }).join("");
