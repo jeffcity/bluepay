@@ -48,3 +48,9 @@ npm run check
 6. 运行 `npm run check`，确认统一入口和既有页面正常后再提交和推送。
 
 不要直接修改 `index.html` 或 `dist/`，它们是构建产物。
+
+## 2026-10-14：iframe 标注兼容与制作规范
+
+切端或切页装载完整 HTML 时使用新 iframe 窗口与同步文档写入，避免此前跨端切换触发的标注失效；保持原有导航、业务源、状态与交付结构。React 壳使用稳定宿主并隔离过期加载回调，路由/context 在内页脚本运行前初始化。
+
+实现与验收规则见 [Demo iframe 装载与标注生命周期](docs/demo-iframe-annotation-lifecycle.md)。SaaS 标注恢复已由用户确认；其他三个项目的程序和切换检查与人工标注确认分别记录，构建成功不能代替标注验收。

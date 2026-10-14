@@ -117,7 +117,7 @@
     const sideNav=document.getElementById("sideNav");
     const side=document.getElementById("sidePanel");
     const merchantCrumb=document.getElementById("merchantCrumb");
-    const frame=document.getElementById("demoFrame");
+    let frame=document.getElementById("demoFrame");
     const frameWrap=document.getElementById("frameWrap");
     const emptyState=document.getElementById("emptyState");
     const toast=document.getElementById("toast");
@@ -305,8 +305,12 @@ html.bp-embed .sys-badge{display:none!important}
       }
       frameWrap.hidden=false;
       emptyState.hidden=true;
+      const previous=frame;
+      frame=previous.cloneNode(false);
+      previous.replaceWith(frame);
       frame.title=item.title;
-      frame.srcdoc=buildSrcdoc(item);
+      const embedded=frame.contentDocument;
+      embedded.open();embedded.write(buildSrcdoc(item));embedded.close();
       if(updateHash && location.hash!=="#"+item.id) history.replaceState(null,"","#"+item.id);
       renderNav();
       renderSide();
@@ -320,7 +324,9 @@ html.bp-embed .sys-badge{display:none!important}
         frameWrap.hidden=true;
         emptyState.hidden=false;
         emptyState.textContent=moduleLabel(code)+"暂未接入页面";
-        frame.removeAttribute("srcdoc");
+        const previous=frame;
+        frame=previous.cloneNode(false);
+        previous.replaceWith(frame);
         renderSide();
         notify(moduleLabel(code)+"暂未接入页面");
         return;

@@ -260,7 +260,10 @@ test("后台默认进产品导航页且商户不串后台", async () => {
         id,
         hidden: false,
         innerHTML: "",
-        srcdoc: "",
+        contentWindow: {},
+        contentDocument: { html: '', documentElement: {}, open(){this.html='';this.documentElement=null;},write(html){this.html=html;this.documentElement={};},close(){} },
+        cloneNode(){const clone={...this,contentWindow:{},contentDocument:{...this.contentDocument}};return clone;},
+        replaceWith(next){elements.set(this.id,next);},
         textContent: "",
         title: "",
         classList: { add() {}, remove() {}, toggle() {} },
@@ -291,12 +294,13 @@ test("后台默认进产品导航页且商户不串后台", async () => {
   assert.match(element("sideNav").innerHTML, /代收商户管理|商户充值订单|虚拟币充值/);
   assert.match(element("sideNav").innerHTML, /通道代收流水记录/);
   assert.doesNotMatch(element("sideNav").innerHTML, /data-page="undefined"/);
-  assert.match(element("demoFrame").srcdoc, /__BP_SURFACE__=\"ADMIN\"|__BP_SURFACE__='ADMIN'|__BP_SURFACE__=\"ADMIN\"/);
-  assert.match(element("demoFrame").srcdoc, /__BP_BOOT__/);
-  assert.match(element("demoFrame").srcdoc, /bp-embed|__BP_EMBED__/);
+  assert.match(element("demoFrame").contentDocument.html, /__BP_SURFACE__=\"ADMIN\"|__BP_SURFACE__='ADMIN'|__BP_SURFACE__=\"ADMIN\"/);
+  assert.match(element("demoFrame").contentDocument.html, /__BP_BOOT__/);
+  assert.match(element("demoFrame").contentDocument.html, /bp-embed|__BP_EMBED__/);
   // default admin page should not be merchant surface
-  assert.doesNotMatch(element("demoFrame").srcdoc, /__BP_SURFACE__=\"MERCHANT\"/);
+  assert.doesNotMatch(element("demoFrame").contentDocument.html, /__BP_SURFACE__=\"MERCHANT\"/);
 
+  const adminWindow=element("demoFrame").contentWindow;
   const clickMain = listeners.get("mainNav:click");
   assert.equal(typeof clickMain, "function");
   clickMain({
@@ -307,8 +311,10 @@ test("后台默认进产品导航页且商户不串后台", async () => {
       }
     }
   });
+  assert.notEqual(element("demoFrame").contentWindow,adminWindow);
+  assert.ok(element("demoFrame").contentDocument.documentElement);
   assert.match(element("sideNav").innerHTML, /代收订单|商户下发提现/);
   assert.doesNotMatch(element("sideNav").innerHTML, /代收商户管理|虚拟币充值配置/);
-  assert.match(element("demoFrame").srcdoc, /__BP_SURFACE__=\"MERCHANT\"/);
-  assert.match(element("demoFrame").srcdoc, /m-order|__BP_BOOT__=\"m-order\"/);
+  assert.match(element("demoFrame").contentDocument.html, /__BP_SURFACE__=\"MERCHANT\"/);
+  assert.match(element("demoFrame").contentDocument.html, /m-order|__BP_BOOT__=\"m-order\"/);
 });
