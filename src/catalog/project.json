@@ -83,7 +83,7 @@
             "id": "admin-beauty-wallet-exchanges",
             "title": "钱包兑换订单",
             "doc": "美人桥商户钱包-demo",
-            "boot": "admin-exchanges",
+            "boot": "admin-topups",
             "req": [
               "BP-REQ-017"
             ],
@@ -105,7 +105,7 @@
             "id": "admin-beauty-wallet-settings",
             "title": "钱包设置",
             "doc": "美人桥商户钱包-demo",
-            "boot": "admin-settings",
+            "boot": "admin-topups",
             "req": [
               "BP-REQ-017"
             ],
@@ -351,7 +351,7 @@
     {
       "id": "BP-REQ-017",
       "title": "美人桥商户中心化钱包",
-      "summary": "独立美人桥商户钱包，USDT/TRX原币自动充值；手续费支持全局和商户配置；USDT兑换TRX确认时锁价并立即完成记账。",
+      "summary": "第一期仅USDT原币充值、余额、记录与后台人工确认入账／取消；USDT充值不收手续费，实际收款全额入账；TRX充值、兑换及汇率配置延期。",
       "moduleCodes": [
         "ADMIN",
         "BEAUTY_MERCHANT"
