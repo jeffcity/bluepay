@@ -70,7 +70,7 @@
           },
           {
             "id": "admin-beauty-wallet-topups",
-            "title": "钱包上分订单",
+            "title": "钱包充值订单",
             "doc": "美人桥商户钱包-demo",
             "boot": "admin-topups",
             "req": [
@@ -351,7 +351,7 @@
     {
       "id": "BP-REQ-017",
       "title": "美人桥商户中心化钱包",
-      "summary": "独立美人桥商户钱包，USDT/TRX原币自动上分；手续费支持全局和商户配置；USDT兑换TRX确认时锁价并立即完成记账。",
+      "summary": "独立美人桥商户钱包，USDT/TRX原币自动充值；手续费支持全局和商户配置；USDT兑换TRX确认时锁价并立即完成记账。",
       "moduleCodes": [
         "ADMIN",
         "BEAUTY_MERCHANT"
