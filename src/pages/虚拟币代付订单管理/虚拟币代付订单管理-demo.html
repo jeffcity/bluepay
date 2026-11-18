@@ -14,6 +14,7 @@
 .third-payout-body{padding:0 16px;overflow:auto}.third-payout-alert{display:flex;gap:10px;align-items:center;background:#fdf6ec;color:#c8a061;border-radius:4px;padding:10px 16px;margin-bottom:0;font-size:13px;line-height:24px}.third-payout-alert-icon{flex:none;background:#e6a23c;color:#fff;border-radius:50%;width:14px;height:14px;line-height:14px;text-align:center;font-size:11px;font-weight:700}
 .third-payout-info{background:#f2f9fd;border:1px solid #e4eaf0;border-radius:6px;padding:10px 12px}.third-payout-row{display:grid;grid-template-columns:130px minmax(0,1fr);gap:0;min-height:28px;align-items:center}.third-payout-label{color:#909399}.third-payout-value{overflow-wrap:anywhere}.third-payout-mono{font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}.third-payout-chain{display:inline-block;padding:0 6px;line-height:18px;border:1px solid #fde2e2;background:#fef0f0;border-radius:3px;color:#f56c6c;font-size:11px;margin-right:6px}.third-payout-amount{font-size:16px;font-weight:600;color:#409eff}.third-payout-copy{border:0;background:transparent;color:#409eff;font-size:12px;cursor:pointer;padding:0 5px}.third-payout-foot{padding:16px;display:flex;gap:12px;justify-content:flex-end}.third-payout-button{height:32px;border:1px solid #dcdfe6;border-radius:4px;background:#fff;color:#606266;padding:0 15px;cursor:pointer;font-size:13px}.third-payout-button:hover{background:#ecf5ff;color:#409eff;border-color:#c6e2ff}.third-payout-submit{background:#409eff;color:#fff;border-color:#409eff}.third-payout-submit:hover{background:#66b1ff;color:#fff;border-color:#66b1ff}.third-payout-dialog button:focus-visible{outline:2px solid #79bbff;outline-offset:2px}.third-payout-error{color:#f56c6c;margin:8px 0 0}.third-payout-error:empty{display:none}
 @media(max-width:560px){.third-payout-shade{padding:12px}.third-payout-row{grid-template-columns:110px minmax(0,1fr);padding:3px 0}.third-payout-foot{flex-wrap:wrap}}
+.third-payout-channel-select{width:100%;height:32px;border:1px solid #dcdfe6;border-radius:4px;background:#fff;color:#606266;padding:0 10px;font:inherit}.third-payout-submit:disabled{cursor:not-allowed;background:#a0cfff;border-color:#a0cfff}
 /* THIRD_PARTY_PAYOUT_STYLE_END */
 </style>
 </head>
@@ -55,19 +56,26 @@
 function canSubmitThirdPartyPayout(order) {
   return !!order && ['待处理', '待支付'].includes(order.status) && order.confirm === '已确认' && order.third === '未提交';
 }
-function submitThirdPartyPayout(order) {
+function selectedThirdPartyChannel(order, id) {
+  return (order.getChannels?.() || []).find(c=>c.id===id && c.category==='下分' && c.enabled);
+}
+function submitThirdPartyPayout(order, channel) {
   if (!canSubmitThirdPartyPayout(order)) return false;
+  if (order.business === 'withdraw') {
+    if (!channel || channel.category !== '下分' || !channel.enabled) return false;
+    order.channelId = channel.id; order.channelName = channel.name; order.channelProvider = channel.provider;
+  }
   order.status = '代付处理中';
   order.third = '已提交';
   return true;
 }
-function thirdPartyPayoutBody(order) {
+function thirdPartyPayoutBody(order, channels = order.getChannels?.() || []) {
   const escape = text => String(text ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const currency = escape(order.currency), amount = Number(order.outAmount).toFixed(2), balance = Number(order.balance).toFixed(2);
   const withdrawal = order.business === 'withdraw';
   const chain = `<span class="third-payout-chain">${escape(order.chain)}</span>`;
   const row = (label, value) => `<div class="third-payout-row"><span class="third-payout-label">${label}</span><span class="third-payout-value">${value}</span></div>`;
-  return `<div class="third-payout-alert" role="alert"><span class="third-payout-alert-icon" aria-hidden="true">!</span><span>${withdrawal ? '本笔下分订单已达到可出款条件。确认后将提交到新万能出款，状态改为「代付处理中」，等待新万能回调更新出款结果。' : '确认后订单将提交到三方代付，当前状态改为「代付处理中」。需等待三方转账回调后，再同步最终状态给商户。'}</span></div>
+  return `<div class="third-payout-alert" role="alert"><span class="third-payout-alert-icon" aria-hidden="true">!</span><span>${withdrawal ? '本笔下分订单已达到可出款条件。请选择下分代付通道，确认后提交到所选通道，状态改为「代付处理中」，等待通道回调更新出款结果。' : '确认后订单将提交到三方代付，当前状态改为「代付处理中」。需等待三方转账回调后，再同步最终状态给商户。'}</span></div>
     <div class="third-payout-info">${[
       ...(withdrawal ? [row('下分单号', `<span class="third-payout-mono">${escape(order.id)}</span>`)] : [
         row('商户订单号', `<span class="third-payout-mono">${escape(order.merchantOrder)}</span>`),
@@ -77,9 +85,9 @@ function thirdPartyPayoutBody(order) {
       row('收款钱包地址', chain + `<span class="third-payout-mono">${escape(order.recipient)}</span><button type="button" class="third-payout-copy" data-third-copy="${escape(order.recipient)}" aria-label="复制收款钱包地址">▣</button>`),
       row('协议类型', chain),
       row('出款金额', `<span class="third-payout-amount">${amount} ${currency}</span><button type="button" class="third-payout-copy" data-third-copy="${amount}" aria-label="复制出款金额">复制</button>`),
-      ...(withdrawal ? [row('出款方式', '代付出款'), row('代付通道', '新万能'), row('提交状态', '未提交新万能')] : [
+      ...(withdrawal ? [row('出款方式', '代付出款'), row('代付通道', `<select class="third-payout-channel-select" id="withdrawPayoutChannel" aria-label="代付通道" ${channels.length?'':'disabled'}><option value="">${channels.length?'请选择下分代付通道':'暂无已开启的下分通道'}</option>${channels.map(c=>`<option value="${escape(c.id)}">${escape(c.name)}</option>`).join('')}</select>`), row('提交状态', '未提交代付通道')] : [
         row('三方处理状态', '未提交第三方：本地订单未记录第三方订单号，可走普通提交第三方流程')]),
-      row('处理方式', withdrawal ? '提交新万能出款，等待新万能回调' : '提交三方代付，等待三方转账回调')
+      row('处理方式', withdrawal ? '提交所选代付通道，等待通道回调' : '提交三方代付，等待三方转账回调')
     ].join('')}</div><p class="third-payout-error" role="status" aria-live="polite"></p>`;
 }
 function openThirdPartyPayout(order, onSubmitted, notify) {
@@ -88,7 +96,7 @@ function openThirdPartyPayout(order, onSubmitted, notify) {
   const previousFocus = document.activeElement, previousOverflow = document.body.style.overflow;
   const shade = document.createElement('div');
   shade.className = 'third-payout-shade';
-  shade.innerHTML = `<section class="third-payout-dialog" role="dialog" aria-modal="true" aria-labelledby="thirdPayoutTitle"><header class="third-payout-head"><h2 id="thirdPayoutTitle">代付出款</h2><button class="third-payout-close" type="button" aria-label="关闭此对话框">×</button></header><div class="third-payout-body">${thirdPartyPayoutBody(order)}</div><footer class="third-payout-foot"><button type="button" class="third-payout-button third-payout-cancel">取消</button><button type="button" class="third-payout-button third-payout-submit">${order.business === 'withdraw' ? '确认提交新万能出款' : '确认提交三方代付'}</button></footer></section>`;
+  shade.innerHTML = `<section class="third-payout-dialog" role="dialog" aria-modal="true" aria-labelledby="thirdPayoutTitle"><header class="third-payout-head"><h2 id="thirdPayoutTitle">代付出款</h2><button class="third-payout-close" type="button" aria-label="关闭此对话框">×</button></header><div class="third-payout-body">${thirdPartyPayoutBody(order)}</div><footer class="third-payout-foot"><button type="button" class="third-payout-button third-payout-cancel">取消</button><button type="button" class="third-payout-button third-payout-submit">${order.business === 'withdraw' ? '确认提交代付出款' : '确认提交三方代付'}</button></footer></section>`;
   function close() { shade.remove(); document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', keydown, true); if (previousFocus?.isConnected) previousFocus.focus(); }
   function keydown(event) {
     if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); close(); return; }
@@ -103,9 +111,13 @@ function openThirdPartyPayout(order, onSubmitted, notify) {
     try { await navigator.clipboard.writeText(button.dataset.thirdCopy); notify('复制成功'); }
     catch { shade.querySelector('.third-payout-error').textContent = '请选中对应内容复制'; }
   });
+  const selector = shade.querySelector('#withdrawPayoutChannel'), submit = shade.querySelector('.third-payout-submit');
+  if (selector) { submit.disabled = true; selector.onchange = () => { submit.disabled = !selector.value; shade.querySelector('.third-payout-error').textContent = ''; }; }
   shade.querySelector('.third-payout-submit').onclick = () => {
-    if (!submitThirdPartyPayout(order)) { shade.querySelector('.third-payout-error').textContent = '订单状态已变化，请关闭后刷新查看'; return; }
-    close(); onSubmitted(order); notify('已模拟提交新万能代付，等待三方回调');
+    const channel = selector ? selectedThirdPartyChannel(order, selector.value) : undefined;
+    if (selector && !channel) { submit.disabled = true; shade.querySelector('.third-payout-error').textContent = '请选择已开启的下分通道；所选通道可能已关闭、变更类型或被删除'; return; }
+    if (!submitThirdPartyPayout(order, channel)) { shade.querySelector('.third-payout-error').textContent = '订单状态已变化，请关闭后刷新查看'; return; }
+    close(); onSubmitted(order); notify(order.business === 'withdraw' ? '已模拟提交至'+order.channelName+'，等待通道回调' : '已模拟提交新万能代付，等待三方回调');
   };
   document.body.appendChild(shade); document.body.style.overflow = 'hidden';
   document.addEventListener('keydown', keydown, true); shade.querySelector('.third-payout-cancel').focus();

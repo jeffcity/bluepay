@@ -127,7 +127,8 @@
       {
         "label": "代付管理",
         "items": [
-          { "id": "admin-payout", "title": "代付商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "payout", "req": ["BP-REQ-003"] }
+          { "id": "admin-payout", "title": "代付商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "payout", "req": ["BP-REQ-003"] },
+          { "id": "admin-payout-channel", "title": "代付通道管理", "doc": "代付通道管理-demo", "boot": "", "req": ["BP-REQ-019"] }
         ]
       },
       {
@@ -381,8 +382,8 @@
     },
     {
       "id": "BP-REQ-019",
-      "title": "商户下分人工出款与代付出款入口",
-      "summary": "商户下分达到可出款条件后可选择人工出款或提交新万能代付，支持USDT和TRX；列表保留原单号并新增通道单号，展示三方返回值；接入虚拟币代付订单现状页面。",
+      "title": "商户下分代付出款与通道管理",
+      "summary": "商户下分达到可出款条件后可选择人工出款或代付出款，支持USDT和TRX；代付可选择已开启的下分类通道；通道类型为普通或下分，列表保留原单号并展示三方返回的通道单号。",
       "moduleCodes": [
         "ADMIN"
       ],
@@ -457,6 +458,10 @@
     {
       "id": "虚拟币代付订单管理-demo",
       "source": "pages/虚拟币代付订单管理/虚拟币代付订单管理-demo.html"
+    },
+    {
+      "id": "代付通道管理-demo",
+      "source": "pages/代付通道管理/代付通道管理-demo.html"
     }
   ]
 }
