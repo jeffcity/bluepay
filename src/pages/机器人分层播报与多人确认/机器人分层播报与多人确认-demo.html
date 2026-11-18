@@ -1062,7 +1062,30 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
-  </style>
+
+/* THIRD_PARTY_PAYOUT_STYLE_START */
+.third-payout-shade{position:fixed;inset:0;z-index:3000;background:#0007;display:flex;align-items:center;justify-content:center;padding:20px}
+.third-payout-dialog{width:min(720px,100%);max-height:90vh;background:#fff;border-radius:4px;box-shadow:0 12px 32px #0003;display:flex;flex-direction:column;font-size:13px;line-height:1.5;color:#606266}
+.third-payout-head{display:flex;align-items:center;justify-content:space-between;padding:16px}
+.third-payout-head h2{margin:0;font-size:18px;font-weight:400;color:#303133}.third-payout-close{border:0;background:transparent;font-size:22px;line-height:24px;color:#909399;cursor:pointer}
+.third-payout-body{padding:0 16px;overflow:auto}.third-payout-alert{display:flex;gap:10px;align-items:center;background:#fdf6ec;color:#c8a061;border-radius:4px;padding:10px 16px;margin-bottom:0;font-size:13px;line-height:24px}.third-payout-alert-icon{flex:none;background:#e6a23c;color:#fff;border-radius:50%;width:14px;height:14px;line-height:14px;text-align:center;font-size:11px;font-weight:700}
+.third-payout-info{background:#f2f9fd;border:1px solid #e4eaf0;border-radius:6px;padding:10px 12px}.third-payout-row{display:grid;grid-template-columns:130px minmax(0,1fr);gap:0;min-height:28px;align-items:center}.third-payout-label{color:#909399}.third-payout-value{overflow-wrap:anywhere}.third-payout-mono{font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}.third-payout-chain{display:inline-block;padding:0 6px;line-height:18px;border:1px solid #fde2e2;background:#fef0f0;border-radius:3px;color:#f56c6c;font-size:11px;margin-right:6px}.third-payout-amount{font-size:16px;font-weight:600;color:#409eff}.third-payout-copy{border:0;background:transparent;color:#409eff;font-size:12px;cursor:pointer;padding:0 5px}.third-payout-foot{padding:16px;display:flex;gap:12px;justify-content:flex-end}.third-payout-button{height:32px;border:1px solid #dcdfe6;border-radius:4px;background:#fff;color:#606266;padding:0 15px;cursor:pointer;font-size:13px}.third-payout-button:hover{background:#ecf5ff;color:#409eff;border-color:#c6e2ff}.third-payout-submit{background:#409eff;color:#fff;border-color:#409eff}.third-payout-submit:hover{background:#66b1ff;color:#fff;border-color:#66b1ff}.third-payout-dialog button:focus-visible{outline:2px solid #79bbff;outline-offset:2px}.third-payout-error{color:#f56c6c;margin:8px 0 0}.third-payout-error:empty{display:none}
+@media(max-width:560px){.third-payout-shade{padding:12px}.third-payout-row{grid-template-columns:110px minmax(0,1fr);padding:3px 0}.third-payout-foot{flex-wrap:wrap}}
+/* THIRD_PARTY_PAYOUT_STYLE_END */
+
+/* MANUAL_WITHDRAW_STYLE_START */
+.manual-withdraw-shade{position:fixed;inset:0;z-index:3000;background:#0007;display:flex;align-items:center;justify-content:center;padding:20px}
+.manual-withdraw-dialog{background:#fff;border-radius:4px;width:min(800px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 32px #0003;color:#606266;font-size:14px}
+.manual-withdraw-head{display:flex;align-items:center;justify-content:space-between;padding:16px}.manual-withdraw-head h2{font-size:16px;font-weight:600;margin:0;color:#303133}.manual-withdraw-close{border:0;background:transparent;color:#909399;font-size:22px;cursor:pointer}
+.manual-withdraw-body{overflow:auto;padding:0 16px 16px}.manual-withdraw-section{margin:0 0 18px}.manual-withdraw-title{margin:0 0 10px;font-size:14px;font-weight:600;color:#606266}.manual-withdraw-risk-icon{display:inline-block;border-radius:50%;background:#e6a23c;color:white;width:14px;height:14px;font-size:11px;line-height:14px;text-align:center;margin-right:6px}
+.manual-withdraw-risk{padding:12px 16px;border:1px solid #ebeef5;background:#fafafa;border-radius:5px;color:#909399}.manual-withdraw-table{width:100%;min-width:0!important;table-layout:fixed;border-collapse:collapse;font-size:13px}.manual-withdraw-table td{border:1px solid #ebeef5;padding:10px 14px;text-align:left;white-space:normal;overflow-wrap:anywhere;height:auto;line-height:20px}.manual-withdraw-table .manual-withdraw-label{background:#fafafa;font-weight:500;width:16%}.manual-withdraw-table .manual-withdraw-value{width:34%;background:#fff}.manual-withdraw-table .pending{color:#409eff}.manual-withdraw-mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.manual-withdraw-hint{font-size:12px;color:#909399;margin:8px 0;line-height:20px}.manual-withdraw-source-state{padding:12px 10px;color:#909399;font-size:13px}.manual-withdraw-retry{border:0;background:transparent;color:#409eff;padding:0 4px;cursor:pointer}.manual-withdraw-divider{display:flex;align-items:center;gap:18px;margin:12px 0 18px;color:#909399;font-size:13px}.manual-withdraw-divider::before,.manual-withdraw-divider::after{content:"";height:1px;background:#ebeef5;flex:1}
+.manual-withdraw-input{height:34px;padding:0 11px;border:1px solid #dcdfe6;border-radius:4px;color:#606266;width:100%;background:white;font:inherit}.manual-withdraw-input::placeholder{color:#a8abb2}.manual-withdraw-input:focus{outline:none;border-color:#409eff}.manual-withdraw-input[aria-invalid="true"]{border-color:#f56c6c}.manual-withdraw-error{color:#f56c6c;font-size:12px;margin:5px 0}.manual-withdraw-error:empty{display:none}.manual-withdraw-amount{color:#303133;font-weight:600;margin:0 0 14px}.manual-withdraw-amount span{font-weight:400;color:#909399;font-size:13px}
+.manual-withdraw-field{display:flex;align-items:flex-start;gap:8px;margin:14px 0}.manual-withdraw-field>label,.manual-withdraw-field-label{width:76px;flex:none;line-height:34px}.manual-withdraw-field .manual-withdraw-input{max-width:400px}.manual-withdraw-upload-list{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}.manual-withdraw-upload{position:relative;width:96px;height:96px;display:flex;align-items:center;justify-content:center;border:1px dashed #d9d9d9;border-radius:6px;background:#fafafa;color:#909399;font-size:26px;cursor:pointer;overflow:hidden}.manual-withdraw-upload:hover{border-color:#409eff;color:#409eff}.manual-withdraw-upload input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.manual-withdraw-upload:focus-within{outline:2px solid #79bbff;outline-offset:2px}.manual-withdraw-preview{position:relative;width:96px;height:96px;border:1px solid #dcdfe6;border-radius:6px;overflow:hidden}.manual-withdraw-preview img{height:100%;width:100%;object-fit:cover}.manual-withdraw-preview button{position:absolute;right:0;top:0;border:0;background:#0009;color:white;cursor:pointer;padding:0 5px;line-height:22px}
+.manual-withdraw-foot{padding:12px 16px 16px;display:flex;justify-content:flex-end;gap:12px}.manual-withdraw-button{height:32px;padding:0 15px;border:1px solid #dcdfe6;border-radius:4px;background:white;color:#606266;cursor:pointer;font:inherit;font-size:13px}.manual-withdraw-button:hover{background:#ecf5ff;border-color:#c6e2ff;color:#409eff}.manual-withdraw-confirm{background:#409eff;border-color:#409eff;color:white}.manual-withdraw-confirm:hover{background:#66b1ff;color:white}.manual-withdraw-confirm:disabled{cursor:not-allowed;background:#a0cfff;border-color:#a0cfff;opacity:1}.manual-withdraw-dialog button:focus-visible{outline:2px solid #79bbff;outline-offset:2px}
+@media(max-width:560px){.manual-withdraw-shade{padding:12px}.manual-withdraw-table td{padding:8px 7px;font-size:12px}.manual-withdraw-field{gap:4px}.manual-withdraw-field>label,.manual-withdraw-field-label{width:65px}}
+/* MANUAL_WITHDRAW_STYLE_END */
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -1090,6 +1113,68 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
+
+// THIRD_PARTY_PAYOUT_START
+function canSubmitThirdPartyPayout(order) {
+  return !!order && ['待处理', '待支付'].includes(order.status) && order.confirm === '已确认' && order.third === '未提交';
+}
+function submitThirdPartyPayout(order) {
+  if (!canSubmitThirdPartyPayout(order)) return false;
+  order.status = '代付处理中';
+  order.third = '已提交';
+  return true;
+}
+function thirdPartyPayoutBody(order) {
+  const escape = text => String(text ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const currency = escape(order.currency), amount = Number(order.outAmount).toFixed(2), balance = Number(order.balance).toFixed(2);
+  const withdrawal = order.business === 'withdraw';
+  const chain = `<span class="third-payout-chain">${escape(order.chain)}</span>`;
+  const row = (label, value) => `<div class="third-payout-row"><span class="third-payout-label">${label}</span><span class="third-payout-value">${value}</span></div>`;
+  return `<div class="third-payout-alert" role="alert"><span class="third-payout-alert-icon" aria-hidden="true">!</span><span>${withdrawal ? '本笔下分订单已达到可出款条件。确认后将提交到新万能出款，状态改为「代付处理中」，等待新万能回调更新出款结果。' : '确认后订单将提交到三方代付，当前状态改为「代付处理中」。需等待三方转账回调后，再同步最终状态给商户。'}</span></div>
+    <div class="third-payout-info">${[
+      ...(withdrawal ? [row('下分单号', `<span class="third-payout-mono">${escape(order.id)}</span>`)] : [
+        row('商户订单号', `<span class="third-payout-mono">${escape(order.merchantOrder)}</span>`),
+        row('平台订单号', `<span class="third-payout-mono">${escape(order.id)}</span>`) ]),
+      row('商户名称', escape(order.merchant)), row('商户号', escape(order.merchantNo)),
+      row(currency + '剩余预付', balance + ' ' + currency),
+      row('收款钱包地址', chain + `<span class="third-payout-mono">${escape(order.recipient)}</span><button type="button" class="third-payout-copy" data-third-copy="${escape(order.recipient)}" aria-label="复制收款钱包地址">▣</button>`),
+      row('协议类型', chain),
+      row('出款金额', `<span class="third-payout-amount">${amount} ${currency}</span><button type="button" class="third-payout-copy" data-third-copy="${amount}" aria-label="复制出款金额">复制</button>`),
+      ...(withdrawal ? [row('出款方式', '代付出款'), row('代付通道', '新万能'), row('提交状态', '未提交新万能')] : [
+        row('三方处理状态', '未提交第三方：本地订单未记录第三方订单号，可走普通提交第三方流程')]),
+      row('处理方式', withdrawal ? '提交新万能出款，等待新万能回调' : '提交三方代付，等待三方转账回调')
+    ].join('')}</div><p class="third-payout-error" role="status" aria-live="polite"></p>`;
+}
+function openThirdPartyPayout(order, onSubmitted, notify) {
+  if (!canSubmitThirdPartyPayout(order)) return notify('该订单当前不可提交代付');
+  if (document.querySelector('.third-payout-shade')) return;
+  const previousFocus = document.activeElement, previousOverflow = document.body.style.overflow;
+  const shade = document.createElement('div');
+  shade.className = 'third-payout-shade';
+  shade.innerHTML = `<section class="third-payout-dialog" role="dialog" aria-modal="true" aria-labelledby="thirdPayoutTitle"><header class="third-payout-head"><h2 id="thirdPayoutTitle">代付出款</h2><button class="third-payout-close" type="button" aria-label="关闭此对话框">×</button></header><div class="third-payout-body">${thirdPartyPayoutBody(order)}</div><footer class="third-payout-foot"><button type="button" class="third-payout-button third-payout-cancel">取消</button><button type="button" class="third-payout-button third-payout-submit">${order.business === 'withdraw' ? '确认提交新万能出款' : '确认提交三方代付'}</button></footer></section>`;
+  function close() { shade.remove(); document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', keydown, true); if (previousFocus?.isConnected) previousFocus.focus(); }
+  function keydown(event) {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); close(); return; }
+    if (event.key !== 'Tab') return;
+    const buttons = [...shade.querySelectorAll('button:not(:disabled)')], first = buttons[0], last = buttons.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+  shade.querySelector('.third-payout-close').onclick = shade.querySelector('.third-payout-cancel').onclick = close;
+  shade.onclick = event => { if (event.target === shade) close(); };
+  shade.querySelectorAll('[data-third-copy]').forEach(button => button.onclick = async () => {
+    try { await navigator.clipboard.writeText(button.dataset.thirdCopy); notify('复制成功'); }
+    catch { shade.querySelector('.third-payout-error').textContent = '请选中对应内容复制'; }
+  });
+  shade.querySelector('.third-payout-submit').onclick = () => {
+    if (!submitThirdPartyPayout(order)) { shade.querySelector('.third-payout-error').textContent = '订单状态已变化，请关闭后刷新查看'; return; }
+    close(); onSubmitted(order); notify('已模拟提交新万能代付，等待三方回调');
+  };
+  document.body.appendChild(shade); document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', keydown, true); shade.querySelector('.third-payout-cancel').focus();
+}
+// THIRD_PARTY_PAYOUT_END
+
     const pageMeta = {
       address: { title: "地址查询", href: "/address-query" },
       withdraw: { title: "商户下分", heading: "商户下发", href: "/merchant/merchant-withdraw" },
@@ -1250,8 +1335,42 @@
       ["3", "LS-W202608120003", "单", "星河商户/M00000903", "80.000000", "1.000000", "80.000000", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
       ["4", "LS-W202608120004", "单", "晨曦商户/M00000904", "50.000000", "1.000000", "50.000000", "USDT", "TRC20", "已取消", "待确认", "0/0", "—", "-"],
       ["5", "LS-W202608120005", "单", "启明商户/M00000905", "350.000000", "5.000000", "350.000000", "USDT", "TRC20", "已处理", "已确认", "2/2", "审核员甲、审核员乙", "-"],
-      ["6", "LS-W202608120006", "单", "云帆商户/M00000906", "900.000000", "9.000000", "900.000000", "USDT", "TRC20", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"]
+      ["6", "LS-W202608120006", "单", "云帆商户/M00000906", "900.000000", "9.000000", "900.000000", "USDT", "TRC20", "待处理", "待确认", "0/2", "审核员甲、审核员乙", "手动确认　取消"],
+      ["7", "LS-W202608120007", "单", "远航商户/M00000901", "120.000000", "2.000000", "120.000000", "USDT", "TRC20", "待处理", "已确认", "2/2", "审核员甲、审核员乙", "出款　取消"]
     ];
+    function canWithdrawPayout(row) {
+      return !!row && row[9] === '待处理' && row[10] === '已确认' && row[13].split('　').includes('出款');
+    }
+    const withdrawPayoutOrders = new Map();
+    function withdrawPayoutOrder(index) {
+      const row = withdrawRows[index];
+      if (!row) return null;
+      if (!withdrawPayoutOrders.has(row[1])) {
+        const [merchant, merchantNo] = row[3].split('/');
+        withdrawPayoutOrders.set(row[1], {id: row[1], business: 'withdraw', merchantOrder: '—', merchant, merchantNo,
+          currency: row[7], chain: row[8], outAmount: Number(row[6]), balance: row[7] === 'TRX' ? 1500 : 12800,
+          recipient: 'TDEMOWithdrawRecipientAddress00001', status: row[9], confirm: row[10], third: '未提交', channelOrder: ''});
+      }
+      const order = withdrawPayoutOrders.get(row[1]);
+      order.status = row[9]; order.confirm = row[10];
+      return order;
+    }
+    function withdrawChannelOrder(index) {
+      return withdrawPayoutOrders.get(withdrawRows[index]?.[1])?.channelOrder || '—';
+    }
+    function openWithdrawPayout(index) {
+      const row = withdrawRows[index];
+      if (!canWithdrawPayout(row)) return showToast('下分订单尚未达到可出款条件或已提交出款');
+      const order = withdrawPayoutOrder(index);
+      openThirdPartyPayout(order, submitted => {
+        // Local Demo simulates the channel accepting this withdrawal and returning its own order number.
+        submitted.channelOrder = submitted.channelOrder || 'XWN-DEMO-' + row[1].replace('LS-W', '');
+        row[9] = submitted.status;
+        row[13] = '—';
+        withdrawLastRefreshAt = withdrawRefreshTime();
+        renderPage();
+      }, showToast);
+    }
     let withdrawQuery = { order: "", type: "", status: "" };
 
     const rechargeOrders = [
@@ -1935,11 +2054,62 @@
       }
     }
 
+
+// MANUAL_WITHDRAW_START
+function manualWithdrawData(row, index) {
+  const chain = row[8] === 'TRON' ? 'TRC20' : row[8];
+  return {id:row[1],merchant:row[3],amount:Number(row[4]),fee:Number(row[5]),net:Number(row[6]),currency:row[7],protocol:row[7]+'-'+chain,
+    recipient:'TDEMOWithdrawRecipientAddress00001',status:row[9],created:'2026-08-04 10:2'+index+':00',
+    operated:index<3?'2026-08-04 10:30:00':'—',operator:index<3?'运营员':'—',remark:index===0?'优先处理':'—'};
+}
+function validManualWithdrawAddress(value, protocol) {
+  return protocol.includes('ERC20') ? /^0x[0-9a-f]{40}$/i.test(value.trim()) : /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(value.trim());
+}
+function manualWithdrawBody(order) {
+  const esc=escapeTierText, money=value=>Number(value).toFixed(2);
+  const pair=(label,value)=>`<td class="manual-withdraw-label">${label}</td><td class="manual-withdraw-value">${esc(value)}</td>`;
+  return `<section class="manual-withdraw-section"><h4 class="manual-withdraw-title"><span class="manual-withdraw-risk-icon" aria-hidden="true">!</span>收款地址风险</h4><div class="manual-withdraw-risk">查询失败</div></section>
+    <section class="manual-withdraw-section"><h4 class="manual-withdraw-title">订单信息</h4><table class="manual-withdraw-table"><tbody>
+    <tr>${pair('单号',order.id)+pair('提交时间',order.created)}</tr>
+    <tr>${pair('商户名称/商户号',order.merchant)+pair('操作时间',order.operated)}</tr>
+    <tr>${pair('提现金额',money(order.amount))+pair('操作人',order.operator)}</tr>
+    <tr>${pair('手续费',money(order.fee))}<td class="manual-withdraw-label">状态</td><td class="manual-withdraw-value pending">${esc(order.status)}</td></tr>
+    <tr>${pair('到账金额',money(order.net))+pair('币种',order.currency)}</tr>
+    <tr>${pair('协议类型',order.protocol)}<td class="manual-withdraw-label"></td><td class="manual-withdraw-value"></td></tr>
+    <tr><td class="manual-withdraw-label">收款钱包地址</td><td class="manual-withdraw-value manual-withdraw-mono" colspan="3">${esc(order.recipient)}</td></tr>
+    <tr><td class="manual-withdraw-label">备注</td><td class="manual-withdraw-value" colspan="3">${esc(order.remark)}</td></tr>
+    </tbody></table></section>
+    <section class="manual-withdraw-section"><h4 class="manual-withdraw-title">推荐源地址（0 个）</h4><p class="manual-withdraw-hint">候选按「同协议链 + 余额 ≥ ${money(order.net)} ${esc(order.currency)} + 余额降序」筛选 Top 5；默认选中余额最高</p><div class="manual-withdraw-source-state"><span>加载失败</span><button type="button" class="manual-withdraw-retry">重试</button></div></section>
+    <section class="manual-withdraw-section"><div class="manual-withdraw-divider">或</div><h4 class="manual-withdraw-title"><label for="manualWithdrawAddress">出款地址</label></h4><input class="manual-withdraw-input manual-withdraw-mono" id="manualWithdrawAddress" placeholder="请输入 ${esc(order.protocol)} 地址${order.protocol.includes('ERC20')?'（以 0x 开头，42 位）':'（以 T 开头，34 位）'}" autocomplete="off" aria-describedby="manualWithdrawAddressHint manualWithdrawAddressError"><p class="manual-withdraw-error" id="manualWithdrawAddressError" role="status"></p><p class="manual-withdraw-hint" id="manualWithdrawAddressHint">点击上方推荐地址会自动填入，可修改或清空后重新输入；确认出款以本框地址为准</p></section>
+    <div class="manual-withdraw-amount">到账金额：${money(order.net)} <span>（请按照此金额给商户付款）</span></div>
+    <div class="manual-withdraw-field"><label for="manualWithdrawRemark">备注：</label><input class="manual-withdraw-input" id="manualWithdrawRemark" placeholder="请输入备注"></div>
+    <div class="manual-withdraw-field"><span class="manual-withdraw-field-label">审核图片：</span><div><div class="manual-withdraw-upload-list" id="manualWithdrawImages"><label class="manual-withdraw-upload">+<input id="manualWithdrawImageInput" type="file" multiple accept="image/jpeg,image/png,image/gif" aria-label="上传审核图片"></label></div><p class="manual-withdraw-hint">可上传多张凭证图</p><p class="manual-withdraw-error" id="manualWithdrawUploadError" role="status"></p></div></div>`;
+}
+function openManualWithdraw(index) {
+  const row=withdrawRows[index];
+  if (!row || row[9] !== '待处理' || !row[13].split('　').includes('出款')) return showToast('该订单当前不可人工出款');
+  if (document.querySelector('.manual-withdraw-shade')) return;
+  const order=manualWithdrawData(row,index), previousFocus=document.activeElement, previousOverflow=document.body.style.overflow;
+  const shade=document.createElement('div'), images=[];
+  shade.className='manual-withdraw-shade';
+  shade.innerHTML=`<section class="manual-withdraw-dialog" role="dialog" aria-modal="true" aria-labelledby="manualWithdrawTitle"><header class="manual-withdraw-head"><h2 id="manualWithdrawTitle">出款</h2><button type="button" class="manual-withdraw-close" aria-label="关闭此对话框">×</button></header><div class="manual-withdraw-body">${manualWithdrawBody(order)}</div><footer class="manual-withdraw-foot"><button type="button" class="manual-withdraw-button manual-withdraw-confirm" disabled>确认出款</button><button type="button" class="manual-withdraw-button manual-withdraw-dismiss">关闭</button></footer></section>`;
+  const address=shade.querySelector('#manualWithdrawAddress'), confirm=shade.querySelector('.manual-withdraw-confirm');
+  function close(){images.forEach(image=>URL.revokeObjectURL(image.url));shade.remove();document.body.style.overflow=previousOverflow;document.removeEventListener('keydown',keydown,true);if(previousFocus?.isConnected)previousFocus.focus()}
+  function keydown(event){if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close();return}if(event.key!=='Tab')return;const items=[...shade.querySelectorAll('button:not(:disabled),input')],first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}}
+  address.oninput=()=>{const valid=validManualWithdrawAddress(address.value,order.protocol);confirm.disabled=!valid;address.setAttribute('aria-invalid',String(!!address.value&&!valid));shade.querySelector('#manualWithdrawAddressError').textContent=address.value&&!valid?'请输入有效的 '+order.protocol+' 地址':''};
+  shade.querySelector('.manual-withdraw-retry').onclick=()=>{showToast('推荐源地址加载失败，请重试或填写出款地址')};
+  shade.querySelector('#manualWithdrawImageInput').onchange=event=>{const errors=[];for(const file of event.target.files){if(!['image/jpeg','image/png','image/gif'].includes(file.type)){errors.push(file.name);continue}const image={url:URL.createObjectURL(file)},item=document.createElement('div');image.item=item;images.push(image);item.className='manual-withdraw-preview';const preview=document.createElement('img');preview.src=image.url;preview.alt=file.name;const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','移除审核图片 '+file.name);remove.onclick=()=>{URL.revokeObjectURL(image.url);images.splice(images.indexOf(image),1);item.remove()};item.append(preview,remove);shade.querySelector('#manualWithdrawImages').insertBefore(item,shade.querySelector('.manual-withdraw-upload'))}shade.querySelector('#manualWithdrawUploadError').textContent=errors.length?'请选择 JPG、PNG 或 GIF 图片':'';event.target.value=''};
+  confirm.onclick=()=>{if(!validManualWithdrawAddress(address.value,order.protocol))return;if(row[9]!=='待处理'){showToast('订单状态已变化，请关闭后刷新查看');return}close();showToast('已确认人工出款演示，不执行真实出款')};
+  shade.querySelector('.manual-withdraw-close').onclick=shade.querySelector('.manual-withdraw-dismiss').onclick=close;
+  shade.onclick=event=>{if(event.target===shade)close()};document.body.appendChild(shade);document.body.style.overflow='hidden';document.addEventListener('keydown',keydown,true);shade.querySelector('.manual-withdraw-dismiss').focus();
+}
+// MANUAL_WITHDRAW_END
+
     function withdrawPage() {
       const records = withdrawRecords();
       const rows = records.map((record) => {
         if (record.kind === "transfer") return `<tr>
-          <td></td><td class="cell-center">—</td><td>${record.no}</td><td><span class="tag">划转</span></td>
+          <td></td><td class="cell-center">—</td><td>${record.no}</td><td>—</td><td><span class="tag">划转</span></td>
           <td class="wrap">${record.merchant}</td><td>${record.amount}</td><td>0.000000</td><td>${record.net}</td><td>${record.currency}</td>
           <td class="wrap">${record.target}</td><td>内部划转</td><td class="wrap">${record.source}</td>
           <td><span class="tag warning">待审核</span></td><td><span class="tag warning">待确认</span></td><td>${record.confirmed}</td><td class="wrap">${record.reviewers}</td>
@@ -1947,22 +2117,22 @@
         </tr>`;
         const r = record.raw;
         return `<tr>
-        <td></td><td class="cell-center">${r[0]}</td><td>${r[1]}</td><td><span class="tag">${r[2]}</span></td>
+        <td></td><td class="cell-center">${r[0]}</td><td>${r[1]}</td><td>${escapeTierText(withdrawChannelOrder(record.index))}</td><td><span class="tag">${r[2]}</span></td>
         <td class="wrap">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td>
-        <td><div class="ellipsis" title="TYvJU4XQ9XEu9ouJkBb7bsjfJ8EcaH1r3n">TYvJU4…H1r3n</div></td><td>${r[8]}</td>
+        <td><div class="ellipsis" title="TDEMOWithdrawRecipientAddress00001">TDEMOW…00001</div></td><td>${r[8]}</td>
         <td><div class="ellipsis">${record.index < 2 ? "TNq4mL…Y2wK" : "—"}</div></td>
-        <td><span class="tag ${r[9] === "待处理" ? "warning" : r[9] === "已取消" ? "danger" : "success"}">${r[9]}</span></td>
+        <td><span class="tag ${["待处理", "代付处理中"].includes(r[9]) ? "warning" : r[9] === "已取消" ? "danger" : "success"}">${r[9]}</span></td>
         <td><span class="tag ${r[10] === "已确认" ? "success" : "warning"}">${r[10]}</span></td><td>${r[11]}</td><td class="wrap">${r[12]}</td>
         <td>${record.index === 0 ? "优先处理" : ""}</td><td>2026-08-04 10:2${record.index}:00</td><td>${record.index < 3 ? "2026-08-04 10:30:00" : "—"}</td>
         <td>${record.index < 3 ? "运营员" : "—"}</td><td>${record.index === 1 ? "等待第二人确认" : ""}</td><td>${record.index < 3 ? "查看" : "—"}</td>
-        <td class="op-links">${r[13].split("　").map(mockLink).join("")}</td>
+        <td class="op-links">${r[13].split("　").flatMap(label => label === "出款" ? (canWithdrawPayout(r) ? ["人工出款", "代付出款"] : ["人工出款"]) : [label]).map(label => label === "代付出款" ? `<button type="button" class="link" data-withdraw-payout="${record.index}">代付出款</button>` : label === "人工出款" ? `<button type="button" class="link" data-manual-withdraw="${record.index}">人工出款</button>` : mockLink(label)).join("")}</td>
       </tr>`;
-      }).join("") || '<tr><td colspan="23" style="padding:42px;text-align:center;color:var(--muted)">当前筛选条件下暂无下分记录</td></tr>';
+      }).join("") || '<tr><td colspan="24" style="padding:42px;text-align:center;color:var(--muted)">当前筛选条件下暂无下分记录</td></tr>';
       return `<div class="subtabs"><button class="subtab active" type="button">商户下分记录</button><button class="subtab" type="button" data-action="平台收款钱包余额">平台收款钱包余额</button></div>
       <div class="filters withdraw-filters" style="margin-top:14px">
         ${field("单号", `<input id="withdrawOrder" class="control" style="width:200px" placeholder="输入单号搜索" value="${withdrawQuery.order}">`)}
         ${field("下分单类型", `<select id="withdrawType" class="control" style="width:140px"><option value="">全部</option><option value="单" ${withdrawQuery.type === "单" ? "selected" : ""}>单</option><option value="划转" ${withdrawQuery.type === "划转" ? "selected" : ""}>划转</option></select>`)}
-        ${field("状态", `<select id="withdrawStatus" class="control" style="width:140px"><option value="">全部</option><option value="待处理" ${withdrawQuery.status === "待处理" ? "selected" : ""}>待处理</option><option value="已处理" ${withdrawQuery.status === "已处理" ? "selected" : ""}>已处理</option><option value="已取消" ${withdrawQuery.status === "已取消" ? "selected" : ""}>已取消</option></select>`)}
+        ${field("状态", `<select id="withdrawStatus" class="control" style="width:140px"><option value="">全部</option><option value="待处理" ${withdrawQuery.status === "待处理" ? "selected" : ""}>待处理</option><option value="已处理" ${withdrawQuery.status === "已处理" ? "selected" : ""}>已处理</option><option value="已取消" ${withdrawQuery.status === "已取消" ? "selected" : ""}>已取消</option><option value="代付处理中" ${withdrawQuery.status === "代付处理中" ? "selected" : ""}>代付处理中</option></select>`)}
         ${field("提交时间", '<div class="control range" style="width:280px"><span>◷　开始时间</span><strong>-</strong><span>结束时间</span></div>')}
         <div class="withdraw-auto-refresh">
           <span class="withdraw-auto-refresh-label">自动刷新</span>
@@ -1974,9 +2144,9 @@
         <button type="button" class="btn" data-withdraw-export>导出</button>
       </div>
       ${withdrawSummary(records)}
-      <div class="table-wrap"><table style="min-width:2600px">
-        <colgroup><col style="width:45px"><col style="width:60px"><col style="width:150px"><col style="width:100px"><col style="width:170px"><col style="width:90px"><col style="width:85px"><col style="width:90px"><col style="width:75px"><col style="width:210px"><col style="width:90px"><col style="width:210px"><col style="width:100px"><col style="width:105px"><col style="width:85px"><col style="width:190px"><col style="width:120px"><col style="width:145px"><col style="width:145px"><col style="width:100px"><col style="width:150px"><col style="width:100px"><col style="width:150px"></colgroup>
-        <thead><tr><th></th><th>序号</th><th>单号</th><th>下分单类型</th><th>商户名称/商户号</th><th>提现金额</th><th>手续费</th><th>到账金额</th><th>币种</th><th>收款钱包地址</th><th>协议类型</th><th>付款地址</th><th>状态</th><th>TG确认状态</th><th>确认人数</th><th>确认人</th><th>备注</th><th>提交时间</th><th>操作时间</th><th>操作人</th><th>操作备注</th><th>审核图片</th><th>操作</th></tr></thead>
+      <div class="table-wrap"><table style="min-width:2810px">
+        <colgroup><col style="width:45px"><col style="width:60px"><col style="width:150px"><col style="width:210px"><col style="width:100px"><col style="width:170px"><col style="width:90px"><col style="width:85px"><col style="width:90px"><col style="width:75px"><col style="width:210px"><col style="width:90px"><col style="width:210px"><col style="width:100px"><col style="width:105px"><col style="width:85px"><col style="width:190px"><col style="width:120px"><col style="width:145px"><col style="width:145px"><col style="width:100px"><col style="width:150px"><col style="width:100px"><col style="width:150px"></colgroup>
+        <thead><tr><th></th><th>序号</th><th>单号</th><th>通道单号</th><th>下分单类型</th><th>商户名称/商户号</th><th>提现金额</th><th>手续费</th><th>到账金额</th><th>币种</th><th>收款钱包地址</th><th>协议类型</th><th>付款地址</th><th>状态</th><th>TG确认状态</th><th>确认人数</th><th>确认人</th><th>备注</th><th>提交时间</th><th>操作时间</th><th>操作人</th><th>操作备注</th><th>审核图片</th><th>操作</th></tr></thead>
         <tbody>${rows}</tbody></table></div>${pagination(records.length)}`;
     }
 
@@ -2007,7 +2177,7 @@
       const total = (currency, key, onlyProcessed = false) => recordsFor(currency).reduce((sum, record) => sum + ((!onlyProcessed || record.status === "已处理") ? record[key] : 0), 0);
       const rows = [
         ["总下分笔数", (currency) => recordsFor(currency).length, ""],
-        ["待处理笔数", (currency) => count(currency, "待处理"), "pending"],
+        ["待处理笔数", (currency) => count(currency, "待处理") + count(currency, "代付处理中"), "pending"],
         ["已处理笔数", (currency) => count(currency, "已处理"), "done"],
         ["已取消笔数", (currency) => count(currency, "已取消"), "cancelled"],
         ["下分申请金额", (currency) => total(currency, "amount").toFixed(2), "amount"],
@@ -2315,6 +2485,14 @@
     document.addEventListener("click", (event) => {
       const target = event.target.closest("button");
       if (!target) return;
+      if (target.dataset.manualWithdraw !== undefined) {
+        openManualWithdraw(Number(target.dataset.manualWithdraw));
+        return;
+      }
+      if (target.dataset.withdrawPayout !== undefined) {
+        openWithdrawPayout(Number(target.dataset.withdrawPayout));
+        return;
+      }
       if (target.dataset.withdrawAutoRefresh !== undefined) {
         withdrawAutoRefresh = !withdrawAutoRefresh;
         if (withdrawAutoRefresh) withdrawLastRefreshAt = withdrawRefreshTime();
@@ -2595,5 +2773,6 @@
     syncWithdrawAutoRefresh();
     renderPage();
   </script>
+
 </body>
 </html>

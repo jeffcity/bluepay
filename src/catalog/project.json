@@ -15,7 +15,7 @@
         "label": "商户管理",
         "items": [
           { "id": "admin-merchant", "title": "商户管理", "doc": "机器人分层播报与多人确认-demo", "boot": "merchant", "req": ["BP-REQ-002", "BP-REQ-003", "BP-REQ-009"] },
-          { "id": "admin-withdraw", "title": "商户下分", "doc": "机器人分层播报与多人确认-demo", "boot": "withdraw", "req": ["BP-REQ-002", "BP-REQ-005", "BP-REQ-007"] },
+          { "id": "admin-withdraw", "title": "商户下分", "doc": "机器人分层播报与多人确认-demo", "boot": "withdraw", "req": ["BP-REQ-002", "BP-REQ-005", "BP-REQ-007", "BP-REQ-019"] },
           { "id": "admin-withdraw-fee", "title": "商户手续费配置", "doc": "机器人分层播报与多人确认-demo", "boot": "feeConfig", "req": ["BP-REQ-005"] },
           { "id": "admin-recharge", "title": "商户充值订单", "doc": "商户充值订单统计栏位-demo", "boot": "", "req": ["BP-REQ-001"] },
           { "id": "admin-merchant-transfer", "title": "资金划转", "doc": "商户增加资金划转-demo", "boot": "transfer-orders", "req": ["BP-REQ-003"] }
@@ -25,7 +25,8 @@
         "label": "虚拟币订单管理",
         "items": [
           { "id": "admin-crypto-config", "title": "虚拟币充值配置", "doc": "机器人分层播报与多人确认-demo", "boot": "cryptoConfig", "req": ["BP-REQ-004"] },
-          { "id": "admin-crypto-order", "title": "虚拟币充值订单管理", "doc": "机器人分层播报与多人确认-demo", "boot": "cryptoOrder", "req": ["BP-REQ-004", "BP-REQ-005"] }
+          { "id": "admin-crypto-order", "title": "虚拟币充值订单管理", "doc": "机器人分层播报与多人确认-demo", "boot": "cryptoOrder", "req": ["BP-REQ-004", "BP-REQ-005"] },
+          {"id": "admin-crypto-payout", "title": "虚拟币代付订单管理", "doc": "虚拟币代付订单管理-demo", "boot": "", "req": ["BP-REQ-019"]}
         ]
       },
       {
@@ -377,6 +378,15 @@
         "BEAUTY_MERCHANT"
       ],
       "doc": "美人桥商户钱包-demo"
+    },
+    {
+      "id": "BP-REQ-019",
+      "title": "商户下分人工出款与代付出款入口",
+      "summary": "商户下分达到可出款条件后可选择人工出款或提交新万能代付，支持USDT和TRX；列表保留原单号并新增通道单号，展示三方返回值；接入虚拟币代付订单现状页面。",
+      "moduleCodes": [
+        "ADMIN"
+      ],
+      "doc": "虚拟币代付订单管理-demo"
     }
   ],
   "documents": [
@@ -443,6 +453,10 @@
     {
       "id": "美人桥商户钱包-demo",
       "source": "pages/美人桥商户钱包/美人桥商户钱包-demo.html"
+    },
+    {
+      "id": "虚拟币代付订单管理-demo",
+      "source": "pages/虚拟币代付订单管理/虚拟币代付订单管理-demo.html"
     }
   ]
 }
