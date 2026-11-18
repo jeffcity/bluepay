@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile('src/pages/机器人分层播报与多人确认/机器人分层播报与多人确认-demo.html','utf8');
+const model=source.split('// MANUAL_WITHDRAW_START')[1].split('// MANUAL_WITHDRAW_END')[0];
+const context=vm.createContext({Number,Array});
+vm.runInContext(model+`;function escapeTierText(s){return String(s).replaceAll('<','&lt;').replaceAll('>','&gt;')}globalThis.api={manualWithdrawData,manualWithdrawBody,validManualWithdrawAddress}`,context);
+const a=context.api;
+test('人工出款订单信息按USDT和TRX各自原币展示，金额使用到账金额，查看不改数据',()=>{for(const currency of ['USDT','TRX']){const row=['1','DEMO-W-001','单','演示商户/M-DEMO','200','4','196',currency,currency==='TRX'?'TRON':'TRC20','待处理','已确认','2/2','审核员','出款　取消'],before=JSON.stringify(row),data=a.manualWithdrawData(row,0),body=a.manualWithdrawBody(data);assert.equal(data.id,row[1]);assert.equal(data.protocol,currency+'-TRC20');assert.equal(data.net,196);assert.ok(body.includes('到账金额：196.00'));assert.ok(body.includes('余额 ≥ 196.00 '+currency));assert.ok(body.includes('出款地址'));assert.ok(body.includes('审核图片'));assert.ok(body.includes('收款地址风险'));assert.equal(JSON.stringify(row),before)}});
+test('人工出款地址空白和格式错误不能确认，USDT与TRX保留TRON地址格式',()=>{for(const p of ['USDT-TRC20','TRX-TRC20']){for(const address of ['', 'T123', '0x'+'a'.repeat(40),'T'+'0'.repeat(33),'T'+'A'.repeat(34)])assert.equal(a.validManualWithdrawAddress(address,p),false);assert.equal(a.validManualWithdrawAddress('T'+'A'.repeat(33),p),true);assert.equal(a.validManualWithdrawAddress('  T'+'A'.repeat(33)+'  ',p),true)}});

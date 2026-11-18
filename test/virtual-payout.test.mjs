@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile('src/pages/虚拟币代付订单管理/虚拟币代付订单管理-demo.html','utf8');
+for(const [,script] of source.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new vm.Script(script);
+const context=vm.createContext({Date,Number,Array});
+vm.runInContext(source.split('// PAYOUT_MODEL_START')[1].split('// PAYOUT_MODEL_END')[0]+';globalThis.api={PAYOUT_HEADERS,payoutFixtures,filterPayoutOrders,summarizePayoutOrders,payoutActions};',context);
+const a=context.api;
+test('虚拟币代付现状复刻保留28列表头及顺序',()=>{assert.deepEqual(Array.from(a.PAYOUT_HEADERS),['系统订单号','通道订单号/商家订单号','商户名/号','类型','交易金额','币种','服务费','客户出款次数','充值次数','充值金额','出款金额(USDT)','确认状态','确认人','收款钱包地址','付款地址(我方)','Hash / TXID','Hash 核验状态','代付状态','三方处理','通知状态','创建时间','打款时间','回调时间','驳回原因','通道商','通道','IP','操作'])});
+test('统计针对全部匹配记录计算，成功和待处理金额保持分开',()=>{const rows=a.payoutFixtures(),s=a.summarizePayoutOrders(rows);assert.equal(rows.length,26);assert.equal(s.completed,3236);assert.equal(s.completedCount,3);assert.equal(s.pending,150.62);assert.equal(s.pendingCount,15);assert.equal(s.profit,.1);assert.equal(s.successRate,'11.5');assert.equal(s.rejected,0)});
+test('订单查询组合币种状态金额时间且不改原记录，空结果统计归零',()=>{const rows=a.payoutFixtures(),before=JSON.stringify(rows);const matched=a.filterPayoutOrders(rows,{currency:'USDT',status:'待支付',confirm:'已确认',min:'10',max:'10',start:'2026-11-13 00:00:00',end:'2026-11-13 23:59:59'});assert.equal(matched.length,3);assert.equal(a.filterPayoutOrders(rows,{system:'vp-demo-00001'}).length,1);assert.equal(a.filterPayoutOrders(rows,{currency:'CNY'}).length,0);const empty=a.summarizePayoutOrders([]);assert.equal(empty.pendingCount,0);assert.equal(empty.successRate,'0.0');assert.equal(JSON.stringify(rows),before)});
+test('现有代付出款仅在已确认且未提交待支付行显示，已提交和终态不增加出款',()=>{const rows=a.payoutFixtures();assert.ok(a.payoutActions(rows[3]).includes('代付出款'));for(const index of [0,1,2])assert.ok(!a.payoutActions(rows[index]).includes('代付出款'));assert.ok(a.payoutActions(rows[6]).includes('重新提交'));assert.ok(a.payoutActions(rows[8]).includes('手动确认'));assert.ok(a.payoutActions(rows[0]).includes('详情'))});

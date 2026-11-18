@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile('src/pages/机器人分层播报与多人确认/机器人分层播报与多人确认-demo.html','utf8');
+const component=source.split('// THIRD_PARTY_PAYOUT_START')[1].split('// THIRD_PARTY_PAYOUT_END')[0];
+const adapter=source.slice(source.indexOf('const withdrawRows ='),source.indexOf('let withdrawQuery ='));
+const ctx=vm.createContext({Map,Number,Array});
+vm.runInContext(component+'\n'+adapter+`;let opened=0;function openThirdPartyPayout(){opened++}function showToast(){}globalThis.a={rows:withdrawRows,eligible:canWithdrawPayout,order:withdrawPayoutOrder,body:thirdPartyPayoutBody,open:openWithdrawPayout,opened:()=>opened}`,ctx);
+const a=ctx.a;
+test('下分达到可出款条件后才可进入新万能代付；未确认、取消、已处理、代付中不可进入',()=>{const ready=a.rows[0];assert.equal(a.eligible(ready),true);for(const [status,confirm,action] of [['待处理','待确认','出款　取消'],['待处理','已确认','取消'],['已处理','已确认','出款'],['已取消','已确认','出款'],['代付处理中','已确认','出款']]){const row=[...ready];row[9]=status;row[10]=confirm;row[13]=action;assert.equal(a.eligible(row),false)}const before=JSON.stringify(a.rows);a.open(1);assert.equal(a.opened(),0);assert.equal(JSON.stringify(a.rows),before);a.open(0);assert.equal(a.opened(),1)});
+test('下分代付确认明确对应下分单与新万能出款，不使用虚拟币订单的订单号标题',()=>{for(const index of [0,6]){const order=a.order(index),body=a.body(order);assert.equal(order.business,'withdraw');for(const text of ['下分单号',order.id,'已达到可出款条件','出款方式','代付出款','代付通道','新万能','提交新万能出款'])assert.ok(body.includes(text));for(const text of ['平台订单号','商户订单号','复用'])assert.ok(!body.includes(text));assert.ok(body.includes(Number(a.rows[index][6]).toFixed(2)+' '+a.rows[index][7]))}});
