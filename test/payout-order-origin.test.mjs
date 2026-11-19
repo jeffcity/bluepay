@@ -14,3 +14,13 @@ test('通用代付保留原13列顺序，新增来源列并独立组合原操作
 test('来源筛选后的统计覆盖全部匹配订单，空结果不遗留其他类型金额',()=>{const vr=v.filterPayoutOrders(v.payoutFixtures(),{origin:'下分'}),vs=v.summarizePayoutOrders(vr);assert.equal(vs.pending,110);assert.equal(vs.completed,0);const gr=g.filterGeneralPayouts(g.generalPayoutFixtures(),{origin:'下分'}),gs=g.generalPayoutSummary(gr);assert.equal(gs.pendingAmount,280);assert.equal(gs.rejectedAmount,100);assert.equal(gs.successAmount,0);assert.equal(gs.pendingCount,2);assert.equal(g.generalPayoutSummary([]).successRate,'0.0');assert.equal(g.generalPayoutSummary([]).pendingAmount,0);assert.equal(v.summarizePayoutOrders([]).pending,0)});
 test('虚拟币来源可组合原币种和确认状态，新增列唯一且原金额能力不变',()=>{assert.equal(v.PAYOUT_HEADERS.length,29);assert.equal(v.PAYOUT_HEADERS.filter(x=>x==='代付订单类型').length,1);const rows=v.filterPayoutOrders(v.payoutFixtures(),{origin:'下分',currency:'USDT',status:'待支付',confirm:'已确认'});assert.equal(rows.length,2);assert.equal(v.filterPayoutOrders(v.payoutFixtures(),{origin:'下分',currency:'CNY'}).length,0)});
 test('新页面完整保留列表详情字段，来源类型同时参与详情及CSV导出',()=>{for(const text of ['订单ID','商户ID','实际金额','商户服务费','通道服务费','商户代理返佣','通道代理返佣','订单成本','订单利润','请求返回内容','回调返回内容','查询返回内容','下单历史','来源下分单号'])assert.ok(general.includes(text),text);for(const text of ['强补订单','冲销订单','手提订单','亏损订单'])assert.ok(general.includes('<option>'+text+'</option>'));const c=vm.createContext({Number});vm.runInContext('const money=v=>Number(v).toFixed(2);'+extract(general,'// GENERAL_PAYOUT_MODEL_START','// GENERAL_PAYOUT_MODEL_END')+general.match(/function generalExportRows\(rows\)\{[^\n]+/)[0]+';globalThis.rows=generalExportRows(generalPayoutFixtures())',c);assert.equal(c.rows.length,26);assert.equal(c.rows[3][1],'下分');assert.equal(c.rows[0][1],'普通订单');assert.ok(c.rows.every(row=>row.length===12));assert.ok(virtual.includes("['来源下分单号',o.sourceWithdrawalNo||'—']"));assert.ok(virtual.includes('payoutOrderType(o),o.channelOrder'))});
+
+test('回调日期筛选排除无回调记录，单边范围也有效', () => {
+  const rows = g.generalPayoutFixtures();
+  const start = '2026-11-19 00:00:00';
+  const end = '2026-11-19 23:59:59';
+  assert.equal(g.filterGeneralPayouts(rows, {origin:'下分', timeType:'callback', start}).length, 0);
+  assert.equal(g.filterGeneralPayouts(rows, {timeType:'callback', start}).length, 3);
+  assert.equal(g.filterGeneralPayouts(rows, {timeType:'callback', end}).length, 9);
+  assert.equal(g.filterGeneralPayouts(rows, {timeType:'created', start, end}).length, 10);
+});

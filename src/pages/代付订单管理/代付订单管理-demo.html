@@ -9,7 +9,28 @@
 function payoutOrderType(order) { return order.sourceWithdrawalNo ? '下分' : '普通订单'; }
 const GENERAL_PAYOUT_HEADERS=['','系统订单号','代付订单类型','通道订单号/商家订单号','商户名/号','类型','交易金额','支付状态','通知状态','驳回描述','通道商','通道','提交时间/回调时间','操作'];
 function generalPayoutFixtures(){return Array.from({length:26},(_,i)=>{const status=i<3||i>=10&&i<16?'已打款':[3,7,8,9].includes(i)?'异常':i===4||i>=16&&i<20?'打款中':i===20||i===21?'已驳回':i===25?'IP封禁':'未打款';const date='2026-11-'+(i<10?'19':i<20?'18':'17'),amount=[100,260,500,120,80,90,200,150,300,180][i%10];return {id:'DF-DEMO-'+String(i+1).padStart(5,'0'),recordId:'DEMO-'+(i+1),merchantId:i%2?'DEMO-M-02':'DEMO-M-01',merchant:i%2?'北辰演示商户':'远航演示商户',merchantNo:i%2?'M-DEMO-002':'M-DEMO-001',merchantOrder:'MO-GENERAL-DEMO-'+String(i+1).padStart(5,'0'),channelOrder:status==='已打款'?'CH-GENERAL-DEMO-'+String(i+1).padStart(5,'0'):'—',sourceWithdrawalNo:[3,4,16,20].includes(i)?'LS-W-DEMO-'+String(i+1).padStart(5,'0'):'',typeCode:i%2?'USDT-DEMO':'BANK-DEMO',operationType:['强补订单','冲销订单','手提订单','亏损订单'][i%4],amount,actualAmount:amount,merchantFee:1,channelFee:.03,merchantCommission:0,channelCommission:0,cost:.03,profit:.97,status,notice:status==='已打款'?'通知成功':'未通知',reject:status==='已驳回'?'演示驳回说明':'—',provider:i%2?'北辰演示通道商':'远航演示通道商',channel:i%2?'北辰演示代付通道':'远航演示代付通道',created:date+' 12:'+String(59-i).padStart(2,'0')+':00',callback:status==='已打款'?date+' 13:'+String(59-i).padStart(2,'0')+':00':'—',message:status==='异常'?'演示通道调用异常':status==='未打款'?'演示订单等待处理':status==='已打款'?'代付下单成功':'',bank:'演示银行',branch:'演示支行',unionNo:'—',account:'DEMO-CARD-'+String(i+1).padStart(4,'0'),payee:i%2?'演示收款人乙':'演示收款人甲',remark:'—'}})}
-function filterGeneralPayouts(orders,q={}){const has=(value,needle)=>!needle||String(value).toLowerCase().includes(String(needle).toLowerCase());return orders.filter(o=>has(o.id,q.system)&&has(o.channelOrder,q.channelOrder)&&has(o.merchantOrder,q.merchantOrder)&&(!q.merchant||o.merchant===q.merchant)&&(!q.channel||o.channel===q.channel)&&(!q.provider||o.provider===q.provider)&&(!q.status||o.status===q.status)&&(!q.operationType||o.operationType===q.operationType)&&(!q.origin||payoutOrderType(o)===q.origin)&&(!q.notice||o.notice===q.notice)&&(!q.keyword||[o.amount.toFixed(2),o.payee,o.account].some(v=>has(v,q.keyword)))&&(!q.start||(q.timeType==='callback'?o.callback:o.created)>=q.start)&&(!q.end||(q.timeType==='callback'?o.callback:o.created)<=q.end))}
+function filterGeneralPayouts(orders, query = {}) {
+  const contains = (value, keyword) => !keyword || String(value).toLowerCase().includes(String(keyword).toLowerCase());
+  return orders.filter(order => {
+    const timestamp = query.timeType === 'callback' ? order.callback : order.created;
+    if (query.start || query.end) {
+      if (!timestamp || timestamp === '—') return false;
+      if (query.start && timestamp < query.start) return false;
+      if (query.end && timestamp > query.end) return false;
+    }
+    return contains(order.id, query.system)
+      && contains(order.channelOrder, query.channelOrder)
+      && contains(order.merchantOrder, query.merchantOrder)
+      && (!query.merchant || order.merchant === query.merchant)
+      && (!query.channel || order.channel === query.channel)
+      && (!query.provider || order.provider === query.provider)
+      && (!query.status || order.status === query.status)
+      && (!query.operationType || order.operationType === query.operationType)
+      && (!query.origin || payoutOrderType(order) === query.origin)
+      && (!query.notice || order.notice === query.notice)
+      && (!query.keyword || [order.amount.toFixed(2), order.payee, order.account].some(value => contains(value, query.keyword)));
+  });
+}
 function generalPayoutSummary(rows){const success=rows.filter(o=>o.status==='已打款'),rejected=rows.filter(o=>o.status==='已驳回'),pending=rows.filter(o=>['未打款','打款中'].includes(o.status)),sum=(items,key)=>items.reduce((n,o)=>n+Math.round(Number(o[key])*100),0)/100;return {successAmount:sum(success,'amount'),rejectedAmount:sum(rejected,'amount'),profit:sum(success,'profit'),channelFees:sum(success,'channelFee'),successCount:success.length,failedCount:0,successRate:rows.length?(success.length/rows.length*100).toFixed(1):'0.0',pendingAmount:sum(pending,'amount'),pendingCount:pending.length}}
 // GENERAL_PAYOUT_MODEL_END
 
