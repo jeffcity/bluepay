@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile('src/pages/机器人分层播报与多人确认/机器人分层播报与多人确认-demo.html','utf8');
+const extract=(a,b)=>source.split(a)[1].split(b)[0];
+const channels=extract('// PAYOUT_CHANNEL_MODEL_START','// PAYOUT_CHANNEL_MODEL_END'),component=extract('// THIRD_PARTY_PAYOUT_START','// THIRD_PARTY_PAYOUT_END'),manual=extract('// MANUAL_WITHDRAW_START','// MANUAL_WITHDRAW_END');
+const adapter=source.slice(source.indexOf('const withdrawRows ='),source.indexOf('let withdrawQuery ='));
+const escape=source.slice(source.indexOf('function escapeTierText('),source.indexOf('function formatTierAmount('));
+const ctx=vm.createContext({Map,Number,Array,JSON,Set});
+vm.runInContext(channels+'\n'+component+'\n'+escape+'\n'+manual+'\n'+adapter+';globalThis.a={rows:withdrawRows,data:manualWithdrawData,manual:manualWithdrawBody,order:withdrawPayoutOrder,body:thirdPartyPayoutBody,info:withdrawOrderInfoHtml,submit:submitThirdPartyPayout}',ctx);
+const a=ctx.a;
+test('人工与代付使用完全相同订单信息区，USDT/TRX金额手续费和到账金额保留原记录',()=>{for(const i of [0,6]){const row=a.rows[i],before=JSON.stringify(row),data=a.data(row,i),order=a.order(i),info=a.info(data),body=a.body(order);assert.ok(a.manual(data).includes(info));assert.ok(body.includes(info));for(const label of ['单号','提交时间','商户名称/商户号','操作时间','提现金额','操作人','手续费','状态','到账金额','币种','协议类型','收款钱包地址','备注'])assert.ok(info.includes(label));assert.equal(order.outAmount,Number(row[6]));assert.equal(order.withdrawInfo.amount,Number(row[4]));assert.equal(order.withdrawInfo.fee,Number(row[5]));assert.equal(order.withdrawInfo.net,Number(row[6]));assert.equal(JSON.stringify(row),before)}});
+test('提现金额与到账金额不同时按记录的到账金额出款，不再次扣手续费',()=>{const row=[...a.rows[0]];row[1]='DEMO-DISTINCT-AMOUNTS';row[4]='200';row[5]='4';row[6]='196';const i=a.rows.push(row)-1,order=a.order(i),before=JSON.stringify(order);a.body(order);assert.equal(JSON.stringify(order),before);assert.equal(a.submit(order,order.getChannels()[0]),true);assert.equal(order.outAmount,196);assert.equal(order.withdrawInfo.amount,200);assert.equal(order.withdrawInfo.fee,4);assert.equal(order.withdrawInfo.net,196)});
+test('代付表单保留备注审核图片，使用通道选择替代人工源地址和出款地址',()=>{const body=a.body(a.order(0));for(const value of ['withdrawPayoutChannel','thirdPayoutRemark','thirdPayoutImageInput','multiple','image/jpeg,image/png,image/gif','到账金额：200.00 TRX'])assert.ok(body.includes(value));assert.ok(!body.includes('manualWithdrawAddress'));assert.ok(!body.includes('推荐源地址'));assert.ok(!body.includes('剩余预付'))});
+test('虚拟币代付参考页保留原确认信息，不被替换成人工下分表单',()=>{const body=a.body({id:'VP-DEMO',merchantOrder:'MO-DEMO',merchant:'演示商户',merchantNo:'M-DEMO',currency:'USDT',outAmount:10,balance:100,chain:'TRC20',recipient:'TDEMO'});assert.ok(body.includes('商户订单号'));assert.ok(body.includes('USDT剩余预付'));assert.ok(!body.includes('订单信息'));assert.ok(!body.includes('thirdPayoutRemark'));assert.ok(!body.includes('withdrawPayoutChannel'))});
