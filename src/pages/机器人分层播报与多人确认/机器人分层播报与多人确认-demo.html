@@ -2735,6 +2735,16 @@ function openManualWithdraw(index) {
         <tbody id="cryptoOrderRows">${cryptoOrderRows(orders)}</tbody></table></div><div id="cryptoOrderPagination">${pagination(orders.length)}</div>
       <p style="margin:12px 0 0;color:var(--muted);font-size:12px">本页是统一的虚拟币充值订单管理页。VND 订单：交易金额为原始 VND；汇率仅展示本单锁定的最终有效值；浮动费率展示本单锁定的比例小数值，0.0200 代表 2%；浮动金额沿用既有订单增加逻辑，本单显示 0.00；到账金额为按既有规则向上取整的实际 USDT。USDT 与 TRX 订单继续按原有规则展示。</p>`;
     }
+    function stepCryptoRepairAmount(value, step) {
+      const parts = /^(\d+)(?:\.(\d+))?$/.exec(value);
+      const whole = BigInt(parts?.[1] ?? "0") + BigInt(step);
+      const fraction = (parts?.[2] ?? "").padEnd(2, "0");
+      const limit = BigInt(Number.MAX_SAFE_INTEGER);
+      if (whole < 0n) return "0." + "0".repeat(fraction.length);
+      if (whole >= limit) return limit + "." + "0".repeat(fraction.length);
+      return whole + "." + fraction;
+    }
+
     function openCryptoRechargeRepair(trigger) {
       const order = cryptoOrders.find(({ plat }) => plat === trigger.dataset.cryptoRechargeRepair);
       if (currentPage !== "cryptoOrder" || order?.status !== "已过期") return;
@@ -2840,8 +2850,7 @@ function openManualWithdraw(index) {
       amount.addEventListener("input", clearAmountError);
       for (const button of dialog.querySelectorAll("[data-crypto-repair-step]")) {
         button.addEventListener("click", () => {
-          const next = (amount.valueAsNumber || 0) + Number(button.dataset.cryptoRepairStep);
-          amount.value = Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, next)).toFixed(2);
+          amount.value = stepCryptoRepairAmount(amount.value, Number(button.dataset.cryptoRepairStep));
           clearAmountError();
         });
       }
