@@ -88,9 +88,27 @@
   <script>
     const iconPaths=['M4 11 12 4l8 7v9H4z','M5 5h14v14H5zM8 9h8M8 13h5','M12 3v18M4 12h16','M5 6h14v12H5zM8 10h8M8 14h5','M5 19V9m7 10V5m7 14v-7','M6 5h12v14H6zM9 9h6M9 13h6','M12 5v9m0 4h.01M5 20h14L12 4z','M4 12h16M12 4v16','M12 3a6 6 0 0 0-6 6c0 7-3 7-3 8h18c0-1-3-1-3-8a6 6 0 0 0-6-6z','M12 2v3m0 14v3M2 12h3m14 0h3'];
     document.getElementById('railNav').innerHTML=iconPaths.map((p,i)=>`<button class="rail-btn ${i===8?'active':''}" type="button" aria-label="导航项 ${i+1}"><svg viewBox="0 0 24 24"><path d="${p}"/></svg></button>`).join('');
+    const withdrawApplicationType = '商户下分申请';
+    const withdrawGroupVariable = '${telegramChatId}';
+    let manualGroupDraft = '';
     const typeMeta={
       '商户钱包地址修改':{risk:'高风险',vars:['riskLevel','merchantName','merchantNo','oldWalletAddress','newWalletAddress'],template:'商户 ${merchantName}（${merchantNo}）钱包地址已变更\n原地址：${oldWalletAddress}\n新地址：${newWalletAddress}'},
       '商户下分出款':{risk:'中/高风险',vars:['riskLevel','merchantName','merchantNo','orderNo','amount','walletAddress','createTime'],template:'商户 ${merchantName} 发起下分出款\n订单号：${orderNo}\n金额：${amount}\n钱包：${walletAddress}\n时间：${createTime}'},
+      [withdrawApplicationType]: {
+        risk: '中/高风险',
+        vars: ['merchantName','merchantNo','orderNo','amount','currency','walletAddress','createTime','effectiveReviewers','telegramChatId','telegramMemberIds'],
+        labels: {
+          merchantName: '商户名称', merchantNo: '商户号', orderNo: '下分单号',
+          amount: '申请金额', currency: '币种', walletAddress: '收款钱包地址', createTime: '申请时间',
+          effectiveReviewers: '有效确认人', telegramChatId: 'Telegram Chat ID', telegramMemberIds: 'Telegram Member ID'
+        },
+        variableSources: {
+          effectiveReviewers: '取该笔下分订单所属商户的有效确认人',
+          telegramChatId: '取该笔下分订单所属商户的审核群 ID',
+          telegramMemberIds: '取该商户有效确认人对应的 Telegram 用户 ID'
+        },
+        template: '【商户下分申请】\n商户：${merchantName}（${merchantNo}）\n下分单号：${orderNo}\n申请金额：${amount} ${currency}\n收款钱包地址：${walletAddress}\n申请时间：${createTime}\n有效确认人：${effectiveReviewers}\n请核对下分申请。'
+      },
       '商户资金划转':{risk:'高风险',vars:['transferOrderNo','transferType','submitTime','fundChangedAt','sourceMerchantName','sourceMerchantNo','sourceWalletType','targetMerchantName','targetMerchantNo','targetWalletType','transferAmount','feeAmount','receivedAmount','currency','protocolType','orderStatus','tgConfirmStatus','confirmProgress','confirmUsers','remark','operationTime','operator','operationRemark','reviewBot','reviewGroup'],labels:{transferOrderNo:'单号',transferType:'下分单类型',submitTime:'提交时间',fundChangedAt:'资金变动时间',sourceMerchantName:'被划出商户名称',sourceMerchantNo:'被划出商户号',sourceWalletType:'划出钱包',targetMerchantName:'转入商户名称',targetMerchantNo:'转入商户号',targetWalletType:'转入钱包',transferAmount:'划转金额',feeAmount:'手续费',receivedAmount:'到账金额',currency:'币种',protocolType:'协议类型',orderStatus:'状态',tgConfirmStatus:'TG确认状态',confirmProgress:'确认人数',confirmUsers:'确认人',remark:'备注',operationTime:'操作时间',operator:'操作人',operationRemark:'操作备注',reviewBot:'审核机器人',reviewGroup:'审核群'},template:'【商户资金划转】\n资金变动时间：${fundChangedAt}\n划转单号：${transferOrderNo}\n从：${sourceMerchantName}（${sourceMerchantNo}）/ ${sourceWalletType}\n到：${targetMerchantName}（${targetMerchantNo}）/ ${targetWalletType}\n划转金额：${transferAmount} ${currency}\n手续费：${feeAmount} ${currency}\n到账金额：${receivedAmount} ${currency}\n订单状态：${orderStatus}\nTG确认：${tgConfirmStatus}（${confirmProgress}）\n操作人：${operator}'},
       '登录IP进入黑名单':{risk:'高风险',vars:['recordId','ipAddress','blockType','currentStatus','triggerReason','failedCount','blockedAt','autoUnblockAt','unblockMethod','updatedAt','remark'],labels:{recordId:'主键',ipAddress:'IP 地址',blockType:'封禁类型',currentStatus:'当前状态',triggerReason:'触发原因',failedCount:'失败次数',blockedAt:'封禁时间',autoUnblockAt:'自动解除时间',unblockMethod:'解除方式',updatedAt:'更新时间',remark:'备注'},sample:{currentStatus:'封禁中',unblockMethod:'未解除',updatedAt:'2026-09-12 10:32:18',remark:'同一 IP 关联 3 个登录账号'},template:'【登录 IP 进入黑名单】\n主键：${recordId}\nIP 地址：${ipAddress}\n封禁类型：${blockType}\n当前状态：${currentStatus}\n触发原因：${triggerReason}\n失败次数：${failedCount}\n封禁时间：${blockedAt}\n自动解除时间：${autoUnblockAt}\n备注：${remark}'},
       '登录IP移出黑名单':{risk:'中风险',vars:['recordId','ipAddress','blockType','currentStatus','triggerReason','failedCount','blockedAt','autoUnblockAt','unblockMethod','updatedAt','remark'],labels:{recordId:'主键',ipAddress:'IP 地址',blockType:'封禁类型',currentStatus:'当前状态',triggerReason:'触发原因',failedCount:'失败次数',blockedAt:'封禁时间',autoUnblockAt:'自动解除时间',unblockMethod:'解除方式',updatedAt:'更新时间',remark:'备注'},sample:{currentStatus:'已解除',unblockMethod:'系统管理机器人解除',updatedAt:'2026-09-12 10:40:12',remark:'系统管理机器人解除'},template:'【登录 IP 移出黑名单】\n主键：${recordId}\nIP 地址：${ipAddress}\n封禁类型：${blockType}\n当前状态：${currentStatus}\n解除方式：${unblockMethod}\n更新时间：${updatedAt}\n备注：${remark}'},
@@ -103,6 +121,7 @@
     };
     const sample={riskLevel:'高',username:'admin.demo',userIp:'203.0.113.18',failedCount:'5',recordId:'1',ipAddress:'203.0.113.28',blockType:'登录临时封锁',currentStatus:'封禁中',triggerReason:'登录密码错误',blockedAt:'2026-09-12 10:32:18',autoUnblockAt:'2026-09-13 10:32:18',unblockMethod:'未解除',updatedAt:'2026-09-12 10:32:18',merchantName:'示例商户',merchantNo:'M0001001',oldWalletAddress:'TQx7…91mA',newWalletAddress:'TNp4…28kQ',orderNo:'WD202608140021',amount:'18,000.00',walletAddress:'TY7k…Ew2c',createTime:'2026-08-14 11:18:04',targetAccount:'ops.demo',roleName:'运营管理员',operator:'system.admin',ip:'203.0.113.21',occurredAt:'2026-08-14 12:30:00',logId:'LOG-20260814-008',requestCount:'6',currentReturnedAmount:'1,001.00',recentIps:'2',transferOrderNo:'TRF202608140001',transferType:'划转',submitTime:'2026-08-14 20:42:00',fundChangedAt:'2026-08-14 20:45:12',sourceMerchantName:'远航商户',sourceMerchantNo:'M00000901',sourceWalletType:'代收 USDT余额',targetMerchantName:'北辰商户',targetMerchantNo:'M00000902',targetWalletType:'代付 USDT代付剩余预付',transferAmount:'120.000000',feeAmount:'0.000000',receivedAmount:'120.000000',currency:'USDT',protocolType:'内部划转',orderStatus:'已完成',tgConfirmStatus:'已确认',confirmProgress:'2/2',confirmUsers:'审核员甲、审核员乙',remark:'审核机器人与审核群按被划出商户配置',operationTime:'2026-08-14 20:45:12',operationRemark:'资金划转执行成功',reviewBot:'商户下分确认机器人 A',reviewGroup:'资金划转审核群 A',merchant_name:'示例商户',platform_order_no:'PO202608140001',merchant_order_no:'MO202608140121',channel_order_no:'CO202608140099',payout_amount:'5,000.00',actual_amount:'4,990.00',order_status:'已驳回',payout_channel:'示例通道',reject_reason:'收款信息校验失败',created_at:'2026-08-14 10:20:00',rejected_at:'2026-08-14 10:22:10'};
     let data=[
+      {type:withdrawApplicationType,group:withdrawGroupVariable,robot:'未指定机器人',on:false,time:'—'},
       {type:'登录IP移出黑名单',group:'-5200000001',robot:'蓝盛通知 A',on:true,time:'2026-09-12 10:40:12'},
       {type:'登录IP进入黑名单',group:'-5200000001',robot:'蓝盛通知 A',on:true,time:'2026-09-12 10:32:18'},
       {type:'同一IP登入失败过多',group:'-5100000001',robot:'蓝盛通知 A',on:true,time:'2026-08-14 12:44:51'},
@@ -135,17 +154,49 @@
     function applyFilter(){const t=$('fType').value,s=$('fStatus').value,r=$('fRisk').value,robot=$('fRobot').value,g=$('fGroup').value.trim();filtered=data.filter(x=>(!t||x.type===t)&&(!s||(s==='on')===x.on)&&(!r||typeMeta[x.type].risk===r)&&(!robot||x.robot===robot)&&(!g||x.group.includes(g)));page=1;render();notify(`已找到 ${filtered.length} 条配置`)}
     function resetFilter(){['fType','fStatus','fRisk','fRobot'].forEach(id=>$(id).value='');$('fGroup').value='';filtered=data.slice();page=1;render();notify('筛选条件已重置')}
     function setRisk(type){const meta=typeMeta[type];if(!meta){$('modalRisk').innerHTML='<span class="risk mid">请选择消息类型</span><small>由系统根据消息类型自动填充</small>';return}$('modalRisk').innerHTML=`<span class="risk ${riskClass(meta.risk)}">${meta.risk}</span><small>由系统根据消息类型自动填充</small>`}
-    function renderVariables(type){const meta=typeMeta[type];$('variables').innerHTML=meta?meta.vars.map(v=>`<span class="chip" title="${esc(meta.labels?.[v]||v)}">\${${v}}${meta.labels?.[v]?`<small>${esc(meta.labels[v])}</small>`:''}</span>`).join(''):'<span class="hint">请选择消息类型，或保存后由系统返回可用变量</span>'}
+    function renderVariables(type) {
+      const meta = typeMeta[type];
+      $('variables').innerHTML = meta ? meta.vars.map((key) => {
+        const label = meta.labels?.[key] || key;
+        const title = meta.variableSources?.[key] || label;
+        const text = esc('${' + key + '}') + (meta.labels?.[key] ? `<small>${esc(label)}</small>` : '');
+        if (type === withdrawApplicationType) {
+          return `<button class="chip" type="button" title="${esc(title)}" aria-label="插入${esc(label)}" data-template-var="${key}">${text}</button>`;
+        }
+        return `<span class="chip" title="${esc(title)}">${text}</span>`;
+      }).join('') : '<span class="hint">请选择消息类型，或保存后由系统返回可用变量</span>';
+    }
+
+    function syncGroupField(type) {
+      const group = $('modalGroup');
+      const dynamic = type === withdrawApplicationType;
+      if (dynamic && !group.readOnly) {
+        manualGroupDraft = group.value;
+        group.value = withdrawGroupVariable;
+      } else if (!dynamic && group.readOnly) {
+        group.value = manualGroupDraft;
+      }
+      group.readOnly = dynamic;
+    }
+
     function renderPreview(){const type=$('modalType').value,text=$('modalTemplate').value;if(!type){$('preview').textContent='请选择消息类型';return}const values={...sample,...(typeMeta[type].sample||{})};$('preview').textContent=text.replace(/\$\{(\w+)\}/g,(_,v)=>values[v]??`\${${v}}`)||'请输入消息模板'}
-    function updateType(){const type=$('modalType').value;setRisk(type);renderVariables(type);if(type&&editIndex===null)$('modalTemplate').value=typeMeta[type].template;renderPreview()}
-    function openConfig(index=null){editIndex=index;const editing=index!==null,row=editing?data[index]:null;$('configTitle').textContent=editing?'编辑系统消息配置':'新增系统消息配置';$('modalType').disabled=editing;$('modalType').value=row?.type||'';$('modalGroup').value=row?.group==='—'?'':row?.group||'';$('modalRobot').value=row?.robot||'';$('modalTemplate').value=row?.template||'';$('typeError').classList.remove('show');$('templateError').classList.remove('show');setRisk($('modalType').value);renderVariables($('modalType').value);renderPreview();$('configMask').classList.add('show');setTimeout(()=>editing?$('modalGroup').focus():$('modalType').focus(),20)}
+    function updateType(){const type=$('modalType').value;setRisk(type);renderVariables(type);if(type&&editIndex===null)$('modalTemplate').value=typeMeta[type].template;syncGroupField(type);renderPreview()}
+    function openConfig(index=null){editIndex=index;const editing=index!==null,row=editing?data[index]:null;$('configTitle').textContent=editing?'编辑系统消息配置':'新增系统消息配置';$('modalType').disabled=editing;$('modalType').value=row?.type||'';$('modalGroup').readOnly=false;$('modalGroup').value=row?.type===withdrawApplicationType||row?.group==='—'?'':row?.group||'';$('modalRobot').value=row?.robot==='未指定机器人'?'':row?.robot||'';$('modalTemplate').value=row?.template||'';$('typeError').classList.remove('show');$('templateError').classList.remove('show');setRisk($('modalType').value);renderVariables($('modalType').value);syncGroupField($('modalType').value);renderPreview();$('configMask').classList.add('show');setTimeout(()=>editing?$('modalGroup').focus():$('modalType').focus(),20)}
     function closeConfig(){$('configMask').classList.remove('show')}
-    function submitConfig(){const type=$('modalType').value,template=$('modalTemplate').value.trim();$('typeError').classList.toggle('show',!type);$('templateError').classList.toggle('show',!template);if(!type||!template)return;const row={type,group:$('modalGroup').value.trim()||'—',robot:$('modalRobot').value||'未指定机器人',on:editIndex===null?true:data[editIndex].on,time:'2026-08-14 16:30:00',template,special:type==='恶意拉单预警'};if(editIndex===null)data.unshift(row);else data[editIndex]=row;filtered=data.slice();page=1;render();closeConfig();notify(editIndex===null?'系统消息配置已新增':'系统消息配置已更新')}
+    function submitConfig(){const type=$('modalType').value,template=$('modalTemplate').value.trim();$('typeError').classList.toggle('show',!type);$('templateError').classList.toggle('show',!template);if(!type||!template)return;const row={type,group:type===withdrawApplicationType?withdrawGroupVariable:$('modalGroup').value.trim()||'—',robot:$('modalRobot').value||'未指定机器人',on:editIndex===null?type!==withdrawApplicationType:data[editIndex].on,time:'2026-08-14 16:30:00',template,special:type==='恶意拉单预警'};if(editIndex===null)data.unshift(row);else data[editIndex]=row;filtered=data.slice();page=1;render();closeConfig();notify(editIndex===null?'系统消息配置已新增':'系统消息配置已更新')}
     function openDelete(index){deleteIndex=index;$('confirmMask').classList.add('show');$('confirmDelete').focus()}
     function closeDelete(){$('confirmMask').classList.remove('show');deleteIndex=null}
     function showSpecial(){$('specialCard').hidden=false;$('specialCard').scrollIntoView({behavior:'smooth',block:'nearest'})}
     $('rows').addEventListener('click',e=>{const toggle=e.target.closest('[data-toggle]'),edit=e.target.closest('[data-edit]'),special=e.target.closest('[data-special]'),del=e.target.closest('[data-delete]');if(toggle){const i=+toggle.dataset.toggle;data[i].on=!data[i].on;filtered=data.slice();render();notify(data[i].on?'配置已启用':'配置已停用')}if(edit)openConfig(+edit.dataset.edit);if(special)showSpecial();if(del)openDelete(+del.dataset.delete)});
     $('addBtn').onclick=()=>openConfig();$('closeConfig').onclick=$('cancelConfig').onclick=closeConfig;$('modalType').onchange=updateType;$('modalTemplate').oninput=renderPreview;$('submitConfig').onclick=submitConfig;
+    $('variables').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-template-var]');
+      if (!button) return;
+      const textarea = $('modalTemplate');
+      textarea.setRangeText('${' + button.dataset.templateVar + '}', textarea.selectionStart, textarea.selectionEnd, 'end');
+      textarea.focus();
+      renderPreview();
+    });
     $('searchBtn').onclick=applyFilter;$('resetBtn').onclick=resetFilter;$('fGroup').onkeydown=e=>{if(e.key==='Enter')applyFilter()};$('refreshBtn').onclick=()=>{filtered=data.slice();render();notify('配置列表已刷新')};
     $('p1Btn').onclick=()=>{page=1;render()};$('p2Btn').onclick=()=>{page=2;render()};$('prevBtn').onclick=()=>{page=Math.max(1,page-1);render()};$('nextBtn').onclick=()=>{page=Math.min(2,page+1);render()};$('jumpPage').onchange=()=>{page=Math.max(1,Math.min(2,+$('jumpPage').value||1));render()};
     $('exportBtn').onclick=()=>{const header='消息类型,TG群ID,通知机器人,状态,更新时间\n',body=data.map(x=>[x.type,x.group,x.robot,x.on?'启用':'停用',x.time].join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([header+body],{type:'text/csv;charset=utf-8'}));a.download='TG系统消息配置-demo.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),100);notify('已导出当前模拟配置')};
