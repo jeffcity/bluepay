@@ -1228,9 +1228,14 @@
 
 // PAYOUT_CHANNEL_MODEL_START
 const PAYOUT_CHANNEL_STORAGE_KEY = 'bluepay.payout-channel-demo.v1';
+const PAYOUT_CHANNEL_PRODUCTS = {
+  'DEMO-CRYPTO': '【DEMO-CRYPTO】虚拟币代付演示产品',
+  'DEMO-BANK': '【DEMO-BANK】银行卡代付演示产品',
+  'DEMO-CNY': '【DEMO-CNY】人民币代付演示产品',
+};
 function payoutChannelSeed() {
   const providers=['新万能通道商','远航演示通道商','北辰演示通道商'];
-  const channels=Array.from({length:41},(_,i)=>({id:'PC-DEMO-'+String(i+1).padStart(3,'0'),name:i===0?'新万能下分演示通道':i===1?'远航下分演示通道':i===2?'北辰停用下分演示通道':'普通代付演示通道 '+String(i-2).padStart(2,'0'),category:i<3?'下分':'普通',provider:providers[i%3],interface:i<3||i%3===0?'USDT':'chpay',code:'DEMO-CHANNEL-'+String(i+1).padStart(3,'0'),enabled:i!==2,tg:false,balance:0,usdtBalance:0,limited:false,successRate:'0%',weight:i===3?8:1,rate:0,singleFee:0,agentProfit:0,agentName:'—',acceptCallback:true,callbackTime:0,group:''}));
+  const channels=Array.from({length:41},(_,i)=>({id:'PC-DEMO-'+String(i+1).padStart(3,'0'),name:i===0?'新万能下分演示通道':i===1?'远航下分演示通道':i===2?'北辰停用下分演示通道':'普通代付演示通道 '+String(i-2).padStart(2,'0'),category:i<3?'下分':'普通',productType:i<3||i%3===0?'DEMO-CRYPTO':i%3===1?'DEMO-BANK':'DEMO-CNY',provider:providers[i%3],interface:i<3||i%3===0?'USDT':'chpay',code:'DEMO-CHANNEL-'+String(i+1).padStart(3,'0'),enabled:i!==2,tg:false,balance:0,usdtBalance:0,limited:false,successRate:'0%',weight:i===3?8:1,rate:0,singleFee:0,agentProfit:0,agentName:'—',acceptCallback:true,callbackTime:0,group:''}));
   return {version:1,nextId:42,channels};
 }
 function readPayoutChannelState() {
@@ -1248,22 +1253,53 @@ function savePayoutChannelState(state) {
   catch {throw new Error('通道资料保存失败，请检查浏览器存储后重试')}
 }
 function eligiblePayoutChannels(state) {return state.channels.filter(c=>c.category==='下分'&&c.enabled)}
-function filterPayoutChannels(state,q={}) {const needle=String(q.keyword||'').trim().toLowerCase();return state.channels.filter(c=>(!needle||[c.name,c.code,c.id].some(v=>String(v).toLowerCase().includes(needle)))&&(!q.category||c.category===q.category)&&(!q.provider||c.provider===q.provider)&&(q.enabled===''||q.enabled==null||c.enabled===(q.enabled==='true'||q.enabled===true)))}
+function filterPayoutChannels(state,q={}) {const needle=String(q.keyword||'').trim().toLowerCase();return state.channels.filter(c=>(!needle||[c.name,c.code,c.id].some(v=>String(v).toLowerCase().includes(needle)))&&(!q.productType||c.productType===q.productType)&&(!q.category||c.category===q.category)&&(!q.provider||c.provider===q.provider)&&(q.enabled===''||q.enabled==null||c.enabled===(q.enabled==='true'||q.enabled===true)))}
 function payoutChannelFields(input) {
   const data={name:String(input.name||'').trim(),interface:input.interface,provider:input.provider,category:input.category,weight:Number(input.weight),group:String(input.group||'').trim(),enabled:input.enabled};
   if(!['chpay','USDT'].includes(data.interface))throw new Error('请选择接口类型');
   if(!data.provider)throw new Error('请选择通道商');
-  if(!['普通','下分'].includes(data.category))throw new Error('请选择通道类型');
+  if(!['普通','下分'].includes(data.category))throw new Error('请选择通道用途');
+  data.productType = validatePayoutChannelProduct(input.productType, data.category);
   if(!data.name)throw new Error('请输入通道名称');
   if(!Number.isInteger(data.weight)||data.weight<1||data.weight>9)throw new Error('权重须为1至9的整数');
   if(typeof data.enabled!=='boolean')throw new Error('请选择状态');
   return data;
 }
-function savePayoutChannel(state,id,input) {
-  const fields=payoutChannelFields(input);
-  if(id){const channel=state.channels.find(c=>c.id===id);if(!channel)throw new Error('通道已不存在，请刷新列表');Object.assign(channel,fields);return channel}
-  const channel={...payoutChannelSeed().channels[0],...fields,id:'PC-DEMO-'+String(state.nextId).padStart(3,'0'),code:'—',balance:0,usdtBalance:0};
-  state.nextId++;state.channels.unshift(channel);return channel;
+function payoutChannelProductRequired(category) {
+  return category !== '下分';
+}
+function validatePayoutChannelProduct(value, category) {
+  const productType = String(value ?? '').trim();
+  if (!productType && !payoutChannelProductRequired(category)) return '';
+  if (!Object.hasOwn(PAYOUT_CHANNEL_PRODUCTS, productType)) throw new Error('请选择通道类型');
+  return productType;
+}
+function setPayoutChannelProduct(state, id, productType) {
+  const channel = state.channels.find(c => c.id === id);
+  if (!channel) throw new Error('通道已不存在，请刷新列表');
+  channel.productType = validatePayoutChannelProduct(productType, channel.category);
+}
+function savePayoutChannel(state, id, input) {
+  if (id) {
+    const channel = state.channels.find(c => c.id === id);
+    if (!channel) throw new Error('通道已不存在，请刷新列表');
+    if (input.category !== undefined && input.category !== channel.category) {
+      throw new Error('通道用途创建后不可修改');
+    }
+    const fields = payoutChannelFields({ ...input, category: channel.category });
+    Object.assign(channel, fields);
+    return channel;
+  }
+
+  const fields = payoutChannelFields(input);
+  const channel = {
+    ...payoutChannelSeed().channels[0], ...fields,
+    id: 'PC-DEMO-' + String(state.nextId).padStart(3,'0'),
+    code: '—', balance: 0, usdtBalance: 0,
+  };
+  state.nextId++;
+  state.channels.unshift(channel);
+  return channel;
 }
 // PAYOUT_CHANNEL_MODEL_END
 
@@ -1371,7 +1407,7 @@ function openThirdPartyPayout(order, onSubmitted, notify) {
   if (selector) { submit.disabled = true; selector.onchange = () => { submit.disabled = !selector.value; shade.querySelector('.third-payout-error').textContent = ''; }; }
   shade.querySelector('.third-payout-submit').onclick = () => {
     const channel = selector ? selectedThirdPartyChannel(order, selector.value) : undefined;
-    if (selector && !channel) { submit.disabled = true; shade.querySelector('.third-payout-error').textContent = '请选择已开启的下分通道；所选通道可能已关闭、变更类型或被删除'; return; }
+    if (selector && !channel) { submit.disabled = true; shade.querySelector('.third-payout-error').textContent = '请选择已开启的下分通道；所选通道可能已关闭或被删除'; return; }
     if (!submitThirdPartyPayout(order, channel)) { shade.querySelector('.third-payout-error').textContent = '订单状态已变化，请关闭后刷新查看'; return; }
     if (selector) { order.operationRemark=shade.querySelector('#thirdPayoutRemark').value.trim(); order.auditImageNames=images.map(image=>image.name); }
     close(); onSubmitted(order); notify(order.business === 'withdraw' ? '已模拟提交至'+order.channelName+'，等待通道回调' : '已模拟提交新万能代付，等待三方回调');
