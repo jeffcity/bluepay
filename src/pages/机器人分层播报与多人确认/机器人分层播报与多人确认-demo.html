@@ -1407,7 +1407,7 @@ function openThirdPartyPayout(order, onSubmitted, notify) {
   if (selector) { submit.disabled = true; selector.onchange = () => { submit.disabled = !selector.value; shade.querySelector('.third-payout-error').textContent = ''; }; }
   shade.querySelector('.third-payout-submit').onclick = () => {
     const channel = selector ? selectedThirdPartyChannel(order, selector.value) : undefined;
-    if (selector && !channel) { submit.disabled = true; shade.querySelector('.third-payout-error').textContent = '请选择已开启的下分通道；所选通道可能已关闭、变更类型或被删除'; return; }
+    if (selector && !channel) { submit.disabled = true; shade.querySelector('.third-payout-error').textContent = '请选择已开启的下分通道；所选通道可能已关闭或被删除'; return; }
     if (!submitThirdPartyPayout(order, channel)) { shade.querySelector('.third-payout-error').textContent = '订单状态已变化，请关闭后刷新查看'; return; }
     if (selector) { order.operationRemark=shade.querySelector('#thirdPayoutRemark').value.trim(); order.auditImageNames=images.map(image=>image.name); }
     close(); onSubmitted(order); notify(order.business === 'withdraw' ? '已模拟提交至'+order.channelName+'，等待通道回调' : '已模拟提交新万能代付，等待三方回调');
