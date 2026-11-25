@@ -1258,7 +1258,7 @@ function payoutChannelFields(input) {
   const data={name:String(input.name||'').trim(),interface:input.interface,provider:input.provider,category:input.category,weight:Number(input.weight),group:String(input.group||'').trim(),enabled:input.enabled};
   if(!['chpay','USDT'].includes(data.interface))throw new Error('请选择接口类型');
   if(!data.provider)throw new Error('请选择通道商');
-  if(!['普通','下分'].includes(data.category))throw new Error('请选择通道用途');
+  if(!['普通','下分'].includes(data.category))throw new Error('请选择通道类型');
   data.productType = validatePayoutChannelProduct(input.productType, data.category);
   if(!data.name)throw new Error('请输入通道名称');
   if(!Number.isInteger(data.weight)||data.weight<1||data.weight>9)throw new Error('权重须为1至9的整数');
@@ -1271,7 +1271,7 @@ function payoutChannelProductRequired(category) {
 function validatePayoutChannelProduct(value, category) {
   const productType = String(value ?? '').trim();
   if (!productType && !payoutChannelProductRequired(category)) return '';
-  if (!Object.hasOwn(PAYOUT_CHANNEL_PRODUCTS, productType)) throw new Error('请选择通道类型');
+  if (!Object.hasOwn(PAYOUT_CHANNEL_PRODUCTS, productType)) throw new Error('请选择代付类型');
   return productType;
 }
 function setPayoutChannelProduct(state, id, productType) {
@@ -1284,7 +1284,7 @@ function savePayoutChannel(state, id, input) {
     const channel = state.channels.find(c => c.id === id);
     if (!channel) throw new Error('通道已不存在，请刷新列表');
     if (input.category !== undefined && input.category !== channel.category) {
-      throw new Error('通道用途创建后不可修改');
+      throw new Error('通道类型创建后不可修改');
     }
     const fields = payoutChannelFields({ ...input, category: channel.category });
     Object.assign(channel, fields);
