@@ -3,7 +3,7 @@
 <style>
 :root{--blue:#409eff;--line:#ebeef5;--text:#606266;--muted:#909399;--canvas:#f2f5f8;--danger:#f56c6c;--warning:#e6a23c;font:14px/1.5 "PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}*{box-sizing:border-box}body{margin:0;background:var(--canvas)}button,input,select{font:inherit}button,select{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #79bbff;outline-offset:2px}[hidden]{display:none!important}button:disabled{cursor:not-allowed;opacity:.55}.page-heading{padding:18px 20px;background:#fff;margin:0;font-size:20px;font-weight:400;color:#303133}.page{padding:24px 20px}.card{padding:24px;background:#fff;border-radius:4px}.filters{display:flex;gap:16px 28px;align-items:center;flex-wrap:wrap;margin:14px 0 28px}.filter-field{display:flex;gap:12px;align-items:center;white-space:nowrap}.control{height:32px;min-width:0;width:160px;background:#fff;border:1px solid #dcdfe6;border-radius:4px;padding:0 11px;color:var(--text);font-size:13px}.control::placeholder{color:#a8abb2}.control:hover{border-color:#c0c4cc}.keyword{width:220px}.filter-actions{margin-left:auto;display:flex;gap:18px}.btn{height:32px;padding:0 16px;border:1px solid #dcdfe6;border-radius:4px;background:#fff;color:var(--text);font-size:13px;white-space:nowrap}.btn:hover{background:#ecf5ff;border-color:#c6e2ff;color:var(--blue)}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.primary:hover{background:#66b1ff}.btn.danger{background:#f5476d;border-color:#f5476d;color:white}.btn.muted{background:#909399;border-color:#909399;color:white}.btn.orange{height:25px;padding:0 8px;background:#e6a23c;color:#fff;border-color:#e6a23c}.toolbar{display:flex;align-items:center;gap:24px;margin-bottom:12px;flex-wrap:wrap}.badge{display:inline-flex;align-items:center;justify-content:center;background:#f56c6c;color:white;border-radius:20px;padding:0 7px;margin-left:8px;font-size:11px}.table-wrap{overflow:auto;max-width:100%;scrollbar-width:thin}table{border-collapse:collapse;table-layout:fixed;width:100%;min-width:2920px;font-size:13px}th,td{border:1px solid var(--line);padding:12px 12px;text-align:center;line-height:23px;overflow-wrap:anywhere;height:60px}th{color:var(--muted);font-weight:600;text-align:left;background:#fff;height:40px}tbody tr:nth-child(even){background:#fafafa}tbody tr:hover{background:#f5f7fa}.left{text-align:left}.links{white-space:normal}.link{border:0;background:transparent;color:var(--blue);font-size:12px;padding:1px 4px;white-space:nowrap}.link:hover{text-decoration:underline}.link.red{color:var(--danger)}.switch{width:40px;height:20px;background:#dcdfe6;border:0;border-radius:14px;position:relative;vertical-align:middle;padding:0;transition:background .15s}.switch::after{content:"";position:absolute;width:16px;height:16px;top:2px;left:2px;border-radius:50%;background:white;transition:left .15s}.switch.on{background:var(--blue)}.switch.on::after{left:22px}.sticky-last{position:sticky;right:0;background:#fff;z-index:2;box-shadow:-5px 0 10px #0000000a}tbody tr:nth-child(even) .sticky-last{background:#fafafa}.balance{display:flex;gap:5px;align-items:center;justify-content:center}.pagination{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:18px;font-size:13px}.pagination .control{width:96px}.page-button{border:0;background:transparent;padding:4px 8px;color:var(--text)}.page-button.current{color:var(--blue);font-weight:700}.pagination .jump{width:54px;text-align:center}.empty{height:130px;color:var(--muted);text-align:center}.shade{position:fixed;inset:0;z-index:1000;background:#0007;display:flex;align-items:center;justify-content:center;padding:20px}.modal{width:min(674px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:4px;box-shadow:0 10px 30px #0003}.modal-head{padding:20px 16px;background:#f5f7fa;display:flex;align-items:center;justify-content:space-between;margin:16px 16px 0}.modal-head h2{font-size:18px;font-weight:400;margin:0;color:#303133}.close{background:transparent;border:0;color:#303133;font-size:28px;line-height:28px;cursor:pointer}.modal-body{padding:12px 32px 10px;overflow:auto}.form-row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:start;margin-bottom:18px}.form-label{line-height:32px;text-align:right;white-space:nowrap}.required::before{content:"* ";color:#f56c6c}.form-row .control{width:100%}.hint{font-size:12px;color:#909399;line-height:20px;margin:4px 0 0}.number-control{display:flex;height:32px}.number-control .control{border-radius:0;text-align:center}.number-control button{width:34px;flex:none;border:1px solid #dcdfe6;background:#f5f7fa;color:#909399;font-size:20px;line-height:24px}.number-control button:first-child{border-radius:4px 0 0 4px;border-right:0}.number-control button:last-child{border-radius:0 4px 4px 0;border-left:0}.radios{display:flex;align-items:center;gap:24px;min-height:32px}.radios label{display:flex;align-items:center;gap:7px}.radios input{accent-color:var(--blue)}.modal-foot{margin:0 16px 16px;border-top:1px solid #e4e7ed;padding:20px 22px 8px;display:flex;justify-content:flex-end;gap:12px}.form-error{color:#f56c6c;margin:0 0 10px;font-size:13px}.form-error:empty{display:none}.toast{position:fixed;z-index:2000;top:20px;left:50%;transform:translateX(-50%);padding:10px 16px;background:#ecf5ff;color:var(--blue);border:1px solid #d9ecff;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .15s}.toast.show{opacity:1}
 @media(max-width:780px){.page{padding:18px 12px}.card{padding:18px 14px}.filters{gap:14px}.filter-actions{margin-left:0}.toolbar{gap:12px}.pagination{gap:6px;flex-wrap:wrap}.modal-body{padding:16px}.form-row{grid-template-columns:106px minmax(0,1fr);gap:10px}.modal-head{padding:16px}.shade{padding:12px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
-</style></head><body><h1 class="page-heading">代付通道管理</h1><main class="page"><section class="card"><div class="filters"><input class="control keyword" id="keyword" placeholder="名称/商户号/编码模糊查询" aria-label="名称/商户号/编码模糊查询"><label class="filter-field">通道类型<select class="control" id="productFilter"></select></label><label class="filter-field">通道用途<select class="control" id="categoryFilter"><option value="">请选择通道用途</option><option>普通</option><option>下分</option></select></label><label class="filter-field">通道商<select class="control" id="providerFilter"><option value="">请选择通道商</option><option>新万能通道商</option><option>远航演示通道商</option><option>北辰演示通道商</option></select></label><label class="filter-field">状态<select class="control" id="statusFilter"><option value="">请选择状态</option><option value="true">开启</option><option value="false">关闭</option></select></label><div class="filter-actions"><button class="btn primary" id="search">查询</button><button class="btn" data-demo-action="开启置顶">开启置顶</button></div></div><div class="toolbar"><button class="btn danger" data-demo-action="一键编辑配置">一键编辑配置</button><button class="btn" data-demo-action="一键编辑回调">一键编辑回调<span class="badge">99+</span></button><button class="btn muted" id="addChannel">添加代付通道</button></div><div class="table-wrap"><table id="channelTable"><colgroup id="channelCols"></colgroup><thead><tr id="channelHead"></tr></thead><tbody id="channelRows"></tbody></table></div><footer class="pagination"><span id="total"></span><select class="control" id="pageSize" aria-label="每页条数"><option value="10">10条/页</option><option value="20">20条/页</option><option value="50">50条/页</option></select><button class="page-button" id="prev" aria-label="上一页">‹</button><span id="pages"></span><button class="page-button" id="next" aria-label="下一页">›</button><span>前往</span><input class="control jump" id="jump" type="number" min="1" value="1" aria-label="页码"><span>页</span></footer></section></main><div id="modalRoot"></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
+</style></head><body><h1 class="page-heading">代付通道管理</h1><main class="page"><section class="card"><div class="filters"><input class="control keyword" id="keyword" placeholder="名称/商户号/编码模糊查询" aria-label="名称/商户号/编码模糊查询"><label class="filter-field">代付类型<select class="control" id="productFilter"></select></label><label class="filter-field">通道类型<select class="control" id="categoryFilter"><option value="">请选择通道类型</option><option>普通</option><option>下分</option></select></label><label class="filter-field">通道商<select class="control" id="providerFilter"><option value="">请选择通道商</option><option>新万能通道商</option><option>远航演示通道商</option><option>北辰演示通道商</option></select></label><label class="filter-field">状态<select class="control" id="statusFilter"><option value="">请选择状态</option><option value="true">开启</option><option value="false">关闭</option></select></label><div class="filter-actions"><button class="btn primary" id="search">查询</button><button class="btn" data-demo-action="开启置顶">开启置顶</button></div></div><div class="toolbar"><button class="btn danger" data-demo-action="一键编辑配置">一键编辑配置</button><button class="btn" data-demo-action="一键编辑回调">一键编辑回调<span class="badge">99+</span></button><button class="btn muted" id="addChannel">添加代付通道</button></div><div class="table-wrap"><table id="channelTable"><colgroup id="channelCols"></colgroup><thead><tr id="channelHead"></tr></thead><tbody id="channelRows"></tbody></table></div><footer class="pagination"><span id="total"></span><select class="control" id="pageSize" aria-label="每页条数"><option value="10">10条/页</option><option value="20">20条/页</option><option value="50">50条/页</option></select><button class="page-button" id="prev" aria-label="上一页">‹</button><span id="pages"></span><button class="page-button" id="next" aria-label="下一页">›</button><span>前往</span><input class="control jump" id="jump" type="number" min="1" value="1" aria-label="页码"><span>页</span></footer></section></main><div id="modalRoot"></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 // PAYOUT_CHANNEL_MODEL_START
 const PAYOUT_CHANNEL_STORAGE_KEY = 'bluepay.payout-channel-demo.v1';
@@ -37,7 +37,7 @@ function payoutChannelFields(input) {
   const data={name:String(input.name||'').trim(),interface:input.interface,provider:input.provider,category:input.category,weight:Number(input.weight),group:String(input.group||'').trim(),enabled:input.enabled};
   if(!['chpay','USDT'].includes(data.interface))throw new Error('请选择接口类型');
   if(!data.provider)throw new Error('请选择通道商');
-  if(!['普通','下分'].includes(data.category))throw new Error('请选择通道用途');
+  if(!['普通','下分'].includes(data.category))throw new Error('请选择通道类型');
   data.productType = validatePayoutChannelProduct(input.productType, data.category);
   if(!data.name)throw new Error('请输入通道名称');
   if(!Number.isInteger(data.weight)||data.weight<1||data.weight>9)throw new Error('权重须为1至9的整数');
@@ -50,7 +50,7 @@ function payoutChannelProductRequired(category) {
 function validatePayoutChannelProduct(value, category) {
   const productType = String(value ?? '').trim();
   if (!productType && !payoutChannelProductRequired(category)) return '';
-  if (!Object.hasOwn(PAYOUT_CHANNEL_PRODUCTS, productType)) throw new Error('请选择通道类型');
+  if (!Object.hasOwn(PAYOUT_CHANNEL_PRODUCTS, productType)) throw new Error('请选择代付类型');
   return productType;
 }
 function setPayoutChannelProduct(state, id, productType) {
@@ -63,7 +63,7 @@ function savePayoutChannel(state, id, input) {
     const channel = state.channels.find(c => c.id === id);
     if (!channel) throw new Error('通道已不存在，请刷新列表');
     if (input.category !== undefined && input.category !== channel.category) {
-      throw new Error('通道用途创建后不可修改');
+      throw new Error('通道类型创建后不可修改');
     }
     const fields = payoutChannelFields({ ...input, category: channel.category });
     Object.assign(channel, fields);
@@ -83,7 +83,7 @@ function savePayoutChannel(state, id, input) {
 // PAYOUT_CHANNEL_MODEL_END
 
 const $=id=>document.getElementById(id),esc=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const CHANNEL_HEADERS=['','通道名称','操作','主类型','通道用途','三方编码','通道商','接口类型','状态','TG 通知','余额','USDT金额','限额','成功率','权重','通道费率','单笔费用','代理总利润','代理名称','接受回调','回调时间','操作'];
+const CHANNEL_HEADERS=['','通道名称','操作','主类型','通道类型','三方编码','通道商','接口类型','状态','TG 通知','余额','USDT金额','限额','成功率','权重','通道费率','单笔费用','代理总利润','代理名称','接受回调','回调时间','操作'];
 let state=readPayoutChannelState(),query={},page=1,size=10,selected=new Set(),returnFocus=null;
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),2000)}
 const action=(id,label,extra='')=>`<button type="button" class="link ${label==='删除'?'red':''}" data-id="${esc(id)}" data-action="${label}" ${extra}>${label}</button>`;
@@ -94,7 +94,7 @@ function closeModal(){$('modalRoot').innerHTML='';if(returnFocus?.isConnected)re
 function openModal(title,body,onSave){returnFocus=document.activeElement;$('modalRoot').innerHTML=`<div class="shade"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><header class="modal-head"><h2 id="modalTitle">${esc(title)}</h2><button class="close" aria-label="关闭此对话框" data-close>×</button></header><div class="modal-body">${body}<p class="form-error" id="formError" role="status"></p></div><footer class="modal-foot"><button class="btn primary" id="saveModal">确 定</button><button class="btn" data-close>取 消</button></footer></section></div>`;document.body.style.overflow='hidden';$('saveModal').onclick=()=>{try{onSave()}catch(e){$('formError').textContent=e.message}};$('modalRoot').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);$('modalRoot').querySelector('.shade').onclick=e=>{if(e.target===e.currentTarget)closeModal()};$('modalRoot').querySelector('[data-close]').focus()}
 function options(values,value,placeholder){return `<option value="">${placeholder}</option>`+values.map(v=>`<option ${value===v?'selected':''}>${esc(v)}</option>`).join('')}
 function productOptions(value) {
-  return '<option value="">请选择通道类型</option>' +
+  return '<option value="">请选择代付类型</option>' +
     Object.entries(PAYOUT_CHANNEL_PRODUCTS).map(([code, label]) =>
       `<option value="${code}" ${value===code?'selected':''}>${esc(label)}</option>`
     ).join('');
@@ -103,8 +103,8 @@ function updateProductRequirement(input, category) {
   const required = payoutChannelProductRequired(category);
   input.required = required;
   input.labels[0]?.classList.toggle('required', required);
-  input.options[0].textContent = required ? '请选择通道类型' : '不绑定代付产品';
-  if ($('formError').textContent === '请选择通道类型') $('formError').textContent = '';
+  input.options[0].textContent = required ? '请选择代付类型' : '不绑定代付产品';
+  if ($('formError').textContent === '请选择代付类型') $('formError').textContent = '';
 }
 function editChannel(id) {
   state = readPayoutChannelState();
@@ -115,10 +115,10 @@ function editChannel(id) {
   const body =
     row('接口类型', `<select class="control" id="editInterface" aria-label="接口类型">${options(['chpay','USDT'],channel?.interface,'请选择接口类型')}</select>`) +
     row('通道商', `<select class="control" id="editProvider" aria-label="通道商">${options(['新万能通道商','远航演示通道商','北辰演示通道商'],channel?.provider,'请选择通道商')}</select>`) +
-    row('通道类型', `<select class="control" id="editProductType" aria-label="通道类型">${productOptions(channel?.productType)}</select>`, true, 'editProductType') +
-    row('通道用途', channel
-      ? `<input class="control" id="editCategory" aria-label="通道用途" aria-describedby="channelPurposeHint" value="${esc(channel.category)}" readonly><p class="hint" id="channelPurposeHint">通道用途创建后不可修改</p>`
-      : `<select class="control" id="editCategory" aria-label="通道用途">${options(['普通','下分'],null,'请选择通道用途')}</select>`, !channel) +
+    row('代付类型', `<select class="control" id="editProductType" aria-label="代付类型">${productOptions(channel?.productType)}</select>`, true, 'editProductType') +
+    row('通道类型', channel
+      ? `<input class="control" id="editCategory" aria-label="通道类型" aria-describedby="channelPurposeHint" value="${esc(channel.category)}" readonly><p class="hint" id="channelPurposeHint">通道类型创建后不可修改</p>`
+      : `<select class="control" id="editCategory" aria-label="通道类型">${options(['普通','下分'],null,'请选择通道类型')}</select>`, !channel) +
     row('通道名称', `<input class="control" id="editName" aria-label="通道名称" placeholder="请输入通道名称" value="${esc(channel?.name||'')}">`) +
     row('权重[1-9]', `<div class="number-control"><button type="button" data-step="-1" aria-label="减少数值">−</button><input class="control" id="editWeight" type="number" min="1" max="9" step="1" value="${channel?.weight||1}" aria-label="权重[1-9]"><button type="button" data-step="1" aria-label="增加数值">+</button></div>`) +
     row('机器人群组ID', `<input class="control" id="editGroup" aria-label="机器人群组ID" placeholder="示例：XXX2222" value="${esc(channel?.group||'')}"><p class="hint">机器人仅在此群监听本通道需通知的关键词</p>`, false) +
@@ -156,7 +156,7 @@ function typeChannel(id) {
   const channel = readPayoutChannelState().channels.find(c => c.id === id);
   if (!channel) return toast('通道已不存在，请刷新列表');
   openModal('选择类型', `<div class="form-row">
-    <label class="form-label required" for="setProductType">通道类型</label>
+    <label class="form-label required" for="setProductType">代付类型</label>
     <select class="control" id="setProductType">${productOptions(channel.productType)}</select>
   </div>`, () => {
     const fresh = readPayoutChannelState();
@@ -164,7 +164,7 @@ function typeChannel(id) {
     savePayoutChannelState(fresh);
     closeModal();
     render();
-    toast('通道类型已保存');
+    toast('代付类型已保存');
   });
   const product = $('setProductType');
   updateProductRequirement(product, channel.category);

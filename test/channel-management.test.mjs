@@ -73,14 +73,14 @@ test('下分可不绑定产品并保持出款资格，普通通道必须绑定�
   assert.equal(unbound.productType, '');
   assert.equal(a.select(order(), channel.id)?.id, channel.id);
 
-  assert.throws(() => a.save(state, null, form({category:'普通', productType:''})), /请选择通道类型/);
+  assert.throws(() => a.save(state, null, form({category:'普通', productType:''})), /请选择代付类型/);
   a.setProduct(state, channel.id, 'DEMO-CRYPTO');
   a.setProduct(state, channel.id, '');
   assert.equal(channel.productType, '');
   assert.equal(channel.category, '下分');
 
   const ordinary = a.save(state, null, form({category:'普通'}));
-  assert.throws(() => a.setProduct(state, ordinary.id, ''), /请选择通道类型/);
+  assert.throws(() => a.setProduct(state, ordinary.id, ''), /请选择代付类型/);
   assert.equal(ordinary.productType, 'DEMO-CRYPTO');
   assert.ok(!a.eligible(state).some(candidate => candidate.id === ordinary.id));
 });
@@ -93,7 +93,7 @@ test('用途锁定后两个方向都不能更改，原通道数据保持完整',
     const snapshot = JSON.stringify(state);
     assert.throws(
       () => a.save(state, channel.id, form({name:'试图变更用途', category})),
-      /通道用途创建后不可修改/,
+      /通道类型创建后不可修改/,
     );
     assert.equal(JSON.stringify(state), snapshot);
   }
