@@ -24,12 +24,6 @@ function readPayoutChannelState() {
     if(!raw)return payoutChannelSeed();
     const state=JSON.parse(raw);
     if(state.version!==1||!Array.isArray(state.channels)||!Number.isInteger(state.nextId)||state.nextId<1||new Set(state.channels.map(c=>c.id)).size!==state.channels.length||state.channels.some(c=>!c.id||!c.name||!['普通','下分'].includes(c.category)||typeof c.enabled!=='boolean'))return payoutChannelSeed();
-    const productsBySeedId = new Map(payoutChannelSeed().channels.map(c => [c.id, c.productType]));
-    for (const channel of state.channels) {
-      if (!Object.hasOwn(channel, 'productType')) {
-        channel.productType = productsBySeedId.get(channel.id) ?? '';
-      }
-    }
     return state;
   }catch{return payoutChannelSeed()}
 }

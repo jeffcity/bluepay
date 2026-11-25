@@ -47,9 +47,9 @@ test('产品选择独立于通道用途，筛选可组合，原有存储可继�
   a.write(previous);
   const state = a.read();
   const legacy = state.channels.at(-1);
-  assert.equal(legacy.productType, '');
-  assert.equal(state.channels[0].productType, 'DEMO-CRYPTO');
-  assert.equal(a.filter(state, { productType:'DEMO-CRYPTO', category:'下分' }).length, 3);
+  assert.equal(Object.hasOwn(legacy, 'productType'), false);
+  assert.equal(a.seed().channels[0].productType, 'DEMO-CRYPTO');
+  assert.equal(a.filter(state, { productType:'DEMO-CRYPTO', category:'下分' }).length, 0);
   a.setProduct(state, legacy.id, 'DEMO-BANK');
   assert.equal(legacy.productType, 'DEMO-BANK');
   assert.equal(legacy.category, '下分');
@@ -57,7 +57,10 @@ test('产品选择独立于通道用途，筛选可组合，原有存储可继�
   assert.ok(a.eligible(state).some(channel => channel.id === legacy.id));
   assert.equal(a.filter(state, { productType:'DEMO-BANK', category:'下分' }).length, 1);
   a.write(state);
-  assert.equal(a.read().channels.at(-1).productType, 'DEMO-BANK');
+  const restored = a.read();
+  assert.equal(restored.channels.at(-1).productType, 'DEMO-BANK');
+  assert.equal(Object.hasOwn(restored.channels[0], 'productType'), false);
+  assert.equal(Object.hasOwn(JSON.parse([...storage.values()][0]).channels[0], 'productType'), false);
 });
 
 test('下分可不绑定产品并保持出款资格，普通通道必须绑定产品', () => {
